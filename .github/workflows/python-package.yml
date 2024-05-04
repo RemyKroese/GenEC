@@ -39,7 +39,7 @@ jobs:
         xvfb-run pipenv run coverage run --branch --omit '*test*,*__init__.py' -m pytest
         pipenv run coverage xml
     - name: Python coverage
-      uses: orgoro/coverage@v3
+      uses: orgoro/coverage@v3.1
       with:
         coverageFile: coverage.xml
         token: ${{ secrets.GITHUB_TOKEN }}
