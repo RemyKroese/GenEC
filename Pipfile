@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pytest = "*"
+pycodestyle = "*"
+flake8 = "*"
+autopep8 = "*"
+mock = "*"
+pyinstaller = "*"
+coverage = "*"
+ptable = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
