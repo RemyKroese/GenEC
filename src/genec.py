@@ -29,7 +29,7 @@ class Extractor():
     def extract_text_from_clusters_by_regex(self, clusters):
         filtered_text = []
         for cluster in clusters:
-            search_result = re.match(self.text_filter['filter'], cluster)
+            search_result = re.search(self.text_filter['filter'], cluster)
             if search_result is not None:
                 filtered_text.append(search_result.group(1))
         return filtered_text
