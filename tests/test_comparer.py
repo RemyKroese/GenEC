@@ -28,15 +28,15 @@ DIFFERENCES_1 = {
 DIFFERENCES_2 = {
     '1': {'source': 1, 'reference': 0, 'difference': 1},
     '2': {'source': 1, 'reference': 0, 'difference': 1},
-    '3': {'source': 0, 'reference': 1, 'difference': 1}
+    '3': {'source': 0, 'reference': 1, 'difference': -1}
 }
 
 DIFFERENCES_3 = {
     '1': {'source': 3, 'reference': 0, 'difference': 3},
     '2': {'source': 1, 'reference': 1, 'difference': 0},
-    '3': {'source': 0, 'reference': 1, 'difference': 1},
-    '52': {'source': 0, 'reference': 1, 'difference': 1},
-    '100': {'source': 0, 'reference': 1, 'difference': 1}
+    '3': {'source': 0, 'reference': 1, 'difference': -1},
+    '52': {'source': 0, 'reference': 1, 'difference': -1},
+    '100': {'source': 0, 'reference': 1, 'difference': -1}
 }
 
 
