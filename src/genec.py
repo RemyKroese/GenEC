@@ -88,7 +88,7 @@ class Comparer():
     def get_differences(self, src, ref):
         differences = dict()
         for element in self.unique_elements:
-            diff = abs(src[element] - ref[element])
+            diff = src[element] - ref[element]
             differences[element] = {
                 # 'value': element,
                 'source': src[element],
