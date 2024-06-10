@@ -2,9 +2,14 @@ from enum import Enum
 import re
 
 
+YES_INPUT = ['yes', 'y']
+NO_INPUT = ['no', 'n']
+
+
 class Extractor():
     def __init__(self):
         self.cluster_filter = None
+        self.should_slice_clusters = False
         self.text_filter = {
             'filter_type': None,
             'filter': None
@@ -18,13 +23,39 @@ class Extractor():
 
     def extract_from_data(self, data):
         clusters = self.get_clusters(data)
+
         if self.text_filter['filter_type'] == self.TextFilterTypes(1):
             return self.extract_text_from_clusters_by_regex(clusters)
         else:
             raise ValueError('Unsupported filter type: %s' % self.text_filter['filter_type'].name)
 
     def get_clusters(self, data):
-        return data.split(self.cluster_filter)
+        clusters = data.split(self.cluster_filter)
+        return self.get_sliced_clusters(clusters) if self.should_slice_clusters else clusters
+
+    # TODO: make tests
+    def request_cluster_slicing(self):
+        response = input('Do you want to compare only a subsection of the clusters (press enter to skip)?' +
+                         '[yes/y]: ').lower()
+        self.should_slice_clusters = response in YES_INPUT
+
+    # TODO: make tests
+    def get_sliced_clusters(self, clusters, start_keyword='', end_keyword=''):
+        start_cluster_index = 0
+        end_cluster_index = len(clusters) - 1
+        start_keyword = input('Text in the cluster where the subsection should start (press enter to skip): ')
+        end_keyword = input('Text in the cluster where the subsection should end (press enter to skip): ')
+
+        if start_keyword:
+            start_cluster_index = next((i for i, cluster in enumerate(clusters)
+                                        if start_keyword in cluster), start_cluster_index)
+
+        if end_keyword:
+            end_cluster_index = next((i for i, cluster in enumerate(
+                clusters[start_cluster_index:], start=start_cluster_index)
+                if end_keyword in cluster), end_cluster_index)
+
+        return (clusters[start_cluster_index:end_cluster_index+1])
 
     def extract_text_from_clusters_by_regex(self, clusters):
         filtered_text = []
