@@ -3,9 +3,6 @@ import argparse
 import utils
 import genec
 
-DEV_FILE = 'src\\tmp_test\\file1.txt'
-REF_FILE = 'src\\tmp_test\\file2.txt'
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -26,8 +23,13 @@ def main():
     extractor = genec.Extractor()
     extractor.request_cluster_filter()
     extractor.request_text_filter()
+    extractor.request_cluster_slicing()
+    print('Extracting data from source file...')
     source_filtered_text = extractor.extract_from_data(source)
+    print('Extracting complete.')
+    print('Extracting data from reference file...')
     ref_filtered_text = extractor.extract_from_data(ref)
+    print('Extracting complete.')
 
     comparer = genec.Comparer(source_filtered_text, ref_filtered_text)
     differences = comparer.compare()

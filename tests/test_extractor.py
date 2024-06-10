@@ -102,3 +102,39 @@ def test_extract_from_data_unsupported_filter_type(mock_input):
     e.text_filter = {'filter_type': Extractor.TextFilterTypes.KEYWORD, 'filter': r'^[^\d]*(\d)'}  # 1st number in group
     with pytest.raises(ValueError, match='Unsupported filter type: KEYWORD'):
         e.extract_from_data(data)
+
+
+@pytest.mark.parametrize("input_side_effects, expected_result", [
+    (['', 'yes'], False),  # Press enter to skip
+    (['yes', 'y'], True),  # 'yes' response
+    (['no', 'n'], False),  # 'no' response
+])
+@patch('builtins.input')
+def test_request_cluster_slicing(mock_input, input_side_effects, expected_result):
+    mock_input.side_effect = input_side_effects
+    e = Extractor()
+    e.request_cluster_slicing()
+    assert e.should_slice_clusters == expected_result
+
+
+@pytest.mark.parametrize('input_side_effects, clusters,expected_result', [
+    (['start', 'end'],
+     ['This is the first cluster', 'This is the start cluster',
+      'This is another cluster', 'This is the end cluster', 'This is the last cluster'],
+     ['This is the start cluster', 'This is another cluster', 'This is the end cluster']),
+    (['', ''], ['Cluster one', 'Cluster two', 'Cluster three'], ['Cluster one', 'Cluster two', 'Cluster three']),
+    (['nonexistent', ''], ['Cluster one', 'Cluster two', 'Cluster three'],
+     ['Cluster one', 'Cluster two', 'Cluster three']),
+    (['', 'nonexistent'], ['Cluster one', 'Cluster two', 'Cluster three'],
+     ['Cluster one', 'Cluster two', 'Cluster three']),
+    (['start', 'nonexistent'], ['Cluster one', 'Cluster start', 'Cluster two', 'Cluster three'],
+     ['Cluster start', 'Cluster two', 'Cluster three']),
+    (['', 'end'], ['Cluster one', 'Cluster two', 'Cluster end', 'Cluster three'],
+     ['Cluster one', 'Cluster two', 'Cluster end']),
+])
+@patch('builtins.input')
+def test_get_sliced_clusters(mock_input, input_side_effects, clusters, expected_result):
+    mock_input.side_effect = input_side_effects
+    e = Extractor()
+    result = e.get_sliced_clusters(clusters)
+    assert result == expected_result
