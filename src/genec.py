@@ -33,13 +33,11 @@ class Extractor():
         clusters = data.split(self.cluster_filter)
         return self.get_sliced_clusters(clusters) if self.should_slice_clusters else clusters
 
-    # TODO: make tests
     def request_cluster_slicing(self):
         response = input('Do you want to compare only a subsection of the clusters (press enter to skip)?' +
                          '[yes/y]: ').lower()
         self.should_slice_clusters = response in YES_INPUT
 
-    # TODO: make tests
     def get_sliced_clusters(self, clusters, start_keyword='', end_keyword=''):
         start_cluster_index = 0
         end_cluster_index = len(clusters) - 1
