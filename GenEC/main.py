@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import utils
-import genec
+from GenEC.core import analyze
 
 
 def parse_arguments():
@@ -20,7 +20,7 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     source, ref = utils.read_files([args.source, args.reference])
-    extractor = genec.Extractor()
+    extractor = analyze.Extractor()
     extractor.request_cluster_filter()
     extractor.request_text_filter()
     extractor.request_cluster_slicing()
@@ -31,7 +31,7 @@ def main():
     ref_filtered_text = extractor.extract_from_data(ref)
     print('Extracting complete.')
 
-    comparer = genec.Comparer(source_filtered_text, ref_filtered_text)
+    comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
     differences = comparer.compare()
 
     print(utils.create_ascii_table(differences))

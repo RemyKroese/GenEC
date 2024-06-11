@@ -1,7 +1,7 @@
 from mock import patch
 import pytest
 
-from src.genec import Extractor
+from GenEC.core.analyze import Extractor
 
 BASIC_TEXT = '''a b c
 d e
@@ -68,7 +68,7 @@ def test_request_invalid_filter_type(mock_input):
     ('""', '""'),
     (r'/^[^\d]*(\d+)/', r'/^[^\d]*(\d+)/')])
 @patch('builtins.input')
-@patch('src.genec.Extractor.request_text_filter_type', return_value=Extractor.TextFilterTypes(1))
+@patch('GenEC.core.analyze.Extractor.request_text_filter_type', return_value=Extractor.TextFilterTypes(1))
 def test_request_text_filter_regex(mock_request, mock_input, user_input, expected_filter):
     mock_input.return_value = user_input
     e = Extractor()

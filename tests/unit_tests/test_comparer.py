@@ -1,6 +1,6 @@
 import pytest
 from collections import Counter
-from src.genec import Comparer
+from GenEC.core.analyze import Comparer
 
 SRC_1 = ['1', '2', '3']
 SRC_2 = ['1', '2']
