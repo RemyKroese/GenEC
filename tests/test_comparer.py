@@ -1,5 +1,5 @@
 import pytest
-
+from collections import Counter
 from src.genec import Comparer
 
 SRC_1 = ['1', '2', '3']
@@ -45,36 +45,27 @@ DIFFERENCES_3 = {
     (SRC_1, REF_1, {'3', '2', '1'}),  # set order should not matter
     (SRC_2, REF_2, {'1', '2', '3'}),
     (SRC_2, REF_3, {'1', '2', '3', '52', '100'}),
-    ])
+])
 def test_init_comparer(source, reference, expected_unique_elements):
     c = Comparer(source, reference)
     assert c.unique_elements == expected_unique_elements
 
 
-@pytest.mark.parametrize('source, reference, expected_src_struct, expected_ref_struct', [
-    (SRC_1, REF_1, SRC_STRUCT_1, REF_STRUCT_1),
-    (SRC_2, REF_2, SRC_STRUCT_2, REF_STRUCT_2),
-    (SRC_3, REF_3, SRC_STRUCT_3, REF_STRUCT_3)])
-def test_create_data_structures(source, reference, expected_src_struct, expected_ref_struct):
+@pytest.mark.parametrize('source, reference, expected_source_counter, expected_reference_counter', [
+    (SRC_1, REF_1, Counter(SRC_1), Counter(REF_1)),
+    (SRC_2, REF_2, Counter(SRC_2), Counter(REF_2)),
+    (SRC_3, REF_3, Counter(SRC_3), Counter(REF_3)),
+])
+def test_counters(source, reference, expected_source_counter, expected_reference_counter):
     c = Comparer(source, reference)
-    src, ref = c.create_data_structures()
-    assert src == expected_src_struct
-    assert ref == expected_ref_struct
+    assert c.source_counter == expected_source_counter
+    assert c.reference_counter == expected_reference_counter
 
 
-@pytest.mark.parametrize('src, ref, src_struct, ref_struct, expected_diff', [
-    (SRC_1, REF_1, SRC_STRUCT_1, REF_STRUCT_1, DIFFERENCES_1),
-    (SRC_2, REF_2, SRC_STRUCT_2, REF_STRUCT_2, DIFFERENCES_2),
-    (SRC_3, REF_3, SRC_STRUCT_3, REF_STRUCT_3, DIFFERENCES_3)])
-def test_get_differences(src, ref, src_struct, ref_struct, expected_diff):
-    c = Comparer(src, ref)
-    assert c.get_differences(src_struct, ref_struct) == expected_diff
-
-
-@pytest.mark.parametrize('src, ref, expected_diff', [
+@pytest.mark.parametrize('source, reference, expected_diff', [
     (SRC_1, REF_1, DIFFERENCES_1),
     (SRC_2, REF_2, DIFFERENCES_2),
     (SRC_3, REF_3, DIFFERENCES_3)])
-def test_compare(src, ref, expected_diff):
-    c = Comparer(src, ref)
+def test_compare(source, reference, expected_diff):
+    c = Comparer(source, reference)
     assert c.compare() == expected_diff

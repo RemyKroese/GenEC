@@ -1,3 +1,4 @@
+from collections import Counter
 from enum import Enum
 import re
 
@@ -97,30 +98,22 @@ class Extractor():
                       '4. Split-keywords (not yet supported)\n')))
 
 
-class Comparer():
+class Comparer:
     def __init__(self, source, reference):
         self.source = source
         self.reference = reference
-        self.unique_elements = set(self.source + self.reference)
+        self.source_counter = Counter(source)
+        self.reference_counter = Counter(reference)
+        self.unique_elements = set(self.source_counter.keys()).union(self.reference_counter.keys())
 
     def compare(self):
-        src, ref = self.create_data_structures()
-        return self.get_differences(src, ref)
-
-    def create_data_structures(self):
-        source_data_structure, reference_data_structure = dict(), dict()
+        differences = {}
         for element in self.unique_elements:
-            source_data_structure[element] = self.source.count(element)
-            reference_data_structure[element] = self.reference.count(element)
-        return source_data_structure, reference_data_structure
-
-    def get_differences(self, src, ref):
-        differences = dict()
-        for element in self.unique_elements:
-            diff = src[element] - ref[element]
+            src_count = self.source_counter.get(element, 0)
+            ref_count = self.reference_counter.get(element, 0)
             differences[element] = {
-                # 'value': element,
-                'source': src[element],
-                'reference': ref[element],
-                'difference': diff}
+                'source': src_count,
+                'reference': ref_count,
+                'difference': src_count - ref_count
+            }
         return differences
