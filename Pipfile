@@ -8,10 +8,10 @@ pytest = "*"
 pycodestyle = "*"
 flake8 = "*"
 autopep8 = "*"
-mock = "*"
 pyinstaller = "*"
 coverage = "*"
 ptable = "*"
+pyyaml = "*"
 
 [dev-packages]
 

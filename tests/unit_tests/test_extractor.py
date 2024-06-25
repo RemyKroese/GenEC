@@ -1,7 +1,6 @@
-from mock import patch
 import pytest
 
-from GenEC.core.analyze import Extractor
+from GenEC.core.analyze import Extractor, ConfigOptions, TextFilterTypes, Files
 
 BASIC_TEXT = '''a b c
 d e
@@ -18,103 +17,49 @@ k l m n o p
 q'''
 
 
+@pytest.fixture
+def extractor_instance():
+    config = {
+        ConfigOptions.CLUSTER_FILTER: None,
+        ConfigOptions.TEXT_FILTER_TYPE: None,
+        ConfigOptions.TEXT_FILTER: None,
+        ConfigOptions.SHOULD_SLICE_CLUSTERS: None,
+        ConfigOptions.SRC_START_CLUSTER_TEXT: None,
+        ConfigOptions.SRC_END_CLUSTER_TEXT: None,
+        ConfigOptions.REF_START_CLUSTER_TEXT: None,
+        ConfigOptions.REF_END_CLUSTER_TEXT: None
+    }
+    return Extractor(config)
+
+
 @pytest.mark.parametrize('data, cluster_filter, expected_result', [
     (BASIC_TEXT, '\n', ['a b c', 'd e', 'f g h i', 'j']),
     (WHITELINES_TEXT, '\n\n', ['a b c\nd e', 'f g h i', 'j\nk l m n o p\nq'])])
-@patch('builtins.input')
-def test_get_clusters(mock_input, data, cluster_filter, expected_result):
-    mock_input.return_value = cluster_filter
-    e = Extractor()
-    e.request_cluster_filter()
-    assert e.get_clusters(data) == expected_result
+def test_get_clusters(extractor_instance, data, cluster_filter, expected_result):
+    extractor_instance.config[ConfigOptions.CLUSTER_FILTER] = cluster_filter
+    assert extractor_instance.get_clusters(data, Files.SOURCE) == expected_result
 
 
-@pytest.mark.parametrize('user_input, expected_result', [
-    (1, Extractor.TextFilterTypes.REGEX),
-    (2, Extractor.TextFilterTypes.KEYWORD),
-    (3, Extractor.TextFilterTypes.POSITIONAL),
-    (4, Extractor.TextFilterTypes.SPLIT_KEYWORDS)])
-@patch('builtins.input')
-def test_request_text_filter_type(mock_input, user_input, expected_result):
-    mock_input.return_value = user_input
-    e = Extractor()
-    filter_type = e.request_text_filter_type()
-    assert filter_type == expected_result
-
-
-@pytest.mark.parametrize('user_input, expected_result', [
-    (2, Extractor.TextFilterTypes.KEYWORD.name),
-    (3, Extractor.TextFilterTypes.POSITIONAL.name),
-    (4, Extractor.TextFilterTypes.SPLIT_KEYWORDS.name)])
-@patch('builtins.input')
-def test_request_unsupported_filter_type(mock_input, user_input, expected_result):
-    mock_input.return_value = user_input
-    e = Extractor()
-    with pytest.raises(ValueError, match='Unsupported filter type: %s' % expected_result):
-        e.request_text_filter()
-
-
-@patch('builtins.input')
-def test_request_invalid_filter_type(mock_input):
-    mock_input.return_value = 999
-    e = Extractor()
-    with pytest.raises(ValueError, match='999 is not a valid Extractor.TextFilterTypes'):
-        e.request_text_filter()
-
-
-@pytest.mark.parametrize('user_input, expected_filter', [
-    ('ab*', 'ab*'),
-    ('[a-z]+', '[a-z]+'),
-    ('""', '""'),
-    (r'/^[^\d]*(\d+)/', r'/^[^\d]*(\d+)/')])
-@patch('builtins.input')
-@patch('GenEC.core.analyze.Extractor.request_text_filter_type', return_value=Extractor.TextFilterTypes(1))
-def test_request_text_filter_regex(mock_request, mock_input, user_input, expected_filter):
-    mock_input.return_value = user_input
-    e = Extractor()
-    e.request_text_filter()
-    assert e.text_filter == {'filter_type': Extractor.TextFilterTypes.REGEX, 'filter': expected_filter}
-
-
-def test_extract_text_from_clusters_by_regex():
+def test_extract_text_from_clusters_by_regex(extractor_instance):
     clusters = ['saiucdjh1', 'dusi2hiuw', '3134ferw', '4waijc', 'djhe56fk7', 'iuaijaudc']
-    e = Extractor()
-    e.text_filter = {'filter_type': Extractor.TextFilterTypes.REGEX, 'filter': r'^[^\d]*(\d)'}  # 1st number in group
-    assert e.extract_text_from_clusters_by_regex(clusters) == ['1', '2', '3', '4', '5']
+    extractor_instance.config[ConfigOptions.TEXT_FILTER] = r'^[^\d]*(\d)'
+    assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == ['1', '2', '3', '4', '5']
 
 
-@patch('builtins.input')
-def test_extract_from_data(mock_input):
-    mock_input.return_value = '\n'
+def test_extract_from_data(extractor_instance):
     data = 'saiucdjh1\ndusi2hiuw\n3134ferw\n4waijc\ndjhe56fk7\niuaijaudc'
-    e = Extractor()
-    e.request_cluster_filter()
-    e.text_filter = {'filter_type': Extractor.TextFilterTypes.REGEX, 'filter': r'^[^\d]*(\d)'}  # 1st number in group
-    assert e.extract_from_data(data) == ['1', '2', '3', '4', '5']
+    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE] = TextFilterTypes.REGEX.value
+    extractor_instance.config[ConfigOptions.TEXT_FILTER] = r'^[^\d]*(\d)'
+    assert extractor_instance.extract_from_data(data, Files.SOURCE) == ['1', '2', '3', '4', '5']
 
 
-@patch('builtins.input')
-def test_extract_from_data_unsupported_filter_type(mock_input):
-    mock_input.return_value = '\n'
+def test_extract_from_data_unsupported_filter_type(extractor_instance):
     data = 'saiucdjh1\ndusi2hiuw\n3134ferw\n4waijc\ndjhe56fk7\niuaijaudc'
-    e = Extractor()
-    e.request_cluster_filter()
-    e.text_filter = {'filter_type': Extractor.TextFilterTypes.KEYWORD, 'filter': r'^[^\d]*(\d)'}  # 1st number in group
-    with pytest.raises(ValueError, match='Unsupported filter type: KEYWORD'):
-        e.extract_from_data(data)
-
-
-@pytest.mark.parametrize("input_side_effects, expected_result", [
-    (['', 'yes'], False),  # Press enter to skip
-    (['yes', 'y'], True),  # 'yes' response
-    (['no', 'n'], False),  # 'no' response
-])
-@patch('builtins.input')
-def test_request_cluster_slicing(mock_input, input_side_effects, expected_result):
-    mock_input.side_effect = input_side_effects
-    e = Extractor()
-    e.request_cluster_slicing()
-    assert e.should_slice_clusters == expected_result
+    extractor_instance.config[ConfigOptions.CLUSTER_FILTER] = '\n'
+    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE] = TextFilterTypes.KEYWORD.value
+    extractor_instance.config[ConfigOptions.TEXT_FILTER] = r'^[^\d]*(\d)'
+    with pytest.raises(ValueError, match='Unsupported filter type: %s' % TextFilterTypes.KEYWORD.value):
+        extractor_instance.extract_from_data(data, Files.SOURCE)
 
 
 @pytest.mark.parametrize('input_side_effects, clusters,expected_result', [
@@ -132,9 +77,26 @@ def test_request_cluster_slicing(mock_input, input_side_effects, expected_result
     (['', 'end'], ['Cluster one', 'Cluster two', 'Cluster end', 'Cluster three'],
      ['Cluster one', 'Cluster two', 'Cluster end']),
 ])
-@patch('builtins.input')
-def test_get_sliced_clusters(mock_input, input_side_effects, clusters, expected_result):
-    mock_input.side_effect = input_side_effects
-    e = Extractor()
-    result = e.get_sliced_clusters(clusters)
+def test_get_sliced_clusters(extractor_instance, input_side_effects, clusters, expected_result):
+    result = extractor_instance.get_sliced_clusters(clusters, input_side_effects[0], input_side_effects[1])
     assert result == expected_result
+
+
+def test_get_src_clusters_with_slicing(extractor_instance):
+    data = 'This is the first cluster\nThis is the start cluster\nThis is another cluster\nThis is the end cluster\nThis is the last cluster'
+    expected_result = ['This is the start cluster', 'This is another cluster', 'This is the end cluster']
+    extractor_instance.config[ConfigOptions.CLUSTER_FILTER] = '\n'
+    extractor_instance.config[ConfigOptions.SHOULD_SLICE_CLUSTERS] = True
+    extractor_instance.config[ConfigOptions.SRC_START_CLUSTER_TEXT] = 'start'
+    extractor_instance.config[ConfigOptions.SRC_END_CLUSTER_TEXT] = 'end'
+    assert extractor_instance.get_clusters(data, Files.SOURCE) == expected_result
+
+
+def test_get_ref_clusters_with_slicing(extractor_instance):
+    data = 'This is the first cluster\nThis is the start cluster\nThis is another cluster\nThis is the end cluster\nThis is the last cluster'
+    expected_result = ['This is the start cluster', 'This is another cluster', 'This is the end cluster']
+    extractor_instance.config[ConfigOptions.CLUSTER_FILTER] = '\n'
+    extractor_instance.config[ConfigOptions.SHOULD_SLICE_CLUSTERS] = True
+    extractor_instance.config[ConfigOptions.REF_START_CLUSTER_TEXT] = 'start'
+    extractor_instance.config[ConfigOptions.REF_END_CLUSTER_TEXT] = 'end'
+    assert extractor_instance.get_clusters(data, Files.REFERENCE) == expected_result
