@@ -133,21 +133,21 @@ def test_load_presets_file_valid_file(mock_safe_load, mock_open_file, mock_exist
 def test_set_cluster_filter(mock_ask_open_question, im_instance):
     mock_ask_open_question.return_value = ';'
     im_instance.set_cluster_filter()
-    assert im_instance.config[ConfigOptions.CLUSTER_FILTER] == ';'
+    assert im_instance.config[ConfigOptions.CLUSTER_FILTER.value] == ';'
 
 
 @patch.object(InputManager, 'ask_mpc_question')
 def test_set_text_filter_type(mock_ask_mpc_question, im_instance):
     mock_ask_mpc_question.return_value = 'type1'
     im_instance.set_text_filter_type()
-    assert im_instance.config[ConfigOptions.TEXT_FILTER_TYPE] == 'type1'
+    assert im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] == 'type1'
 
 
 @patch.object(InputManager, 'request_text_filter')
 def test_set_text_filter(mock_request_text_filter, im_instance):
     mock_request_text_filter.return_value = 'filter1'
     im_instance.set_text_filter()
-    assert im_instance.config[ConfigOptions.TEXT_FILTER] == 'filter1'
+    assert im_instance.config[ConfigOptions.TEXT_FILTER.value] == 'filter1'
 
 
 @pytest.mark.parametrize('response, expected', [
@@ -158,14 +158,15 @@ def test_set_text_filter(mock_request_text_filter, im_instance):
 def test_set_should_slice_clusters(mock_ask_open_question, response, expected, im_instance):
     mock_ask_open_question.return_value = response
     im_instance.set_should_slice_clusters()
-    assert im_instance.config[ConfigOptions.SHOULD_SLICE_CLUSTERS] == expected
+
+    assert im_instance.config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] == expected
 
 
 @pytest.mark.parametrize('config_option, start_end, src_ref', [
-    (ConfigOptions.SRC_START_CLUSTER_TEXT, 'start', 'SRC'),
-    (ConfigOptions.SRC_END_CLUSTER_TEXT, 'end', 'SRC'),
-    (ConfigOptions.REF_START_CLUSTER_TEXT, 'start', 'REF'),
-    (ConfigOptions.REF_END_CLUSTER_TEXT, 'end', 'REF'),
+    (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
+    (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
+    (ConfigOptions.REF_START_CLUSTER_TEXT.value, 'start', 'REF'),
+    (ConfigOptions.REF_END_CLUSTER_TEXT.value, 'end', 'REF'),
 ])
 @patch.object(InputManager, 'ask_open_question')
 def test_set_cluster_text(mock_ask_open_question, config_option, start_end, src_ref, im_instance):
@@ -219,7 +220,7 @@ def test_ask_mpc_question_exit(mock_input, mock_stdout):
 @patch.object(InputManager, 'ask_open_question')
 def test_request_REGEX_filter_type(mock_input, im_instance):
     mock_input.return_value = USER_INPUT = 'my_filter'
-    im_instance.config[ConfigOptions.TEXT_FILTER_TYPE] = TextFilterTypes.REGEX.value
+    im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
     im_instance.request_text_filter()
     assert im_instance.request_text_filter() == USER_INPUT
 
@@ -229,6 +230,6 @@ def test_request_REGEX_filter_type(mock_input, im_instance):
     (TextFilterTypes.POSITIONAL.value),
     (TextFilterTypes.SPLIT_KEYWORDS.value)])
 def test_request_unsupported_filter_type(im_instance, filter_type):
-    im_instance.config[ConfigOptions.TEXT_FILTER_TYPE] = filter_type
+    im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = filter_type
     with pytest.raises(ValueError, match='Unsupported filter type: %s' % filter_type):
         im_instance.request_text_filter()

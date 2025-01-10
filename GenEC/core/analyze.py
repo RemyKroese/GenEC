@@ -36,7 +36,7 @@ class InputManager:
     PRESETS_DIR = os.path.join(os.path.dirname(__file__), '../presets')
 
     def __init__(self, preset_param: str = None):
-        self.preset_file, self.preset_name = self.parse_preset_param(preset_param) if preset_param else None, None
+        self.preset_file, self.preset_name = self.parse_preset_param(preset_param) if preset_param else (None, None)
         self.config = self.load_preset() if self.preset_file else {}
 
     @staticmethod
@@ -78,31 +78,34 @@ class InputManager:
         self.set_text_filter()
         self.set_should_slice_clusters()
 
-        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS):
-            self.set_cluster_text(ConfigOptions.SRC_START_CLUSTER_TEXT, 'start', 'SRC')
-            self.set_cluster_text(ConfigOptions.SRC_END_CLUSTER_TEXT, 'end', 'SRC')
-            self.set_cluster_text(ConfigOptions.REF_START_CLUSTER_TEXT, 'start', 'REF')
-            self.set_cluster_text(ConfigOptions.REF_END_CLUSTER_TEXT, 'end', 'REF')
+        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
+            self.set_cluster_text(ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC')
+            self.set_cluster_text(ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC')
+            self.set_cluster_text(ConfigOptions.REF_START_CLUSTER_TEXT.value, 'start', 'REF')
+            self.set_cluster_text(ConfigOptions.REF_END_CLUSTER_TEXT.value, 'end', 'REF')
 
     def set_cluster_filter(self):
-        if not self.config.get(ConfigOptions.CLUSTER_FILTER):
-            self.config[ConfigOptions.CLUSTER_FILTER] = self.ask_open_question(
-                'Please indicate the character(s) to split text clusters on: ').replace('\\n', '\n')
+        if not self.config.get(ConfigOptions.CLUSTER_FILTER.value):
+            input_string = self.ask_open_question(
+                'Please indicate the character(s) to split text clusters on: ')
+        else:
+            input_string = self.config.get(ConfigOptions.CLUSTER_FILTER.value)
+        self.config[ConfigOptions.CLUSTER_FILTER.value] = input_string.replace('\\n', '\n')
 
     def set_text_filter_type(self):
-        if not self.config.get(ConfigOptions.TEXT_FILTER_TYPE):
-            self.config[ConfigOptions.TEXT_FILTER_TYPE] = self.ask_mpc_question(
+        if not self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value):
+            self.config[ConfigOptions.TEXT_FILTER_TYPE.value] = self.ask_mpc_question(
                 'Please choose a filter type:\n', [t.value for t in TextFilterTypes])
 
     def set_text_filter(self):
-        if not self.config.get(ConfigOptions.TEXT_FILTER):
-            self.config[ConfigOptions.TEXT_FILTER] = self.request_text_filter()
+        if not self.config.get(ConfigOptions.TEXT_FILTER.value):
+            self.config[ConfigOptions.TEXT_FILTER.value] = self.request_text_filter()
 
     def set_should_slice_clusters(self):
-        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS) is None:  # False is a valid value
+        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value) is None:  # False is a valid value
             response = self.ask_open_question(
                 'Do you want to compare only a subsection of the clusters (press enter to skip)? [yes/y]: ').lower()
-            self.config[ConfigOptions.SHOULD_SLICE_CLUSTERS] = response in YES_INPUT
+            self.config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = response in YES_INPUT
 
     def set_cluster_text(self, config_option, position, src_or_ref):
         if not self.config.get(config_option):
@@ -110,10 +113,10 @@ class InputManager:
                 f'Text in the {src_or_ref.lower()} cluster where the subsection should {position} (press enter to skip): ')
 
     def request_text_filter(self):
-        if self.config.get(ConfigOptions.TEXT_FILTER_TYPE) == TextFilterTypes.REGEX.value:
+        if self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
             return self.ask_open_question('Please provide a regex filter: ')
         else:
-            raise ValueError('Unsupported filter type: %s' % self.config.get(ConfigOptions.TEXT_FILTER_TYPE))
+            raise ValueError('Unsupported filter type: %s' % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
         # TODO: continue implementation of following filter types
         # elif self.text_filter['filter_type'] == self.TextFilterTypes.KEYWORD:
@@ -167,20 +170,20 @@ class Extractor:
     def extract_from_data(self, data, file):
         clusters = self.get_clusters(data, file)
 
-        if self.config.get(ConfigOptions.TEXT_FILTER_TYPE) == TextFilterTypes.REGEX.value:
+        if self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
             return self.extract_text_from_clusters_by_regex(clusters)
         else:
-            raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE))
+            raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
     def get_clusters(self, data, file):
-        clusters = data.split(self.config.get(ConfigOptions.CLUSTER_FILTER))
-        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS):
-            if file == Files.SOURCE:
-                start_keyword = self.config.get(ConfigOptions.SRC_START_CLUSTER_TEXT)
-                end_keyword = self.config.get(ConfigOptions.SRC_END_CLUSTER_TEXT)
+        clusters = data.split(self.config.get(ConfigOptions.CLUSTER_FILTER.value))
+        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
+            if file == Files.SOURCE.value:
+                start_keyword = self.config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value)
+                end_keyword = self.config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value)
             else:
-                start_keyword = self.config.get(ConfigOptions.REF_START_CLUSTER_TEXT)
-                end_keyword = self.config.get(ConfigOptions.REF_END_CLUSTER_TEXT)
+                start_keyword = self.config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value)
+                end_keyword = self.config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
             return self.get_sliced_clusters(clusters, start_keyword, end_keyword)
         else:
             return clusters
@@ -203,7 +206,7 @@ class Extractor:
     def extract_text_from_clusters_by_regex(self, clusters):
         filtered_text = []
         for cluster in clusters:
-            search_result = re.search(self.config.get(ConfigOptions.TEXT_FILTER), cluster)
+            search_result = re.search(self.config.get(ConfigOptions.TEXT_FILTER.value), cluster)
             if search_result is not None:
                 filtered_text.append(search_result.group(1))
         return filtered_text
