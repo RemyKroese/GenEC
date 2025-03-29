@@ -1,4 +1,9 @@
 from prettytable import PrettyTable
+import json
+import os
+
+
+ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
 
 def read_files(file_paths):
@@ -23,3 +28,21 @@ def create_ascii_table(data):
         table.add_row([key, data[key]['source'], data[key]['reference'], data[key]['difference']])
 
     return table.get_string(sortby='Difference', reversesort=True)
+
+
+def write_to_txt_file(data, file_path):
+    try:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(data)
+    except OSError as err:
+        print(ERROR_WRITING_FILE.format(file_path, err))
+
+
+def write_to_json_file(data, file_path):
+    try:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, indent=4)
+    except OSError as err:
+        print(ERROR_WRITING_FILE.format(file_path, err))
