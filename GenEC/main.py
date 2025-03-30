@@ -14,8 +14,8 @@ def parse_arguments():
                         help='Source file to extract data and compare.')
     parser.add_argument('-r', '--reference', type=str, required=True,
                         help='Reference file to extract data and compare.')
-    parser.add_argument('-t', '--template', type=str, required=False,
-                        help='Template to use as analysis parameters.')
+    parser.add_argument('-p', '--preset', type=str, required=False,
+                        help='Preset to use as analysis parameters.')
     parser.add_argument('-o', '--output_folder', type=str, required=False,
                         help='Output folder to store results.')
 
@@ -25,7 +25,7 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     source, ref = utils.read_files([args.source, args.reference])
-    input_manager = analyze.InputManager(args.template)
+    input_manager = analyze.InputManager(args.preset)
     input_manager.set_config()
     extractor = analyze.Extractor(input_manager.config)
     print('Extracting data from source file...')
