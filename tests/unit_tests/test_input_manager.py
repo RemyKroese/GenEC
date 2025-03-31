@@ -136,6 +136,12 @@ def test_set_cluster_filter(mock_ask_open_question, im_instance):
     assert im_instance.config[ConfigOptions.CLUSTER_FILTER.value] == ';'
 
 
+def test_set_cluster_filter_from_config(im_instance):
+    im_instance.config[ConfigOptions.CLUSTER_FILTER.value] = '\n'
+    im_instance.set_cluster_filter()
+    assert im_instance.config[ConfigOptions.CLUSTER_FILTER.value] == '\n'
+
+
 @patch.object(InputManager, 'ask_mpc_question')
 def test_set_text_filter_type(mock_ask_mpc_question, im_instance):
     mock_ask_mpc_question.return_value = 'type1'
@@ -221,13 +227,23 @@ def test_ask_mpc_question_exit(mock_input, mock_stdout):
 def test_request_REGEX_filter_type(mock_input, im_instance):
     mock_input.return_value = USER_INPUT = 'my_filter'
     im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
-    im_instance.request_text_filter()
     assert im_instance.request_text_filter() == USER_INPUT
+
+
+@pytest.mark.parametrize('mock_side_effect, mock_output', [
+    ([' ', '2', '4'], [' ', 2, 4]),
+    (['', '3', '8'], [' ', 3, 8]),
+    (['ABC', '4', '2'], ['ABC', 4, 2])
+])
+@patch.object(InputManager, 'ask_open_question')
+def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_output, im_instance):
+    mock_input.side_effect = mock_side_effect
+    im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.POSITIONAL.value
+    assert im_instance.request_text_filter() == {'separator': mock_output[0], 'line': mock_output[1], 'occurrence': mock_output[2]}
 
 
 @pytest.mark.parametrize('filter_type', [
     (TextFilterTypes.KEYWORD.value),
-    (TextFilterTypes.POSITIONAL.value),
     (TextFilterTypes.SPLIT_KEYWORDS.value)])
 def test_request_unsupported_filter_type(im_instance, filter_type):
     im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = filter_type
