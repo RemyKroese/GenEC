@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 
 from GenEC.core.analyze import Extractor, ConfigOptions, TextFilterTypes, Files
 
@@ -46,11 +47,24 @@ def test_extract_text_from_clusters_by_regex(extractor_instance):
     assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == ['1', '2', '3', '4', '5']
 
 
-def test_extract_from_data(extractor_instance):
-    data = 'saiucdjh1\ndusi2hiuw\n3134ferw\n4waijc\ndjhe56fk7\niuaijaudc'
+def test_extract_text_from_clusters_by_position(extractor_instance):
+    clusters = ['line_1\nline_2 word_1 word_2', 'line_3\nline_4 word_3 word_4', 'line_5']
+    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = {'separator': ' ', 'line': 2, 'occurrence': 3}
+    assert extractor_instance.extract_text_from_clusters_by_position(clusters) == ['word_2', 'word_4']
+
+
+@patch.object(Extractor, 'extract_text_from_clusters_by_regex')
+def test_extract_from_data_by_regex(mock_extract_text_from_clusters_by_regex, extractor_instance):
+    mock_extract_text_from_clusters_by_regex.return_value = ['my_result']
     extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
-    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = r'^[^\d]*(\d)'
-    assert extractor_instance.extract_from_data(data, Files.SOURCE.value) == ['1', '2', '3', '4', '5']
+    assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
+
+
+@patch.object(Extractor, 'extract_text_from_clusters_by_position')
+def test_extract_from_data_by_position(mock_extract_text_from_clusters_by_position, extractor_instance):
+    mock_extract_text_from_clusters_by_position.return_value = ['my_result']
+    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.POSITIONAL.value
+    assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
 
 
 def test_extract_from_data_unsupported_filter_type(extractor_instance):

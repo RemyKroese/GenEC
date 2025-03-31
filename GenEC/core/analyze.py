@@ -27,8 +27,8 @@ class ConfigOptions(Enum):
 
 class TextFilterTypes(Enum):
     REGEX = 'Regex'
+    POSITIONAL = 'Positional'
     KEYWORD = 'Keyword_UNSUPPORTED'
-    POSITIONAL = 'Positional_UNSUPPORTED'
     SPLIT_KEYWORDS = 'Split-keywords_UNSUPPORTED'
 
 
@@ -87,10 +87,10 @@ class InputManager:
     def set_cluster_filter(self):
         if not self.config.get(ConfigOptions.CLUSTER_FILTER.value):
             input_string = self.ask_open_question(
-                'Please indicate the character(s) to split text clusters on: ')
+                'Please indicate the character(s) to split text clusters on (Default: Newline [\\n]): ')
         else:
             input_string = self.config.get(ConfigOptions.CLUSTER_FILTER.value)
-        self.config[ConfigOptions.CLUSTER_FILTER.value] = input_string.replace('\\n', '\n')
+        self.config[ConfigOptions.CLUSTER_FILTER.value] = input_string.replace('\\n', '\n') if input_string else '\n'
 
     def set_text_filter_type(self):
         if not self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value):
@@ -115,17 +115,18 @@ class InputManager:
     def request_text_filter(self):
         if self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
             return self.ask_open_question('Please provide a regex filter: ')
+        elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
+            separator_input = self.ask_open_question('Please provide the separator for counting (default: 1 space character): ')
+            positional_text_filter = {'separator': separator_input if separator_input else ' ',
+                                      'line': int(self.ask_open_question('Please provide the line number in the cluster: ')),
+                                      'occurrence': int(self.ask_open_question('Please provide the occurrence number: '))}
+            return positional_text_filter
         else:
             raise ValueError('Unsupported filter type: %s' % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
         # TODO: continue implementation of following filter types
         # elif self.text_filter['filter_type'] == self.TextFilterTypes.KEYWORD:
         #      self.text_filter['filter'] = input('Please provide a keyword filter: ')
-
-        # elif self.text_filter['filter_type'] == self.TextFilterTypes.POSITIONAL):
-        #      self.text_filter['filter'] = {'line': None, 'word': None}
-        #      self.text_filter['filter']['line'] = int(input('Please provide the line number in the cluster: '))
-        #      self.text_filter['filter']['word'] = int(input('Please provide the word number on the line: '))
 
         # elif self.text_filter['filter_type'] == self.TextFilterTypes.SPLIT_KEYWORDS:
         #      self.text_filter['filter'] = {'start_split': None, 'end_split': None}
@@ -169,9 +170,10 @@ class Extractor:
 
     def extract_from_data(self, data, file):
         clusters = self.get_clusters(data, file)
-
         if self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
             return self.extract_text_from_clusters_by_regex(clusters)
+        elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
+            return self.extract_text_from_clusters_by_position(clusters)
         else:
             raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
@@ -209,6 +211,17 @@ class Extractor:
             search_result = re.search(self.config.get(ConfigOptions.TEXT_FILTER.value), cluster)
             if search_result is not None:
                 filtered_text.append(search_result.group(1))
+        return filtered_text
+
+    def extract_text_from_clusters_by_position(self, clusters):
+        position_filter = self.config.get(ConfigOptions.TEXT_FILTER.value)
+        filtered_text = []
+        for cluster in clusters:
+            try:
+                line = cluster.split('\n')[position_filter['line']-1]
+                filtered_text.append(line.split(position_filter['separator'])[position_filter['occurrence']-1])
+            except IndexError:  # Clusters that don't contain the search parameters are ignored altogether
+                continue
         return filtered_text
 
 
