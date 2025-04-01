@@ -62,11 +62,6 @@ def test_extract_text_from_clusters_by_regex(extractor_instance, regex_pattern, 
     extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
     assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == expected
 
-# def test_extract_text_from_clusters_by_regex(extractor_instance):
-#     clusters = ['saiucdjh1', 'dusi2hiuw', '3134ferw', '4waijc', 'djhe56fk7', 'iuaijaudc']
-#     extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = r'^[^\d]*(\d)'
-#     assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == ['1', '2', '3', '4', '5']
-
 
 def test_extract_text_from_clusters_by_position(extractor_instance):
     clusters = ['line_1\nline_2 word_1 word_2', 'line_3\nline_4 word_3 word_4', 'line_5']
