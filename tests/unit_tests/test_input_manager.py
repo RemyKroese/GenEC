@@ -242,6 +242,18 @@ def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_outpu
     assert im_instance.request_text_filter() == {'separator': mock_output[0], 'line': mock_output[1], 'occurrence': mock_output[2]}
 
 
+@pytest.mark.parametrize('mock_side_effect, mock_output', [
+    (['regex_1', 'y', 'regex_2', 'done'], ['regex_1', 'regex_2']),
+    (['regex_1', 'n'], ['regex_1']),
+    (['regex_1', 'Y', 'regex_2', 'YeS', 'regex_3', ''], ['regex_1', 'regex_2', 'regex_3']),
+])
+@patch.object(InputManager, 'ask_open_question')
+def test_request_COMBI_SEARCH_filter_type(mock_input, mock_side_effect, mock_output, im_instance):
+    mock_input.side_effect = mock_side_effect
+    im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.COMBI_SEARCH.value
+    assert im_instance.request_text_filter() == mock_output
+
+
 @pytest.mark.parametrize('filter_type', [
     (TextFilterTypes.KEYWORD.value),
     (TextFilterTypes.SPLIT_KEYWORDS.value)])

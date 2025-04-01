@@ -67,6 +67,37 @@ def test_extract_from_data_by_position(mock_extract_text_from_clusters_by_positi
     assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
 
 
+@patch.object(Extractor, 'extract_text_from_clusters_by_combi_search')
+def test_extract_from_data_by_combi_search(mock_extract_text_from_clusters_by_combi_search, extractor_instance):
+    mock_extract_text_from_clusters_by_combi_search.return_value = ['my_result']
+    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.COMBI_SEARCH.value
+    assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
+
+
+@pytest.mark.parametrize(
+    'clusters, regex_filters, expected_filtered_clusters',
+    [
+        # Case 1: Some clusters remain after filtering
+        (['abc123', 'xyz89', 'test456', 'hello111', 'finalTest'],
+         [r'\d{3}', r'test'],
+         ['abc123', 'test456', 'hello111']),
+        # Case 2: More restrictive filtering, leaving only 'test456'
+        (['abc123', 'xyz89', 'test456', 'hello111', 'finalTest'],
+         [r'\d{3}', r'test', r'final'],
+         ['test456']),
+        # Case 3: All clusters are removed by the regex filters, leaving an empty list
+        (['abc123', 'xyz89', 'test456', 'hello111', 'finalTest'],
+         [r'^z.*$', r'test'],  # First filter keeps only words starting with 'z'
+         [])
+    ]
+)
+@patch.object(Extractor, 'extract_text_from_clusters_by_regex')
+def test_extract_text_from_clusters_by_combi_search(mock_extract_text, extractor_instance, clusters, regex_filters, expected_filtered_clusters):
+    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = regex_filters
+    extractor_instance.extract_text_from_clusters_by_combi_search(clusters)
+    mock_extract_text.assert_called_once_with(expected_filtered_clusters, regex_filters[-1])
+
+
 def test_extract_from_data_unsupported_filter_type(extractor_instance):
     data = 'saiucdjh1\ndusi2hiuw\n3134ferw\n4waijc\ndjhe56fk7\niuaijaudc'
     extractor_instance.config[ConfigOptions.CLUSTER_FILTER.value] = '\n'
