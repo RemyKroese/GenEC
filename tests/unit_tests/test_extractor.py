@@ -41,10 +41,31 @@ def test_get_clusters(extractor_instance, data, cluster_filter, expected_result)
     assert extractor_instance.get_clusters(data, Files.SOURCE.value) == expected_result
 
 
-def test_extract_text_from_clusters_by_regex(extractor_instance):
-    clusters = ['saiucdjh1', 'dusi2hiuw', '3134ferw', '4waijc', 'djhe56fk7', 'iuaijaudc']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = r'^[^\d]*(\d)'
-    assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == ['1', '2', '3', '4', '5']
+@pytest.mark.parametrize(
+    "regex_pattern, expected",
+    [
+        (r'\d+', ['48291', '7', '345', '98', '1204', '550']),
+        (r'(\d+)', ['48291', '7', '345', '98', '1204', '550']),
+        (r'(\d+)[^\d]+(\d+)', ['48291 | 384', '7 | 2', '345 | 19', '98 | 771', '1204 | 66', '550 | 43']),
+        (r'(\d+)[^\d]+(\d+)[^\d]+(\d+)', ['48291 | 384 | 11', '345 | 19 | 8', '1204 | 66 | 99', '550 | 43 | 7'])
+    ]
+)
+def test_extract_text_from_clusters_by_regex(extractor_instance, regex_pattern, expected):
+    clusters = [
+        'text48291more_384even11more',  # 3 number groups
+        'single_number7_test2',  # 2 number groups
+        'random345text19again8',  # 3 number groups
+        'prefix98middle771end',  # 2 number groups
+        'data1204with66extra99',  # 3 number groups
+        'noise550letters43final7',  # 3 number groups
+    ]
+    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
+    assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == expected
+
+# def test_extract_text_from_clusters_by_regex(extractor_instance):
+#     clusters = ['saiucdjh1', 'dusi2hiuw', '3134ferw', '4waijc', 'djhe56fk7', 'iuaijaudc']
+#     extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = r'^[^\d]*(\d)'
+#     assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == ['1', '2', '3', '4', '5']
 
 
 def test_extract_text_from_clusters_by_position(extractor_instance):

@@ -222,8 +222,10 @@ class Extractor:
         pattern = re.compile(regex_pattern if regex_pattern else self.config.get(ConfigOptions.TEXT_FILTER.value))
         for cluster in clusters:
             search_result = pattern.search(cluster)
-            if search_result is not None:
-                filtered_text.append(search_result.group(1))
+            if search_result:
+                groups = search_result.groups()
+                text_output = ' | '.join(groups) if groups else search_result.group(0)
+                filtered_text.append(text_output)
         return filtered_text
 
     def extract_text_from_clusters_by_position(self, clusters):
