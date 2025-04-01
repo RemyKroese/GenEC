@@ -28,6 +28,7 @@ class ConfigOptions(Enum):
 class TextFilterTypes(Enum):
     REGEX = 'Regex'
     POSITIONAL = 'Positional'
+    COMBI_SEARCH = 'Combi-search'
     KEYWORD = 'Keyword_UNSUPPORTED'
     SPLIT_KEYWORDS = 'Split-keywords_UNSUPPORTED'
 
@@ -121,6 +122,15 @@ class InputManager:
                                       'line': int(self.ask_open_question('Please provide the line number in the cluster: ')),
                                       'occurrence': int(self.ask_open_question('Please provide the occurrence number: '))}
             return positional_text_filter
+        elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.COMBI_SEARCH.value:
+            combi_search_filters = []
+            index = 1
+            while True:
+                combi_search_filters.append(self.ask_open_question('Please provide a regex filter for search {0}: '.format(index)))
+                index += 1
+                if self.ask_open_question('Do you wish to provide a next search parameter [yes/y]: ').lower() not in YES_INPUT:
+                    break
+            return combi_search_filters
         else:
             raise ValueError('Unsupported filter type: %s' % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
@@ -174,6 +184,8 @@ class Extractor:
             return self.extract_text_from_clusters_by_regex(clusters)
         elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
             return self.extract_text_from_clusters_by_position(clusters)
+        elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.COMBI_SEARCH.value:
+            return self.extract_text_from_clusters_by_combi_search(clusters)
         else:
             raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
@@ -205,10 +217,11 @@ class Extractor:
 
         return (clusters[start_cluster_index:end_cluster_index+1])
 
-    def extract_text_from_clusters_by_regex(self, clusters):
+    def extract_text_from_clusters_by_regex(self, clusters, regex_pattern=None):
         filtered_text = []
+        pattern = re.compile(regex_pattern if regex_pattern else self.config.get(ConfigOptions.TEXT_FILTER.value))
         for cluster in clusters:
-            search_result = re.search(self.config.get(ConfigOptions.TEXT_FILTER.value), cluster)
+            search_result = pattern.search(cluster)
             if search_result is not None:
                 filtered_text.append(search_result.group(1))
         return filtered_text
@@ -223,6 +236,14 @@ class Extractor:
             except IndexError:  # Clusters that don't contain the search parameters are ignored altogether
                 continue
         return filtered_text
+
+    def extract_text_from_clusters_by_combi_search(self, clusters):
+        '''Combi-search executes multiple user-defined regex searches, isolating only the relevant clusters for the final search'''
+        filters = self.config.get(ConfigOptions.TEXT_FILTER.value)
+        for filter in filters[:-1]:
+            pattern = re.compile(filter)
+            clusters = [cluster for cluster in clusters if pattern.search(cluster)]
+        return self.extract_text_from_clusters_by_regex(clusters, filters[-1])
 
 
 class Comparer:
