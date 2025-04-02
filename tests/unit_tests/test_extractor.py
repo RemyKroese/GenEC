@@ -51,14 +51,8 @@ def test_get_clusters(extractor_instance, data, cluster_filter, expected_result)
     ]
 )
 def test_extract_text_from_clusters_by_regex(extractor_instance, regex_pattern, expected):
-    clusters = [
-        'text48291more_384even11more',  # 3 number groups
-        'single_number7_test2',  # 2 number groups
-        'random345text19again8',  # 3 number groups
-        'prefix98middle771end',  # 2 number groups
-        'data1204with66extra99',  # 3 number groups
-        'noise550letters43final7',  # 3 number groups
-    ]
+    clusters = ['text48291more_384even11more', 'single_number7_test2', 'random345text19again8',
+                'prefix98middle771end', 'data1204with66extra99', 'noise550letters43final7']
     extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
     assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == expected
 
