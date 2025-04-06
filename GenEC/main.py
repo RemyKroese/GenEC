@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import argparse
 import os
-import utils
-from core import analyze
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from GenEC import utils                     # noqa: E402
+from GenEC.core import analyze, manage_io   # noqa: E402
+from GenEC.core import FileID               # noqa: E402
 
 
 def parse_arguments():
@@ -16,8 +20,8 @@ def parse_arguments():
                         help='Reference file to extract data and compare.')
     parser.add_argument('-p', '--preset', type=str, required=False,
                         help='Preset to use as analysis parameters.')
-    parser.add_argument('-o', '--output_folder', type=str, required=False,
-                        help='Output folder to store results.')
+    parser.add_argument('-o', '--output_directory', type=str, required=False,
+                        help='Output directory to store results.')
 
     return parser.parse_args()
 
@@ -25,25 +29,19 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     source, ref = utils.read_files([args.source, args.reference])
-    input_manager = analyze.InputManager(args.preset)
+    input_manager = manage_io.InputManager(args.preset)
     input_manager.set_config()
+
     extractor = analyze.Extractor(input_manager.config)
-    print('Extracting data from source file...')
-    source_filtered_text = extractor.extract_from_data(source, analyze.Files.SOURCE)
-    print('Extracting complete.')
-    print('Extracting data from reference file...')
-    ref_filtered_text = extractor.extract_from_data(ref, analyze.Files.REFERENCE)
-    print('Extracting complete.')
+    source_filtered_text = extractor.extract_from_data(source, FileID.SOURCE)
+    ref_filtered_text = extractor.extract_from_data(ref, FileID.REFERENCE)
 
     comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
     differences = comparer.compare()
 
-    ascii_table = utils.create_ascii_table(differences)
-    print(ascii_table)
-
-    if args.output_folder:
-        utils.write_to_txt_file(ascii_table, os.path.join(args.output_folder, 'results.txt'))
-        utils.write_to_json_file(differences, os.path.join(args.output_folder, 'results.json'))
+    output_directory = args.output_directory if args.output_directory else None
+    output_manager = manage_io.OutputManager(output_directory)
+    output_manager.process(differences)
 
 
 if __name__ == '__main__':
