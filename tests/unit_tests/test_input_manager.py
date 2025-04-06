@@ -2,7 +2,8 @@ from io import StringIO
 import pytest
 from unittest.mock import patch, mock_open
 
-from GenEC.core.analyze import InputManager, ConfigOptions, TextFilterTypes
+from GenEC.core import ConfigOptions, TextFilterTypes
+from GenEC.core.manage_io import InputManager
 
 # Mock preset data for testing
 SINGLE_PRESET_DATA = {

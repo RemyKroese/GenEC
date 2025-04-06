@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import patch
 
-from GenEC.core.analyze import Extractor, ConfigOptions, TextFilterTypes, Files
+from GenEC.core import ConfigOptions, FileID, TextFilterTypes
+from GenEC.core.analyze import Extractor
 
 BASIC_TEXT = '''a b c
 d e
@@ -38,7 +39,7 @@ def extractor_instance():
     (WHITELINES_TEXT, '\n\n', ['a b c\nd e', 'f g h i', 'j\nk l m n o p\nq'])])
 def test_get_clusters(extractor_instance, data, cluster_filter, expected_result):
     extractor_instance.config[ConfigOptions.CLUSTER_FILTER.value] = cluster_filter
-    assert extractor_instance.get_clusters(data, Files.SOURCE.value) == expected_result
+    assert extractor_instance.get_clusters(data, FileID.SOURCE) == expected_result
 
 
 @pytest.mark.parametrize(
@@ -67,21 +68,21 @@ def test_extract_text_from_clusters_by_position(extractor_instance):
 def test_extract_from_data_by_regex(mock_extract_text_from_clusters_by_regex, extractor_instance):
     mock_extract_text_from_clusters_by_regex.return_value = ['my_result']
     extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
-    assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
+    assert extractor_instance.extract_from_data('', FileID.SOURCE) == ['my_result']
 
 
 @patch.object(Extractor, 'extract_text_from_clusters_by_position')
 def test_extract_from_data_by_position(mock_extract_text_from_clusters_by_position, extractor_instance):
     mock_extract_text_from_clusters_by_position.return_value = ['my_result']
     extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.POSITIONAL.value
-    assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
+    assert extractor_instance.extract_from_data('', FileID.SOURCE) == ['my_result']
 
 
 @patch.object(Extractor, 'extract_text_from_clusters_by_combi_search')
 def test_extract_from_data_by_combi_search(mock_extract_text_from_clusters_by_combi_search, extractor_instance):
     mock_extract_text_from_clusters_by_combi_search.return_value = ['my_result']
     extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.COMBI_SEARCH.value
-    assert extractor_instance.extract_from_data('', Files.SOURCE.value) == ['my_result']
+    assert extractor_instance.extract_from_data('', FileID.SOURCE) == ['my_result']
 
 
 @pytest.mark.parametrize(
@@ -114,7 +115,7 @@ def test_extract_from_data_unsupported_filter_type(extractor_instance):
     extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.KEYWORD.value
     extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = r'^[^\d]*(\d)'
     with pytest.raises(ValueError, match='Unsupported filter type: %s' % TextFilterTypes.KEYWORD.value):
-        extractor_instance.extract_from_data(data, Files.SOURCE.value)
+        extractor_instance.extract_from_data(data, FileID.SOURCE)
 
 
 @pytest.mark.parametrize('input_side_effects, clusters,expected_result', [
@@ -144,7 +145,7 @@ def test_get_src_clusters_with_slicing(extractor_instance):
     extractor_instance.config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = True
     extractor_instance.config[ConfigOptions.SRC_START_CLUSTER_TEXT.value] = 'start'
     extractor_instance.config[ConfigOptions.SRC_END_CLUSTER_TEXT.value] = 'end'
-    assert extractor_instance.get_clusters(data, Files.SOURCE.value) == expected_result
+    assert extractor_instance.get_clusters(data, FileID.SOURCE) == expected_result
 
 
 def test_get_ref_clusters_with_slicing(extractor_instance):
@@ -154,4 +155,4 @@ def test_get_ref_clusters_with_slicing(extractor_instance):
     extractor_instance.config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = True
     extractor_instance.config[ConfigOptions.REF_START_CLUSTER_TEXT.value] = 'start'
     extractor_instance.config[ConfigOptions.REF_END_CLUSTER_TEXT.value] = 'end'
-    assert extractor_instance.get_clusters(data, Files.REFERENCE.value) == expected_result
+    assert extractor_instance.get_clusters(data, FileID.REFERENCE) == expected_result

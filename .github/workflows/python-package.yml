@@ -36,7 +36,7 @@ jobs:
         pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=150 --statistics
     - name: Test with pytest
       run: |
-        xvfb-run pipenv run coverage run --branch --omit '*test*,*__init__.py' -m pytest
+        xvfb-run pipenv run coverage run --branch -m pytest
         pipenv run coverage xml
     - name: Python coverage
       uses: orgoro/coverage@v3.1
