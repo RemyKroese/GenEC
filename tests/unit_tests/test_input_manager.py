@@ -5,7 +5,7 @@ from unittest.mock import patch, mock_open
 from GenEC.core import ConfigOptions, TextFilterTypes
 from GenEC.core.manage_io import InputManager
 
-# Mock preset data for testing
+
 SINGLE_PRESET_DATA = {
     'main_preset': {
         'cluster_filter': '',
@@ -51,10 +51,57 @@ MULTIPLE_PRESETS_DATA = {
     }
 }
 
+MOCK_YAML_CONTENT = {
+    'presets': [
+        'file1/presetA',
+        'file1/presetB',
+        'file2/presetC'
+    ]
+}
+
+MOCK_LOADED_PRESETS_FILE_1 = {
+    'presetA': {'key': 'value'},
+    'presetB': {'key2': 'value2'}
+}
+
+MOCK_LOADED_PRESETS_FILE_2 = {
+    'presetB': {'key3': 'value3'}
+}
+
 
 @pytest.fixture
 def im_instance():
     return InputManager()
+
+
+@patch.object(InputManager, 'load_preset', return_value={'key': 'value'})
+@patch.object(InputManager, 'parse_preset_param', return_value=('file.yaml', 'presetA'))
+def test_init_with_preset_type(mock_parse_preset_param, mock_load_preset):
+    im_instance = InputManager({'type': 'preset', 'value': 'fake_path'})
+    assert im_instance.preset_file == 'file.yaml'
+    assert im_instance.preset_name == 'presetA'
+    assert im_instance.config == {'key': 'value'}
+    assert not hasattr(im_instance, 'presets')
+
+
+@patch.object(InputManager, 'load_preset_list', return_value=['presetA', 'presetB'])
+def test_init_with_preset_list_type(mock_load_preset_list):
+    im_instance = InputManager({'type': 'preset-list', 'value': 'fake_list'})
+    assert im_instance.presets == ['presetA', 'presetB']
+    assert im_instance.preset_file is None
+    assert im_instance.preset_name is None
+    assert im_instance.config == {}
+
+
+def test_init_with_invalid_type():
+    with pytest.raises(ValueError, match='not a valid preset parameter type'):
+        InputManager({'type': 'invalid', 'value': 'something'})
+
+
+def test_init_with_no_parameters(im_instance):
+    assert im_instance.preset_file is None
+    assert im_instance.preset_name is None
+    assert im_instance.config == {}
 
 
 @pytest.mark.parametrize('preset_param, expected_result', [
@@ -64,27 +111,27 @@ def test_parse_preset_param(preset_param, expected_result):
     assert InputManager.parse_preset_param(preset_param) == expected_result
 
 
-@patch.object(InputManager, 'load_presets_file')
+@patch.object(InputManager, 'load_preset_file')
 @patch.object(InputManager, 'ask_mpc_question')
-def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_presets_file, im_instance):
-    mock_load_presets_file.return_value = MULTIPLE_PRESETS_DATA
+def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_preset_file, im_instance):
+    mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     mock_ask_mpc_question.return_value = preset_name = 'main_preset'
     im_instance.preset_name = None
     result = im_instance.load_preset()
     assert result == MULTIPLE_PRESETS_DATA[preset_name]
 
 
-@patch.object(InputManager, 'load_presets_file')
-def test_load_preset_invalid_preset_name(mock_load_presets_file, im_instance):
-    mock_load_presets_file.return_value = MULTIPLE_PRESETS_DATA
+@patch.object(InputManager, 'load_preset_file')
+def test_load_preset_invalid_preset_name(mock_load_preset_file, im_instance):
+    mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     im_instance.preset_name = 'non_existing_preset'
     with pytest.raises(ValueError):
         im_instance.load_preset()
 
 
-@patch.object(InputManager, 'load_presets_file')
-def test_load_from_single_preset(mock_load_presets_file, im_instance):
-    mock_load_presets_file.return_value = SINGLE_PRESET_DATA
+@patch.object(InputManager, 'load_preset_file')
+def test_load_from_single_preset(mock_load_preset_file, im_instance):
+    mock_load_preset_file.return_value = SINGLE_PRESET_DATA
     result = im_instance.load_preset()
     assert result == SINGLE_PRESET_DATA['main_preset']
 
@@ -93,27 +140,27 @@ def test_load_from_single_preset(mock_load_presets_file, im_instance):
     ('main_preset'),
     ('sub_preset_A')
 ])
-@patch.object(InputManager, 'load_presets_file')
-def test_load_from_multiple_presets_existing_preset_name(mock_load_presets_file, im_instance, preset_name):
-    mock_load_presets_file.return_value = MULTIPLE_PRESETS_DATA
+@patch.object(InputManager, 'load_preset_file')
+def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file, im_instance, preset_name):
+    mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     im_instance.preset_name = preset_name
     result = im_instance.load_preset()
     assert result == MULTIPLE_PRESETS_DATA[preset_name]
 
 
 @patch('os.path.exists', return_value=False)
-def test_load_presets_file_file_not_found(mock_exists, im_instance):
+def test_load_preset_file_file_not_found(mock_exists, im_instance):
     im_instance.preset_file = 'mock_file'
     with pytest.raises(FileNotFoundError):
-        im_instance.load_presets_file()
+        im_instance.load_preset_file()
 
 
 @patch('os.path.exists', return_value=True)
 @patch('builtins.open', new_callable=mock_open, read_data='')
-def test_load_presets_file_empty_file(mock_open_file, mock_exists, im_instance):
+def test_load_preset_file_empty_file(mock_open_file, mock_exists, im_instance):
     im_instance.preset_file = 'mock_file'
     with pytest.raises(ValueError):
-        im_instance.load_presets_file()
+        im_instance.load_preset_file()
 
 
 @pytest.mark.parametrize('preset_data', [
@@ -123,11 +170,97 @@ def test_load_presets_file_empty_file(mock_open_file, mock_exists, im_instance):
 @patch('os.path.exists', return_value=True)
 @patch('builtins.open', new_callable=mock_open)
 @patch('yaml.safe_load')
-def test_load_presets_file_valid_file(mock_safe_load, mock_open_file, mock_exists, im_instance, preset_data):
+def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, im_instance, preset_data):
     mock_safe_load.return_value = preset_data
     im_instance.preset_file = 'mock_file'
-    result = im_instance.load_presets_file()
+    result = im_instance.load_preset_file()
     assert result == preset_data
+
+
+@patch('GenEC.utils.read_yaml_file', return_value=MOCK_YAML_CONTENT)
+@patch.object(InputManager, 'parse_preset_param', )
+@patch.object(InputManager, 'load_presets')
+def test_load_preset_list(mock_load_presets, mock_parse_preset_param, mock_read_yaml_file, im_instance):
+    mock_load_presets.return_value = {'file1/presetA': {'key': 'value'},
+                                      'file1/presetB': {'key2': 'value2'},
+                                      'file2/presetC': {'key3': 'value3'}}
+    mock_parse_preset_param.side_effect = [('file1', 'presetA'),
+                                           ('file1', 'presetB'),
+                                           ('file2', 'presetC')]
+
+    im_instance.load_preset_list('preset_list_file')
+
+    assert 'file1/presetA' in im_instance.presets
+    assert 'file1/presetB' in im_instance.presets
+    assert 'file2/presetC' in im_instance.presets
+
+    expected_presets_list = {
+        'file1': ['presetA', 'presetB'],
+        'file2': ['presetC']
+    }
+    mock_load_presets.assert_called_once_with(expected_presets_list)
+
+    mock_parse_preset_param.assert_any_call('file1/presetA')
+    mock_parse_preset_param.assert_any_call('file1/presetB')
+    mock_parse_preset_param.assert_any_call('file2/presetC')
+
+
+@patch('GenEC.utils.read_yaml_file', return_value={})
+def test_load_preset_list_with_empty_yaml(mock_read_yaml, im_instance):
+    with pytest.raises(KeyError, match="'presets'"):
+        im_instance.load_preset_list('empty_preset_list')
+
+
+@patch.object(InputManager, 'load_preset_file', side_effect=[MOCK_LOADED_PRESETS_FILE_1, MOCK_LOADED_PRESETS_FILE_2])
+def test_load_presets_with_valid_data(mock_load_preset_file, im_instance):
+    presets_list = {
+        'file1': ['presetA', 'presetB'],
+        'file2': ['presetB']
+    }
+
+    result = im_instance.load_presets(presets_list)
+
+    assert len(result) == 3
+    assert 'file1/presetA' in result
+    assert 'file1/presetB' in result
+    assert 'file2/presetB' in result
+    assert result['file1/presetA'] == {'key': 'value'}
+    assert result['file1/presetB'] == {'key2': 'value2'}
+    assert result['file2/presetB'] == {'key3': 'value3'}
+
+
+@patch.object(InputManager, 'load_preset_file', side_effect=[MOCK_LOADED_PRESETS_FILE_1, MOCK_LOADED_PRESETS_FILE_2])
+def test_load_presets_with_missing_preset(mock_load_preset_file, im_instance):
+    presets_list = {
+        'file1': ['presetA', 'presetX'],
+        'file2': ['presetB']
+    }
+
+    result = im_instance.load_presets(presets_list)
+    assert len(result) == 2
+    assert 'file1/presetA' in result
+    assert 'file1/presetX' not in result
+    assert 'file2/presetB' in result
+    assert result['file1/presetA'] == {'key': 'value'}
+    assert result['file2/presetB'] == {'key3': 'value3'}
+
+
+@patch.object(InputManager, 'load_preset_file', return_value={})
+def test_load_presets_with_empty_file(mock_load_preset_file, im_instance):
+    presets_list = {
+        'file1': ['presetA'],
+    }
+    with pytest.raises(ValueError, match='None of the provided presets were found.'):
+        im_instance.load_presets(presets_list)
+
+
+@patch.object(InputManager, 'load_preset_file', side_effect=[MOCK_LOADED_PRESETS_FILE_1])
+def test_load_presets_with_invalid_data(mock_load_preset_file, im_instance):
+    presets_list = {
+        'file1': ['invalidPreset'],
+    }
+    with pytest.raises(ValueError, match='None of the provided presets were found.'):
+        im_instance.load_presets(presets_list)
 
 
 @patch.object(InputManager, 'ask_open_question')
