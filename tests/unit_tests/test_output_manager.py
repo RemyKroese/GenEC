@@ -22,9 +22,9 @@ def om_instance():
 
 
 @patch('builtins.print')
-@patch('GenEC.core.manage_io.utils.write_to_json_file')
-@patch('GenEC.core.manage_io.utils.write_to_txt_file')
-@patch('GenEC.core.manage_io.utils.create_ascii_table', return_value=MOCK_ASCII_TABLE)
+@patch('GenEC.utils.write_to_json_file')
+@patch('GenEC.utils.write_to_txt_file')
+@patch('GenEC.utils.create_ascii_table', return_value=MOCK_ASCII_TABLE)
 def test_process_print_only(mock_create_ascii_table, mock_write_to_txt_file, mock_write_to_json_file, mock_print, om_instance):
     om_instance.process(MOCK_RESULTS)
 
@@ -36,9 +36,9 @@ def test_process_print_only(mock_create_ascii_table, mock_write_to_txt_file, moc
 
 
 @patch('builtins.print')
-@patch('GenEC.core.manage_io.utils.write_to_json_file')
-@patch('GenEC.core.manage_io.utils.write_to_txt_file')
-@patch('GenEC.core.manage_io.utils.create_ascii_table', return_value=MOCK_ASCII_TABLE)
+@patch('GenEC.utils.write_to_json_file')
+@patch('GenEC.utils.write_to_txt_file')
+@patch('GenEC.utils.create_ascii_table', return_value=MOCK_ASCII_TABLE)
 def test_process_write_only(mock_create_ascii_table, mock_write_to_txt_file, mock_write_to_json_file, mock_print, om_instance):
     om_instance.output_directory = MOCK_OUTPUT_DIRECTORY
     om_instance.should_print_results = False
@@ -52,9 +52,9 @@ def test_process_write_only(mock_create_ascii_table, mock_write_to_txt_file, moc
 
 
 @patch('builtins.print')
-@patch('GenEC.core.manage_io.utils.write_to_json_file')
-@patch('GenEC.core.manage_io.utils.write_to_txt_file')
-@patch('GenEC.core.manage_io.utils.create_ascii_table', return_value=MOCK_ASCII_TABLE)
+@patch('GenEC.utils.write_to_json_file')
+@patch('GenEC.utils.write_to_txt_file')
+@patch('GenEC.utils.create_ascii_table', return_value=MOCK_ASCII_TABLE)
 def test_process_write_and_print(mock_create_ascii_table, mock_write_to_txt_file, mock_write_to_json_file, mock_print, om_instance):
     om_instance.output_directory = MOCK_OUTPUT_DIRECTORY
     om_instance.process(MOCK_RESULTS)

@@ -1,5 +1,5 @@
+from collections import defaultdict
 import os
-import yaml
 
 from GenEC import utils
 from GenEC.core import ConfigOptions, TextFilterTypes
@@ -12,9 +12,17 @@ NO_INPUT = ['no', 'n']
 class InputManager:
     PRESETS_DIR = os.path.join(os.path.dirname(__file__), '../presets')
 
-    def __init__(self, preset_param: str = None):
-        self.preset_file, self.preset_name = self.parse_preset_param(preset_param) if preset_param else (None, None)
-        self.config = self.load_preset() if self.preset_file else {}
+    def __init__(self, preset_param=None):
+        self.preset_file = self.preset_name = None
+        self.config = {}
+        if preset_param:
+            if preset_param['type'] == 'preset':
+                self.preset_file, self.preset_name = self.parse_preset_param(preset_param['value'])
+                self.config = self.load_preset()
+            elif preset_param['type'] == 'preset-list':
+                self.presets = self.load_preset_list()
+            else:
+                raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
 
     @staticmethod
     def parse_preset_param(preset_param):
@@ -23,8 +31,30 @@ class InputManager:
         else:
             return tuple(preset_param.split('/', 1))
 
+    def load_preset_list(self, preset_list_file):
+        preset_list_construction = utils.read_yaml_file(os.path.join(self.PRESETS_DIR, preset_list_file + '.yaml'))
+
+        presets_list = defaultdict(list)
+        for entry in preset_list_construction['presets']:
+            file_name, preset_name = self.parse_preset_param(entry)
+            presets_list[file_name].append(preset_name)
+        self.presets = self.load_presets(presets_list)
+
+    def load_presets(self, presets_list):
+        presets = {}
+        for file_name, preset_names in presets_list.items():
+            loaded_presets = self.load_preset_file(file_name)
+            for preset_name in preset_names:
+                if preset_name in loaded_presets:
+                    presets[file_name + '/' + preset_name] = loaded_presets[preset_name]
+                else:
+                    print(f'preset {preset_name} not found in {file_name}. Skipping...')
+        if not presets:
+            raise ValueError('None of the provided presets were found.')
+        return presets
+
     def load_preset(self):
-        presets = self.load_presets_file()
+        presets = self.load_preset_file()
         if not self.preset_name:
             if len(presets) == 1:
                 self.preset_name = next(iter(presets))
@@ -36,13 +66,9 @@ class InputManager:
 
         return presets[self.preset_name]
 
-    def load_presets_file(self):
-        presets_file_path = os.path.join(self.PRESETS_DIR, self.preset_file) + '.yaml'
-        if not os.path.exists(presets_file_path):
-            raise FileNotFoundError(f'preset file {presets_file_path} not found.')
-
-        with open(presets_file_path, 'r') as file:
-            presets = yaml.safe_load(file)
+    def load_preset_file(self):
+        presets_file_path = os.path.join(self.PRESETS_DIR, self.preset_file + '.yaml')
+        presets = utils.read_yaml_file(presets_file_path)
 
         if not presets or len(presets) == 0:
             raise ValueError(f'presets file {presets_file_path} does not contain any presets')

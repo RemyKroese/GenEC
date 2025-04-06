@@ -1,6 +1,7 @@
 from prettytable import PrettyTable
 import json
 import os
+import yaml
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
@@ -13,9 +14,18 @@ def read_files(file_paths):
     return files
 
 
-def read_file(file):
-    with open(file, 'r') as data:
+def read_file(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f'File {file_path} not found.')
+    with open(file_path, 'r') as data:
         return data.read()
+
+
+def read_yaml_file(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f'File {file_path} not found.')
+    with open(file_path, 'r') as file:
+        return yaml.safe_load(file)
 
 
 def create_ascii_table(data):

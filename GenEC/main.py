@@ -18,10 +18,15 @@ def parse_arguments():
                         help='Source file to extract data and compare.')
     parser.add_argument('-r', '--reference', type=str, required=True,
                         help='Reference file to extract data and compare.')
-    parser.add_argument('-p', '--preset', type=str, required=False,
-                        help='Preset to use as analysis parameters.')
     parser.add_argument('-o', '--output_directory', type=str, required=False,
                         help='Output directory to store results.')
+
+    # Only a preset, or a preset-list should be provided
+    preset_group = parser.add_mutually_exclusive_group(required=False)
+    preset_group.add_argument('-p', '--preset', type=str, required=False,
+                              help='Preset to use as analysis parameters.')
+    preset_group.add_argument('-l', '--preset-list', type=str, required=False,
+                              help='A list of presets to perform a larger scale analysis.')
 
     return parser.parse_args()
 
@@ -29,7 +34,11 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     source, ref = utils.read_files([args.source, args.reference])
-    input_manager = manage_io.InputManager(args.preset)
+    if args.preset_list:
+        preset_param = {'type': 'preset-list', 'value': args.preset_list}
+    elif args.preset:
+        preset_param = {'type': 'preset', 'value': args.preset}
+    input_manager = manage_io.InputManager(preset_param)
     input_manager.set_config()
 
     extractor = analyze.Extractor(input_manager.config)
