@@ -181,8 +181,11 @@ class OutputManager:
         self.output_directory = output_directory
         self.should_print_results = should_print_results
 
-    def process(self, results, file_name='results'):
-        ascii_table = utils.create_ascii_table(results)
+    def process(self, results, file_name='results', is_comparison=False):
+        if is_comparison:
+            ascii_table = utils.create_comparison_ascii_table(results)
+        else:
+            ascii_table = utils.create_extraction_ascii_table(results)
         if self.should_print_results:
             print(ascii_table)
         if self.output_directory:
