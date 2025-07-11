@@ -1,5 +1,4 @@
 import pytest
-from collections import Counter
 from GenEC.core.analyze import Comparer
 
 SRC_1 = ['1', '2', '3']
@@ -9,6 +8,14 @@ SRC_3 = ['1', '1', '1', '2']
 REF_1 = ['1', '2', '3']
 REF_2 = ['3']
 REF_3 = ['3', '2', '100', '52']
+
+EXPECTED_SRC_1 = {'1': {'count': 1}, '2': {'count': 1}, '3': {'count': 1}}
+EXPECTED_SRC_2 = {'1': {'count': 1}, '2': {'count': 1}}
+EXPECTED_SRC_3 = {'1': {'count': 3}, '2': {'count': 1}}
+
+EXPECTED_REF_1 = {'1': {'count': 1}, '2': {'count': 1}, '3': {'count': 1}}
+EXPECTED_REF_2 = {'3': {'count': 1}}
+EXPECTED_REF_3 = {'3': {'count': 1}, '2': {'count': 1}, '100': {'count': 1}, '52': {'count': 1}}
 
 SRC_STRUCT_1 = {'1': 1, '2': 1, '3': 1}
 REF_STRUCT_1 = {'1': 1, '2': 1, '3': 1}
@@ -52,14 +59,14 @@ def test_init_comparer(source, reference, expected_unique_elements):
 
 
 @pytest.mark.parametrize('source, reference, expected_source_counter, expected_reference_counter', [
-    (SRC_1, REF_1, Counter(SRC_1), Counter(REF_1)),
-    (SRC_2, REF_2, Counter(SRC_2), Counter(REF_2)),
-    (SRC_3, REF_3, Counter(SRC_3), Counter(REF_3)),
+    (SRC_1, REF_1, EXPECTED_SRC_1, EXPECTED_REF_1),
+    (SRC_2, REF_2, EXPECTED_SRC_2, EXPECTED_REF_2),
+    (SRC_3, REF_3, EXPECTED_SRC_3, EXPECTED_REF_3),
 ])
 def test_counters(source, reference, expected_source_counter, expected_reference_counter):
     c = Comparer(source, reference)
-    assert c.source_counter == expected_source_counter
-    assert c.reference_counter == expected_reference_counter
+    assert c.source_counts == expected_source_counter
+    assert c.reference_counts == expected_reference_counter
 
 
 @pytest.mark.parametrize('source, reference, expected_diff', [

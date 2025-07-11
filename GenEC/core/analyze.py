@@ -1,6 +1,6 @@
-from collections import Counter
 import re
 
+from GenEC import utils
 from GenEC.core import FileID, ConfigOptions, TextFilterTypes
 
 
@@ -80,17 +80,15 @@ class Extractor:
 
 class Comparer:
     def __init__(self, source, reference):
-        self.source = source
-        self.reference = reference
-        self.source_counter = Counter(source)
-        self.reference_counter = Counter(reference)
-        self.unique_elements = set(self.source_counter.keys()).union(self.reference_counter.keys())
+        self.source_counts = utils.get_list_each_element_count(source)
+        self.reference_counts = utils.get_list_each_element_count(reference)
+        self.unique_elements = set(self.source_counts.keys()).union(self.reference_counts.keys())
 
     def compare(self):
         differences = {}
         for element in self.unique_elements:
-            src_count = self.source_counter.get(element, 0)
-            ref_count = self.reference_counter.get(element, 0)
+            src_count = self.source_counts.get(element, {}).get('count', 0)
+            ref_count = self.reference_counts.get(element, {}).get('count', 0)
             differences[element] = {
                 'source': src_count,
                 'reference': ref_count,

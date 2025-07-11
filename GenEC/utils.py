@@ -1,3 +1,4 @@
+from collections import Counter
 from prettytable import PrettyTable
 import json
 import os
@@ -5,6 +6,10 @@ import yaml
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
+
+
+def get_list_each_element_count(elements):
+    return {k: {'count': v} for k, v in Counter(elements).items()}
 
 
 def read_files(file_paths):
@@ -28,7 +33,19 @@ def read_yaml_file(file_path):
         return yaml.safe_load(file)
 
 
-def create_ascii_table(data):
+def create_extraction_ascii_table(data):
+    table = PrettyTable()
+    table.title = 'GenEC results'
+    table.field_names = ['Text', 'Count']
+    table.align = 'l'
+
+    for key in data:
+        table.add_row([key, data[key]['count']])
+
+    return table.get_string(sortby='Count', reversesort=True)
+
+
+def create_comparison_ascii_table(data):
     table = PrettyTable()
     table.title = 'GenEC results'
     table.field_names = ['Text', 'Source count', 'Reference count', 'Difference']
