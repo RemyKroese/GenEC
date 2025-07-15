@@ -19,9 +19,9 @@ class InputManager:
                 self.preset_file, self.preset_name = self.parse_preset_param(preset_param['value'])
                 self.config = self.load_preset()
             elif preset_param['type'] == 'preset-list':
-                self.presets = self.load_preset_list()
+                self.presets = self.load_preset_list(preset_param['value'])
             else:
-                raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
+                raise ValueError('{} is not a valid preset parameter type.'.format(preset_param['type']))
 
     @staticmethod
     def parse_preset_param(preset_param):
@@ -37,7 +37,7 @@ class InputManager:
         for entry in preset_list_construction['presets']:
             file_name, preset_name = self.parse_preset_param(entry)
             presets_list[file_name].append(preset_name)
-        self.presets = self.load_presets(presets_list)
+        return self.load_presets(presets_list)
 
     def load_presets(self, presets_list):
         presets = {}
@@ -47,7 +47,7 @@ class InputManager:
                 if preset_name in loaded_presets:
                     presets[file_name + '/' + preset_name] = loaded_presets[preset_name]
                 else:
-                    print(f'preset {preset_name} not found in {file_name}. Skipping...')
+                    print('preset {} not found in {}. Skipping...'.format(preset_name, file_name))
         if not presets:
             raise ValueError('None of the provided presets were found.')
         return presets
@@ -61,16 +61,16 @@ class InputManager:
                 self.preset_name = self.ask_mpc_question('Please choose a preset:\n', list(presets.keys()))
 
         if self.preset_name not in presets:
-            raise ValueError(f'preset {self.preset_name} not found in {self.preset_file}')
+            raise ValueError('preset {} not found in {}'.format(self.preset_name, self.preset_file))
 
         return presets[self.preset_name]
 
-    def load_preset_file(self):
-        presets_file_path = os.path.join(self.presets_directory, self.preset_file + '.yaml')
+    def load_preset_file(self, file_name=None):
+        presets_file_path = os.path.join(self.presets_directory, file_name if file_name else self.preset_file + '.yaml')
         presets = utils.read_yaml_file(presets_file_path)
 
         if not presets or len(presets) == 0:
-            raise ValueError(f'presets file {presets_file_path} does not contain any presets')
+            raise ValueError('presets file {} does not contain any presets'.format(presets_file_path))
 
         return presets
 
@@ -112,7 +112,7 @@ class InputManager:
     def set_cluster_text(self, config_option, position, src_or_ref):
         if not self.config.get(config_option):
             self.config[config_option] = self.ask_open_question(
-                f'Text in the {src_or_ref.lower()} cluster where the subsection should {position} (press enter to skip): ')
+                'Text in the {} cluster where the subsection should {} (press enter to skip): '.format(src_or_ref.lower(), position))
 
     def request_text_filter(self):
         if self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
@@ -135,15 +135,6 @@ class InputManager:
         else:
             raise ValueError('Unsupported filter type: %s' % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
-        # TODO: continue implementation of following filter types
-        # elif self.text_filter['filter_type'] == self.TextFilterTypes.KEYWORD:
-        #      self.text_filter['filter'] = input('Please provide a keyword filter: ')
-
-        # elif self.text_filter['filter_type'] == self.TextFilterTypes.SPLIT_KEYWORDS:
-        #      self.text_filter['filter'] = {'start_split': None, 'end_split': None}
-        #      self.text_filter['filter']['start_split'] = input('Please provide a keyword after which to filter: ')
-        #      self.text_filter['filter']['end_split'] = input('Please provide a keyword to end the filter: ')
-
     @staticmethod
     def ask_open_question(prompt):
         return input(prompt)
@@ -153,12 +144,12 @@ class InputManager:
         print(prompt)
         print('0. Exit')
         for i, option in enumerate(options, 1):
-            print(f'{i}. {option}')
+            print('{}. {}'.format(i, option))
 
         choice = InputManager.get_user_choice(len(options))
 
         if choice == 0:
-            exit()  # Exit the script
+            exit()
         else:
             return options[choice - 1]
 
@@ -166,7 +157,7 @@ class InputManager:
     def get_user_choice(max_choice):
         while True:
             try:
-                choice = int(input(f'Choose a number [0-{max_choice}]: '))
+                choice = int(input('Choose a number [0-{}]: '.format(max_choice)))
                 if 0 <= choice <= max_choice:
                     return choice
                 else:
@@ -189,4 +180,4 @@ class OutputManager:
             print(ascii_table)
         if self.output_directory:
             utils.write_to_txt_file(ascii_table, os.path.join(self.output_directory, file_name + '.txt'))
-            utils.write_to_json_file(results, os.path.join(self.output_directory,  file_name + '.json'))
+            utils.write_to_json_file(results, os.path.join(self.output_directory, file_name + '.json'))

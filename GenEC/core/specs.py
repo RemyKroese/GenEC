@@ -1,4 +1,7 @@
-from enum import Enum, IntEnum
+try:
+    from enum import Enum, IntEnum
+except ImportError:
+    from enum34 import Enum, IntEnum  # Python 2 fallback
 
 
 class FileID(IntEnum):

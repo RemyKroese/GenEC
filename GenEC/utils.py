@@ -1,8 +1,15 @@
 from collections import Counter
-from prettytable import PrettyTable
 import json
 import os
 import yaml
+
+from prettytable import PrettyTable
+
+# Python 2 fallback
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
@@ -21,14 +28,14 @@ def read_files(file_paths):
 
 def read_file(file_path):
     if not os.path.exists(file_path):
-        raise FileNotFoundError(f'File {file_path} not found.')
+        raise FileNotFoundError('File {} not found.'.format(file_path))
     with open(file_path, 'r') as data:
         return data.read()
 
 
 def read_yaml_file(file_path):
     if not os.path.exists(file_path):
-        raise FileNotFoundError(f'File {file_path} not found.')
+        raise FileNotFoundError('File {} not found.'.format(file_path))
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
 
@@ -59,8 +66,8 @@ def create_comparison_ascii_table(data):
 
 def write_to_txt_file(data, file_path):
     try:
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, 'w', encoding='utf-8') as file:
+        ensure_directory_exists(os.path.dirname(file_path))
+        with open_with_encoding(file_path, 'w', 'utf-8') as file:
             file.write(data)
     except OSError as err:
         print(ERROR_WRITING_FILE.format(file_path, err))
@@ -68,8 +75,24 @@ def write_to_txt_file(data, file_path):
 
 def write_to_json_file(data, file_path):
     try:
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, 'w', encoding='utf-8') as file:
+        ensure_directory_exists(os.path.dirname(file_path))
+        with open_with_encoding(file_path, 'wb') as file:
             json.dump(data, file, indent=4)
     except OSError as err:
         print(ERROR_WRITING_FILE.format(file_path, err))
+
+
+def ensure_directory_exists(path):
+    try:
+        os.makedirs(path, exist_ok=True)
+    except TypeError:  # Python 2 fallback
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+
+def open_with_encoding(file_path, mode, encoding=None):
+    try:
+        return open(file_path, mode, encoding=encoding)
+    except TypeError:  # Python 2 fallback
+        import io
+        return io.open(file_path, mode, encoding=encoding)

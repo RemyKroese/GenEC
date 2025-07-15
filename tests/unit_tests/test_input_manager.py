@@ -188,11 +188,11 @@ def test_load_preset_list(mock_load_presets, mock_parse_preset_param, mock_read_
                                            ('file1', 'presetB'),
                                            ('file2', 'presetC')]
 
-    im_instance.load_preset_list('preset_list_file')
+    presets = im_instance.load_preset_list('preset_list_file')
 
-    assert 'file1/presetA' in im_instance.presets
-    assert 'file1/presetB' in im_instance.presets
-    assert 'file2/presetC' in im_instance.presets
+    assert 'file1/presetA' in presets
+    assert 'file1/presetB' in presets
+    assert 'file2/presetC' in presets
 
     expected_presets_list = {
         'file1': ['presetA', 'presetB'],
