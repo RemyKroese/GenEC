@@ -60,12 +60,12 @@ jobs:
     - name: lint (flake8) and test (pytest)
       uses: addnab/docker-run-action@v3
       with:
-        image: python:${{ matrix.python-version }}
+        image: quay.io/centos/python-27-centos7
         options: -v ${{ github.workspace }}:/workspace -w /workspace
         run: |
-          apt-get update
-          apt-get install -y xvfb
-          apt-get install -y libgles2-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
+          yum update
+          yum install -y epel-release
+          yum install -y libgles2-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
           pip install pipenv
           pipenv install --dev --skip-lock || pipenv install --dev;
           pipenv run pip list
@@ -75,7 +75,9 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=150 --statistics
 
-          xvfb-run pipenv run coverage run --branch -m pytest
+          Xvfb : 99 &
+          export DISPLAY=:99
+          pipenv run coverage run --branch -m pytest
           pipenv run coverage xml
 
           cp coverage.xml /workspace/coverage.xml || true
