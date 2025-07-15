@@ -10,7 +10,7 @@ on:
 
 jobs:
   python3:
-    name: Python 3.11 test
+    name: Python 3 test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -50,14 +50,14 @@ jobs:
       if: github.event_name == 'pull_request'
 
   python2:
-    name: Python 2.7 test
+    name: Python 2 test
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['2.7']
     steps:
     - uses: actions/checkout@v3
-    - name: Install dependencies
+    - name: lint (flake8) and test (pytest)
       uses: addnab/docker-run-action@v3
       with:
         image: python:${{ matrix.python-version }}
@@ -69,28 +69,15 @@ jobs:
           pip install pipenv
           pipenv install --dev --skip-lock || pipenv install --dev;
           pipenv run pip list
-    - name: Lint with flake8
-      uses: addnab/docker-run-action@v3
-      with:
-        image: python:${{ matrix.python-version }}
-        options: -v ${{ github.workspace }}:/workspace -w /workspace
-        run: |
-          pip install pipenv
-          pipenv install --dev --skip-lock || pipenv install --dev;
+
           # stop the build if there are Python syntax errors or undefined names
           pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=150 --statistics
-    - name: Test with pytest
-      uses: addnab/docker-run-action@v3
-      with:
-        image: python:${{ matrix.python-version }}
-        options: -v ${{ github.workspace }}:/workspace -w /workspace
-        run: |
-          pip install pipenv
-          pipenv install --dev --skip-lock || pipenv install --dev;
+
           xvfb-run pipenv run coverage run --branch -m pytest
           pipenv run coverage xml
+
           cp coverage.xml /workspace/coverage.xml || true
     - name: Python coverage
       uses: orgoro/coverage@v3.1
