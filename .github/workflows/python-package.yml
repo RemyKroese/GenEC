@@ -63,9 +63,9 @@ jobs:
         image: python:${{ matrix.python-version }}
         options: -v ${{ github.workspace }}:/workspace -w /workspace
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-          sudo apt-get install -y libgles2-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
+          apt-get update
+          apt-get install -y xvfb
+          apt-get install -y libgles2-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
           pip install pipenv
           pipenv install --dev --skip-lock || pipenv install --dev;
           pipenv run pip list
