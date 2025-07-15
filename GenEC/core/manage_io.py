@@ -10,9 +10,8 @@ NO_INPUT = ['no', 'n']
 
 
 class InputManager:
-    PRESETS_DIR = os.path.join(os.path.dirname(__file__), '../presets')
-
-    def __init__(self, preset_param=None):
+    def __init__(self, preset_param=None, presets_directory=None):
+        self.presets_directory = presets_directory if presets_directory else os.path.join(os.path.dirname(__file__), '../presets')
         self.preset_file = self.preset_name = None
         self.config = {}
         if preset_param:
@@ -32,7 +31,7 @@ class InputManager:
             return tuple(preset_param.split('/', 1))
 
     def load_preset_list(self, preset_list_file):
-        preset_list_construction = utils.read_yaml_file(os.path.join(self.PRESETS_DIR, preset_list_file + '.yaml'))
+        preset_list_construction = utils.read_yaml_file(os.path.join(self.presets_directory, preset_list_file + '.yaml'))
 
         presets_list = defaultdict(list)
         for entry in preset_list_construction['presets']:
@@ -67,7 +66,7 @@ class InputManager:
         return presets[self.preset_name]
 
     def load_preset_file(self):
-        presets_file_path = os.path.join(self.PRESETS_DIR, self.preset_file + '.yaml')
+        presets_file_path = os.path.join(self.presets_directory, self.preset_file + '.yaml')
         presets = utils.read_yaml_file(presets_file_path)
 
         if not presets or len(presets) == 0:
