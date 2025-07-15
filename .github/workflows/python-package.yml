@@ -9,12 +9,12 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  python3:
+    name: Python 3.11 test
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        python-version: ['2.7', '3.11']
+        python-version: ['3.11']
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -27,11 +27,7 @@ jobs:
         sudo apt-get install -y xvfb
         sudo apt-get install -y libgles2-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
         pip install pipenv
-        if [[ "${{ matrix.python-version }}" == "2.7" ]]; then
-          pipenv --python 2.7 install --dev --skip-lock || pipenv --python 2.7 install --dev;
-        else
-          pipenv install --deploy --dev
-        fi
+        pipenv install --deploy --dev
         pipenv run pip list
     - name: Lint with flake8
       run: |
@@ -43,6 +39,59 @@ jobs:
       run: |
         xvfb-run pipenv run coverage run --branch -m pytest
         pipenv run coverage xml
+    - name: Python coverage
+      uses: orgoro/coverage@v3.1
+      with:
+        coverageFile: coverage.xml
+        token: ${{ secrets.GITHUB_TOKEN }}
+        thresholdAll: 0.9
+        thresholdNew: 0.9
+        thresholdModified: 0.9
+      if: github.event_name == 'pull_request'
+
+  python2:
+    name: Python 2.7 test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['2.7']
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      uses: addnab/docker-run-action@v3
+      with:
+        image: python:${{ matrix.python-version }}
+        options: -v ${{ github.workspace }}:/workspace -w /workspace
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          sudo apt-get install -y libgles2-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
+          pip install pipenv
+          pipenv install --dev --skip-lock || pipenv install --dev;
+          pipenv run pip list
+    - name: Lint with flake8
+      uses: addnab/docker-run-action@v3
+      with:
+        image: python:${{ matrix.python-version }}
+        options: -v ${{ github.workspace }}:/workspace -w /workspace
+        run: |
+          pip install pipenv
+          pipenv install --dev --skip-lock || pipenv install --dev;
+          # stop the build if there are Python syntax errors or undefined names
+          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=150 --statistics
+    - name: Test with pytest
+      uses: addnab/docker-run-action@v3
+      with:
+        image: python:${{ matrix.python-version }}
+        options: -v ${{ github.workspace }}:/workspace -w /workspace
+        run: |
+          pip install pipenv
+          pipenv install --dev --skip-lock || pipenv install --dev;
+          xvfb-run pipenv run coverage run --branch -m pytest
+          pipenv run coverage xml
+          cp coverage.xml /workspace/coverage.xml || true
     - name: Python coverage
       uses: orgoro/coverage@v3.1
       with:
