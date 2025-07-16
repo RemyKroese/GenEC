@@ -19,7 +19,7 @@ ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
 def safe_print(s):
     if sys.version_info.major < 3:
-        sys.__stdout__.write('DEBUG: type {}'.formaT(type(s)))
+        sys.__stdout__.write('DEBUG: type {}'.format(type(s)))
         if isinstance(s, str):
             s = s.decode('utf-8')
     print(s)
