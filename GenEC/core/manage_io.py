@@ -1,6 +1,5 @@
 from collections import defaultdict
 import os
-import six
 
 from GenEC import utils
 from GenEC.core import ConfigOptions, TextFilterTypes
@@ -48,7 +47,7 @@ class InputManager:
                 if preset_name in loaded_presets:
                     presets[file_name + '/' + preset_name] = loaded_presets[preset_name]
                 else:
-                    print(six.text_type('preset {} not found in {}. Skipping...'.format(preset_name, file_name)))
+                    utils.safe_print('preset {} not found in {}. Skipping...'.format(preset_name, file_name))
         if not presets:
             raise ValueError('None of the provided presets were found.')
         return presets
@@ -142,10 +141,10 @@ class InputManager:
 
     @staticmethod
     def ask_mpc_question(prompt, options):
-        print(six.text_type(prompt))
-        print(six.text_type('0. Exit'))
+        utils.safe_print(prompt)
+        utils.safe_print('0. Exit')
         for i, option in enumerate(options, 1):
-            print(six.text_type('{}. {}'.format(i, option)))
+            utils.safe_print('{}. {}'.format(i, option))
 
         choice = InputManager.get_user_choice(len(options))
 
@@ -162,9 +161,9 @@ class InputManager:
                 if 0 <= choice <= max_choice:
                     return choice
                 else:
-                    print(six.text_type('Please enter a valid number.'))
+                    utils.safe_print('Please enter a valid number.')
             except ValueError:
-                print(six.text_type('Please enter a valid number.'))
+                utils.safe_print('Please enter a valid number.')
 
 
 class OutputManager:
@@ -178,7 +177,7 @@ class OutputManager:
         else:
             ascii_table = utils.create_extraction_ascii_table(results)
         if self.should_print_results:
-            print(six.text_type(ascii_table))
+            utils.safe_print(ascii_table)
         if self.output_directory:
             utils.write_to_txt_file(ascii_table, os.path.join(self.output_directory, file_name + '.txt'))
             utils.write_to_json_file(results, os.path.join(self.output_directory, file_name + '.json'))

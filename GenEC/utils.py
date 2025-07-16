@@ -2,6 +2,7 @@ from collections import Counter
 import json
 import os
 import six
+import sys
 import yaml
 
 from prettytable import PrettyTable
@@ -14,6 +15,13 @@ except NameError:
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
+
+
+def safe_print(s):
+    if sys.version_info.major < 3 and isinstance(s, str):
+        print(six.text_type(s, encoding='utf-8'))
+    else:
+        print(s)
 
 
 def get_list_each_element_count(elements):
