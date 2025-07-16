@@ -1,8 +1,13 @@
+import io
 import os
 import pytest
-from unittest.mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from GenEC.core.manage_io import OutputManager
+
 
 MOCK_RESULTS_COMPARISON = {
     '1': {'source': 1, 'reference': 1, 'difference': 0},
@@ -31,7 +36,7 @@ def om_instance():
     (MOCK_RESULTS_COMPARISON, True),
     (MOCK_RESULTS_EXTRACTION, False),
 ])
-@patch('builtins.print')
+@patch('sys.stdout', new_callable=io.StringIO)
 @patch('GenEC.utils.write_to_json_file')
 @patch('GenEC.utils.write_to_txt_file')
 def test_process_print_only(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
@@ -43,7 +48,7 @@ def test_process_print_only(mock_write_to_txt_file, mock_write_to_json_file, moc
         om_instance.process(mock_results, is_comparison=is_comparison)
 
         mock_create_table.assert_called_once_with(mock_results)
-        mock_print.assert_called_once_with(MOCK_ASCII_TABLE)
+        assert mock_print.getvalue() == MOCK_ASCII_TABLE + '\n'  # sys.stdout has an extra \n
 
         mock_write_to_txt_file.assert_not_called()
         mock_write_to_json_file.assert_not_called()
@@ -53,7 +58,7 @@ def test_process_print_only(mock_write_to_txt_file, mock_write_to_json_file, moc
     (MOCK_RESULTS_COMPARISON, True),
     (MOCK_RESULTS_EXTRACTION, False),
 ])
-@patch('builtins.print')
+@patch('sys.stdout', new_callable=io.StringIO)
 @patch('GenEC.utils.write_to_json_file')
 @patch('GenEC.utils.write_to_txt_file')
 def test_process_write_only(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
@@ -71,14 +76,14 @@ def test_process_write_only(mock_write_to_txt_file, mock_write_to_json_file, moc
         mock_write_to_txt_file.assert_called_once_with(MOCK_ASCII_TABLE, TXT_RESULTS_PATH)
         mock_write_to_json_file.assert_called_once_with(mock_results, JSON_RESULTS_PATH)
 
-        mock_print.assert_not_called()
+        assert mock_print.getvalue() == ''
 
 
 @pytest.mark.parametrize('mock_results, is_comparison', [
     (MOCK_RESULTS_COMPARISON, True),
     (MOCK_RESULTS_EXTRACTION, False),
 ])
-@patch('builtins.print')
+@patch('sys.stdout', new_callable=io.StringIO)
 @patch('GenEC.utils.write_to_json_file')
 @patch('GenEC.utils.write_to_txt_file')
 def test_process_write_and_print(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
@@ -92,6 +97,6 @@ def test_process_write_and_print(mock_write_to_txt_file, mock_write_to_json_file
         om_instance.process(mock_results, is_comparison=is_comparison)
 
         mock_create_table.assert_called_once_with(mock_results)
-        mock_print.assert_called_once_with(MOCK_ASCII_TABLE)
+        assert mock_print.getvalue() == MOCK_ASCII_TABLE + '\n'  # sys.stdout has an extra \n
         mock_write_to_txt_file.assert_called_once_with(MOCK_ASCII_TABLE, TXT_RESULTS_PATH)
         mock_write_to_json_file.assert_called_once_with(mock_results, JSON_RESULTS_PATH)

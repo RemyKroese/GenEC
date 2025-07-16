@@ -1,5 +1,8 @@
 import pytest
-from unittest.mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from GenEC.core import ConfigOptions, FileID, TextFilterTypes
 from GenEC.core.analyze import Extractor

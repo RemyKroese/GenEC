@@ -41,6 +41,7 @@ def main():
     args = parse_arguments()
     source = utils.read_file(args.source)
     ref = utils.read_file(args.reference) if args.reference else None
+    preset_param = None
     if args.preset_list:
         preset_param = {'type': 'preset-list', 'value': args.preset_list}
     elif args.preset:

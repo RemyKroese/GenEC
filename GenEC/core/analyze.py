@@ -17,7 +17,7 @@ class Extractor:
         elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.COMBI_SEARCH.value:
             return self.extract_text_from_clusters_by_combi_search(clusters)
         else:
-            raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
+            raise ValueError('Unsupported filter type: %s' % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 
     def get_clusters(self, data, file):
         clusters = data.split(self.config.get(ConfigOptions.CLUSTER_FILTER.value))
