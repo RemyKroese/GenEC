@@ -18,6 +18,7 @@ ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
 
 def safe_print(s):
+    print(type(s))
     if sys.version_info.major < 3 and isinstance(s, str):
         s = s.decode('utf-8')
     print(s)
