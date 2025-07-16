@@ -167,7 +167,7 @@ def test_load_preset_file_file_not_found(mock_exists, im_instance):
 
 
 @patch('os.path.exists', return_value=True)
-@patch('builtins.open', new_callable=mock_open, read_data='')
+@patch('{}.open'.format(builtins.__name__), new_callable=mock_open, read_data='')
 def test_load_preset_file_empty_file(mock_open_file, mock_exists, im_instance):
     im_instance.preset_file = 'mock_file'
     with pytest.raises(ValueError):
@@ -179,7 +179,7 @@ def test_load_preset_file_empty_file(mock_open_file, mock_exists, im_instance):
     (MULTIPLE_PRESETS_DATA)
 ])
 @patch('os.path.exists', return_value=True)
-@patch('builtins.open', new_callable=mock_open)
+@patch('{}.open'.format(builtins.__name__), new_callable=mock_open)
 @patch('yaml.safe_load')
 def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, im_instance, preset_data):
     mock_safe_load.return_value = preset_data
@@ -326,14 +326,14 @@ def test_set_cluster_text(mock_ask_open_question, config_option, start_end, src_
     assert im_instance.config[config_option] == 'some text'
 
 
-@patch('builtins.input', return_value='user_input')
+@patch('{}.input'.format(builtins.__name__), return_value='user_input')
 def test_ask_open_question(mock_input):
     result = InputManager.ask_open_question('Prompt: ')
     assert result == 'user_input'
 
 
 @patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
+@patch('{}.input'.format(builtins.__name__))
 def test_ask_mpc_question_valid_choice(mock_input, mock_stdout):
     mock_input.return_value = '2\n'
 
@@ -345,7 +345,7 @@ def test_ask_mpc_question_valid_choice(mock_input, mock_stdout):
 
 
 @patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
+@patch('{}.input'.format(builtins.__name__))
 def test_ask_mpc_question_invalid_choice(mock_input, mock_stdout):
     mock_input.side_effect = ['5\n', 'invalid input\n', '1\n']
 
@@ -357,7 +357,7 @@ def test_ask_mpc_question_invalid_choice(mock_input, mock_stdout):
 
 
 @patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
+@patch('{}.input'.format(builtins.__name__))
 def test_ask_mpc_question_exit(mock_input, mock_stdout):
     mock_input.return_value = '0\n'
 

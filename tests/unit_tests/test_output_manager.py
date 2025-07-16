@@ -40,7 +40,7 @@ def om_instance():
     (MOCK_RESULTS_COMPARISON, True),
     (MOCK_RESULTS_EXTRACTION, False),
 ])
-@patch('builtins.print')
+@patch('{}.print'.format(builtins.__name__))
 @patch('GenEC.utils.write_to_json_file')
 @patch('GenEC.utils.write_to_txt_file')
 def test_process_print_only(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
@@ -62,7 +62,7 @@ def test_process_print_only(mock_write_to_txt_file, mock_write_to_json_file, moc
     (MOCK_RESULTS_COMPARISON, True),
     (MOCK_RESULTS_EXTRACTION, False),
 ])
-@patch('builtins.print')
+@patch('{}.print'.format(builtins.__name__))
 @patch('GenEC.utils.write_to_json_file')
 @patch('GenEC.utils.write_to_txt_file')
 def test_process_write_only(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
@@ -87,7 +87,7 @@ def test_process_write_only(mock_write_to_txt_file, mock_write_to_json_file, moc
     (MOCK_RESULTS_COMPARISON, True),
     (MOCK_RESULTS_EXTRACTION, False),
 ])
-@patch('builtins.print')
+@patch('{}.print'.format(builtins.__name__))
 @patch('GenEC.utils.write_to_json_file')
 @patch('GenEC.utils.write_to_txt_file')
 def test_process_write_and_print(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
