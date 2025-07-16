@@ -1,9 +1,18 @@
 from io import StringIO
 import pytest
-from unittest.mock import patch, mock_open
+try:
+    from unittest.mock import patch, mock_open
+except ImportError:
+    from mock import patch, mock_open
 
 from GenEC.core import ConfigOptions, TextFilterTypes
 from GenEC.core.manage_io import InputManager
+
+# Python 2 fallback
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
 
 
 SINGLE_PRESET_DATA = {
