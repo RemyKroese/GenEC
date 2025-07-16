@@ -11,8 +11,10 @@ from GenEC.core.manage_io import InputManager
 # Python 2 fallback
 try:
     FileNotFoundError
+    import builtins
 except NameError:
     FileNotFoundError = IOError
+    import __builtin__ as builtins
 
 
 SINGLE_PRESET_DATA = {

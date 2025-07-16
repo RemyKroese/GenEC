@@ -7,6 +7,12 @@ except ImportError:
 
 from GenEC.core.manage_io import OutputManager
 
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins  # Python 2 fallback
+
+
 MOCK_RESULTS_COMPARISON = {
     '1': {'source': 1, 'reference': 1, 'difference': 0},
     '2': {'source': 1, 'reference': 1, 'difference': 0},
