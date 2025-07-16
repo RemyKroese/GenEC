@@ -19,9 +19,8 @@ ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
 def safe_print(s):
     if sys.version_info.major < 3 and isinstance(s, str):
-        print(six.text_type(s, encoding='utf-8'))
-    else:
-        print(s)
+        s = s.decode('utf-8')
+    print(s)
 
 
 def get_list_each_element_count(elements):
