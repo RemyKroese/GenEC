@@ -63,9 +63,12 @@ jobs:
         image: centos/python-27-centos7
         options: -v ${{ github.workspace }}:/workspace -w /workspace
         run: |
+          USER root
           yum -y update
           yum -y install epel-release
+          yum -y groupinstall 'Development Tools'
           yum -y install mesa-libGL-devel xorg-x11-server-Xvfb xorg-x11-xauth xorg-x11-utils libX11 libXext libXrender libXrandr libXi libXfixes
+          pip install --upgrade pip
           pip install pipenv
           pipenv install --dev --skip-lock || pipenv install --dev;
           pipenv run pip list
