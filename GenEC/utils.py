@@ -1,7 +1,7 @@
-from __future__ import print_function
 from collections import Counter
 import json
 import os
+import six
 import yaml
 
 from prettytable import PrettyTable
@@ -71,7 +71,7 @@ def write_to_txt_file(data, file_path):
         with open_with_encoding(file_path, 'w', 'utf-8') as file:
             file.write(data)
     except OSError as err:
-        print(ERROR_WRITING_FILE.format(file_path, err))
+        print(six.text_type(ERROR_WRITING_FILE.format(file_path, err)))
 
 
 def write_to_json_file(data, file_path):
@@ -80,7 +80,7 @@ def write_to_json_file(data, file_path):
         with open_with_encoding(file_path, 'wb') as file:
             json.dump(data, file, indent=4)
     except OSError as err:
-        print(ERROR_WRITING_FILE.format(file_path, err))
+        print(six.text_type(ERROR_WRITING_FILE.format(file_path, err)))
 
 
 def ensure_directory_exists(path):

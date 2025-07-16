@@ -12,6 +12,7 @@ pyinstaller = "*"
 coverage = "*"
 ptable = "*"
 pyyaml = "*"
+six = "*"
 
 [dev-packages]
 
