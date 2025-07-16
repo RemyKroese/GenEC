@@ -55,13 +55,13 @@ jobs:
     strategy:
       matrix:
         python-version: ['2.7']
+    env:
+      ENABLE_PIPENV: 'true'
+      UPGRADE_PIP_TO_LATEST: 'true'
     steps:
     - uses: actions/checkout@v3
     - name: lint (flake8) and test (pytest)
       uses: addnab/docker-run-action@v3
-      env:
-        ENABLE_PIPENV: 'true'
-        UPGRADE_PIP_TO_LATEST: 'true'
       with:
         image: centos/python-27-centos7
         options: -v ${{ github.workspace }}:/workspace -w /workspace
