@@ -9,13 +9,13 @@ REF_1 = ['1', '2', '3']
 REF_2 = ['3']
 REF_3 = ['3', '2', '100', '52']
 
-EXPECTED_SRC_1 = {'1': {'count': 1}, '2': {'count': 1}, '3': {'count': 1}}
-EXPECTED_SRC_2 = {'1': {'count': 1}, '2': {'count': 1}}
-EXPECTED_SRC_3 = {'1': {'count': 3}, '2': {'count': 1}}
+EXPECTED_SRC_1 = {'1': 1, '2': 1, '3': 1}
+EXPECTED_SRC_2 = {'1': 1, '2': 1}
+EXPECTED_SRC_3 = {'1': 3, '2': 1}
 
-EXPECTED_REF_1 = {'1': {'count': 1}, '2': {'count': 1}, '3': {'count': 1}}
-EXPECTED_REF_2 = {'3': {'count': 1}}
-EXPECTED_REF_3 = {'3': {'count': 1}, '2': {'count': 1}, '100': {'count': 1}, '52': {'count': 1}}
+EXPECTED_REF_1 = {'1': 1, '2': 1, '3': 1}
+EXPECTED_REF_2 = {'3': 1}
+EXPECTED_REF_3 = {'3': 1, '2': 1, '100': 1, '52': 1}
 
 SRC_STRUCT_1 = {'1': 1, '2': 1, '3': 1}
 REF_STRUCT_1 = {'1': 1, '2': 1, '3': 1}

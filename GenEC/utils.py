@@ -9,7 +9,7 @@ ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
 
 def get_list_each_element_count(elements):
-    return {k: {'count': v} for k, v in Counter(elements).items()}
+    return dict(Counter(elements))
 
 
 def read_files(file_paths):
