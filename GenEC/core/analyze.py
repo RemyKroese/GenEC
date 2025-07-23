@@ -87,8 +87,8 @@ class Comparer:
     def compare(self):
         differences = {}
         for element in self.unique_elements:
-            src_count = self.source_counts.get(element, {}).get('count', 0)
-            ref_count = self.reference_counts.get(element, {}).get('count', 0)
+            src_count = self.source_counts.get(element, 0)
+            ref_count = self.reference_counts.get(element, 0)
             differences[element] = {
                 'source': src_count,
                 'reference': ref_count,
