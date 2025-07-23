@@ -2,16 +2,17 @@
 import argparse
 import os
 import sys
+from typing import cast, Optional
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_PATH)
 
-from GenEC import utils                     # noqa: E402
-from GenEC.core import analyze, manage_io   # noqa: E402
-from GenEC.core import FileID               # noqa: E402
+from GenEC import utils                                 # noqa: E402
+from GenEC.core import analyze, manage_io               # noqa: E402
+from GenEC.core import PresetConfigFinalized, FileID    # noqa: E402
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='Extract specific data from files and ' +
         'compare the differences between these two files based on the data.')
@@ -41,14 +42,16 @@ def main():
     args = parse_arguments()
     source = utils.read_file(args.source)
     ref = utils.read_file(args.reference) if args.reference else None
+
+    preset_param: Optional[dict[str, str]] = None
     if args.preset_list:
         preset_param = {'type': 'preset-list', 'value': args.preset_list}
     elif args.preset:
         preset_param = {'type': 'preset', 'value': args.preset}
 
     input_manager = manage_io.InputManager(preset_param, args.presets_directory)
-    input_manager.set_config()
-    extractor = analyze.Extractor(input_manager.config)
+    input_manager.set_config()  # config is finalized for the remained of the execution
+    extractor = analyze.Extractor(cast(PresetConfigFinalized, input_manager.config))
     output_manager = manage_io.OutputManager(args.output_directory)
 
     source_filtered_text = extractor.extract_from_data(source, FileID.SOURCE)
@@ -60,7 +63,8 @@ def main():
         output_manager.process(results, is_comparison=True)
     else:
         results = utils.get_list_each_element_count(source_filtered_text)
-        output_manager.process(results, is_comparison=False)
+        output_results = {key: {'source': value} for key, value in results.items()}
+        output_manager.process(output_results, is_comparison=False)
 
 
 if __name__ == '__main__':

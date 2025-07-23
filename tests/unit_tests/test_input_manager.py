@@ -2,9 +2,19 @@ from io import StringIO
 import pytest
 from unittest.mock import patch, mock_open
 
-from GenEC.core import ConfigOptions, TextFilterTypes
-from GenEC.core.manage_io import InputManager
+from GenEC.core import ConfigOptions, TextFilterTypes, PositionalFilterType
+from GenEC.core.manage_io import InputManager, PresetConfigInitialized
 
+
+EMPTY_CONFIG = PresetConfigInitialized(
+            cluster_filter=None,
+            text_filter_type=None,
+            text_filter=None,
+            should_slice_clusters=None,
+            src_start_cluster_text=None,
+            source_end_cluster_text=None,
+            ref_start_cluster_text=None,
+            ref_end_cluster_text=None)
 
 SINGLE_PRESET_DATA = {
     'main_preset': {
@@ -84,13 +94,12 @@ def test_init_with_preset_type(mock_parse_preset_param, mock_load_preset):
     assert not hasattr(im_instance, 'presets')
 
 
-@patch.object(InputManager, 'load_preset_list', return_value=['presetA', 'presetB'])
+@patch.object(InputManager, 'load_preset_list')
 def test_init_with_preset_list_type(mock_load_preset_list):
     im_instance = InputManager({'type': 'preset-list', 'value': 'fake_list'})
-    assert im_instance.presets == ['presetA', 'presetB']
-    assert im_instance.preset_file is None
-    assert im_instance.preset_name is None
-    assert im_instance.config == {}
+    assert im_instance.preset_file == ''
+    assert im_instance.preset_name == ''
+    assert im_instance.config == EMPTY_CONFIG
 
 
 def test_init_with_invalid_type():
@@ -99,9 +108,9 @@ def test_init_with_invalid_type():
 
 
 def test_init_with_no_parameters(im_instance):
-    assert im_instance.preset_file is None
-    assert im_instance.preset_name is None
-    assert im_instance.config == {}
+    assert im_instance.preset_file == ''
+    assert im_instance.preset_name == ''
+    assert im_instance.config == EMPTY_CONFIG
 
 
 @pytest.mark.parametrize('preset_param, expected_result', [
@@ -150,17 +159,15 @@ def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file, 
 
 @patch('os.path.exists', return_value=False)
 def test_load_preset_file_file_not_found(mock_exists, im_instance):
-    im_instance.preset_file = 'mock_file'
     with pytest.raises(FileNotFoundError):
-        im_instance.load_preset_file()
+        im_instance.load_preset_file('mock_file')
 
 
 @patch('os.path.exists', return_value=True)
 @patch('builtins.open', new_callable=mock_open, read_data='')
 def test_load_preset_file_empty_file(mock_open_file, mock_exists, im_instance):
-    im_instance.preset_file = 'mock_file'
     with pytest.raises(ValueError):
-        im_instance.load_preset_file()
+        im_instance.load_preset_file( 'mock_file')
 
 
 @pytest.mark.parametrize('preset_data', [
@@ -172,8 +179,7 @@ def test_load_preset_file_empty_file(mock_open_file, mock_exists, im_instance):
 @patch('yaml.safe_load')
 def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, im_instance, preset_data):
     mock_safe_load.return_value = preset_data
-    im_instance.preset_file = 'mock_file'
-    result = im_instance.load_preset_file()
+    result = im_instance.load_preset_file('mock_file')
     assert result == preset_data
 
 
@@ -373,7 +379,8 @@ def test_request_REGEX_filter_type(mock_input, im_instance):
 def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_output, im_instance):
     mock_input.side_effect = mock_side_effect
     im_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.POSITIONAL.value
-    assert im_instance.request_text_filter() == {'separator': mock_output[0], 'line': mock_output[1], 'occurrence': mock_output[2]}
+
+    assert im_instance.request_text_filter() == PositionalFilterType(separator=mock_output[0], line=mock_output[1], occurrence=mock_output[2])
 
 
 @pytest.mark.parametrize('mock_side_effect, mock_output', [
