@@ -1,4 +1,12 @@
 from enum import Enum, IntEnum
+from dataclasses import dataclass
+
+
+@dataclass
+class PositionalFilterType:
+    separator: str
+    line: int
+    occurrence: int
 
 
 class FileID(IntEnum):

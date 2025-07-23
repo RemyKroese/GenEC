@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from GenEC.core import ConfigOptions, FileID, TextFilterTypes
+from GenEC.core import ConfigOptions, PositionalFilterType, FileID, TextFilterTypes
 from GenEC.core.analyze import Extractor
 
 BASIC_TEXT = '''a b c
@@ -60,7 +60,8 @@ def test_extract_text_from_clusters_by_regex(extractor_instance, regex_pattern, 
 
 def test_extract_text_from_clusters_by_position(extractor_instance):
     clusters = ['line_1\nline_2 word_1 word_2', 'line_3\nline_4 word_3 word_4', 'line_5']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = {'separator': ' ', 'line': 2, 'occurrence': 3}
+    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = PositionalFilterType(separator=' ', line=2, occurrence=3)
+
     assert extractor_instance.extract_text_from_clusters_by_position(clusters) == ['word_2', 'word_4']
 
 
