@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
-from GenEC.core import ConfigOptions, PositionalFilterType, FileID, TextFilterTypes
+from GenEC.core import ConfigOptions, FileID, TextFilterTypes
 from GenEC.core.analyze import Extractor
 
 BASIC_TEXT = '''a b c
@@ -42,72 +42,23 @@ def test_get_clusters(extractor_instance, data, cluster_filter, expected_result)
     assert extractor_instance.get_clusters(data, FileID.SOURCE) == expected_result
 
 
-@pytest.mark.parametrize(
-    "regex_pattern, expected",
-    [
-        (r'\d+', ['48291', '7', '345', '98', '1204', '550']),
-        (r'(\d+)', ['48291', '7', '345', '98', '1204', '550']),
-        (r'(\d+)[^\d]+(\d+)', ['48291 | 384', '7 | 2', '345 | 19', '98 | 771', '1204 | 66', '550 | 43']),
-        (r'(\d+)[^\d]+(\d+)[^\d]+(\d+)', ['48291 | 384 | 11', '345 | 19 | 8', '1204 | 66 | 99', '550 | 43 | 7'])
-    ]
-)
-def test_extract_text_from_clusters_by_regex(extractor_instance, regex_pattern, expected):
-    clusters = ['text48291more_384even11more', 'single_number7_test2', 'random345text19again8',
-                'prefix98middle771end', 'data1204with66extra99', 'noise550letters43final7']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
-    assert extractor_instance.extract_text_from_clusters_by_regex(clusters) == expected
+@pytest.mark.parametrize("filter_type", [
+    TextFilterTypes.REGEX,
+    TextFilterTypes.POSITIONAL,
+    TextFilterTypes.COMBI_SEARCH,
+])
+@patch("GenEC.core.extraction_filters.get_extractor")
+def test_extract_from_data(mock_get_extractor, filter_type, extractor_instance):
+    fake_extractor = MagicMock()
+    fake_extractor.extract.return_value = ['my_result']
+    mock_get_extractor.return_value = fake_extractor
 
+    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = filter_type.value
+    result = extractor_instance.extract_from_data("some data", FileID.SOURCE)
 
-def test_extract_text_from_clusters_by_position(extractor_instance):
-    clusters = ['line_1\nline_2 word_1 word_2', 'line_3\nline_4 word_3 word_4', 'line_5']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = PositionalFilterType(separator=' ', line=2, occurrence=3)
-
-    assert extractor_instance.extract_text_from_clusters_by_position(clusters) == ['word_2', 'word_4']
-
-
-@patch.object(Extractor, 'extract_text_from_clusters_by_regex')
-def test_extract_from_data_by_regex(mock_extract_text_from_clusters_by_regex, extractor_instance):
-    mock_extract_text_from_clusters_by_regex.return_value = ['my_result']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
-    assert extractor_instance.extract_from_data('', FileID.SOURCE) == ['my_result']
-
-
-@patch.object(Extractor, 'extract_text_from_clusters_by_position')
-def test_extract_from_data_by_position(mock_extract_text_from_clusters_by_position, extractor_instance):
-    mock_extract_text_from_clusters_by_position.return_value = ['my_result']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.POSITIONAL.value
-    assert extractor_instance.extract_from_data('', FileID.SOURCE) == ['my_result']
-
-
-@patch.object(Extractor, 'extract_text_from_clusters_by_combi_search')
-def test_extract_from_data_by_combi_search(mock_extract_text_from_clusters_by_combi_search, extractor_instance):
-    mock_extract_text_from_clusters_by_combi_search.return_value = ['my_result']
-    extractor_instance.config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.COMBI_SEARCH.value
-    assert extractor_instance.extract_from_data('', FileID.SOURCE) == ['my_result']
-
-
-@pytest.mark.parametrize(
-    'clusters, regex_filters, expected_filtered_clusters',
-    [
-        # Case 1: Some clusters remain after filtering
-        (['abc123', 'xyz89', 'test456', 'hello111', 'finalTest'],
-         [r'\d{3}', r'test'],
-         ['abc123', 'test456', 'hello111']),
-        # Case 2: More restrictive filtering, leaving only 'test456'
-        (['abc123', 'xyz89', 'test456', 'hello111', 'finalTest'],
-         [r'\d{3}', r'test', r'final'],
-         ['test456']),
-        # Case 3: All clusters are removed by the regex filters, leaving an empty list
-        (['abc123', 'xyz89', 'test456', 'hello111', 'finalTest'],
-         [r'^z.*$', r'test'],  # First filter keeps only words starting with 'z'
-         [])
-    ]
-)
-@patch.object(Extractor, 'extract_text_from_clusters_by_regex')
-def test_extract_text_from_clusters_by_combi_search(mock_extract_text, extractor_instance, clusters, regex_filters, expected_filtered_clusters):
-    extractor_instance.config[ConfigOptions.TEXT_FILTER.value] = regex_filters
-    extractor_instance.extract_text_from_clusters_by_combi_search(clusters)
-    mock_extract_text.assert_called_once_with(expected_filtered_clusters, regex_filters[-1])
+    assert result == ['my_result']
+    mock_get_extractor.assert_called_once_with(filter_type.value, extractor_instance.config)
+    fake_extractor.extract.assert_called_once()
 
 
 def test_extract_from_data_unsupported_filter_type(extractor_instance):
