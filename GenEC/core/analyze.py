@@ -1,8 +1,7 @@
-import re
-from typing import cast, Optional
+from typing import Optional
 
 from GenEC import utils
-from GenEC.core import PresetConfigFinalized, PositionalFilterType, FileID, ConfigOptions, TextFilterTypes
+from GenEC.core import extraction_filters, PresetConfigFinalized, FileID, ConfigOptions, TextFilterTypes
 
 
 class Extractor:
@@ -11,14 +10,11 @@ class Extractor:
 
     def extract_from_data(self, data: str, file: int) -> list[str]:
         clusters = self.get_clusters(data, file)
-        if self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
-            return self.extract_text_from_clusters_by_regex(clusters)
-        elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
-            return self.extract_text_from_clusters_by_position(clusters)
-        elif self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.COMBI_SEARCH.value:
-            return self.extract_text_from_clusters_by_combi_search(clusters)
-        else:
+        filter_type = self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+        if filter_type not in [t.value for t in TextFilterTypes] or 'UNSUPPORTED' in filter_type:
             raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
+        extractor = extraction_filters.get_extractor(filter_type, self.config)
+        return extractor.extract(clusters)
 
     def get_clusters(self, data: str, file: int) -> list[str]:
         clusters = data.split(self.config.get(ConfigOptions.CLUSTER_FILTER.value))
@@ -47,50 +43,6 @@ class Extractor:
                 if end_keyword in cluster), end_cluster_index)
 
         return clusters[start_cluster_index:end_cluster_index+1]
-
-    def extract_text_from_clusters_by_regex(self, clusters: list[str], regex_pattern: Optional[str] = None) -> list[str]:
-        regex_pattern = regex_pattern if regex_pattern else cast(str, self.config.get(ConfigOptions.TEXT_FILTER.value))
-        if not isinstance(regex_pattern, str):  # type: ignore[unnecessary-isinstance]
-            # Regex pattern should always be a string due to input_manager logic, so there will be a bug if this error is raised
-            raise TypeError('Incorrect text filter type for regex, expected a regex pattern.')
-        pattern = re.compile(regex_pattern)
-
-        filtered_text: list[str] = []
-        for cluster in clusters:
-            search_result = pattern.search(cluster)
-            if search_result:
-                groups = search_result.groups()
-                text_output = ' | '.join(groups) if groups else search_result.group(0)
-                filtered_text.append(text_output)
-        return filtered_text
-
-    def extract_text_from_clusters_by_position(self, clusters: list[str]) -> list[str]:
-        position_filter = cast(PositionalFilterType, self.config.get(ConfigOptions.TEXT_FILTER.value))
-        print(type(position_filter))
-        if not isinstance(position_filter, PositionalFilterType):  # type: ignore[unnecessary-isinstance]
-            # Regex pattern should always be a string due to input_manager logic, so there will be a bug if this error is raised
-            raise TypeError('Incorrect text filter type for positional, expected a separator string, line number, and occurrence number.')
-
-        filtered_text: list[str] = []
-        for cluster in clusters:
-            try:
-                line = cluster.split('\n')[position_filter.line-1]
-                filtered_text.append(line.split(position_filter.separator)[position_filter.occurrence-1])
-            except IndexError:  # Clusters that don't contain the search parameters are ignored altogether
-                continue
-        return filtered_text
-
-    def extract_text_from_clusters_by_combi_search(self, clusters: list[str]) -> list[str]:
-        '''Combi-search executes multiple user-defined regex searches, isolating only the relevant clusters for the final search'''
-        text_filters = self.config.get(ConfigOptions.TEXT_FILTER.value)
-        if not isinstance(text_filters, list):
-            # Regex pattern should always be a string due to input_manager logic, so there will be a bug if this error is raised
-            raise TypeError('Incorrect text filter type for Combi-Search, expected a list of regex patterns.')
-
-        for text_filter in text_filters[:-1]:
-            pattern = re.compile(text_filter)
-            clusters = [cluster for cluster in clusters if pattern.search(cluster)]
-        return self.extract_text_from_clusters_by_regex(clusters, text_filters[-1])
 
 
 class Comparer:
