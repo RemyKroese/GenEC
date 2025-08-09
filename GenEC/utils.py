@@ -1,11 +1,14 @@
 from collections import Counter
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import json
 import os
 
 from prettytable import PrettyTable  # type: ignore
 import yaml
-from GenEC.core import AnalysisConstruct
+
+if TYPE_CHECKING:
+    from GenEC.core.config_manager import AnalysisConstruct
+
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
@@ -14,7 +17,7 @@ def get_list_each_element_count(elements: list[str]) -> dict[str, int]:
     return dict(Counter(elements))
 
 
-def read_files(base_path: str, analysis_constructs: list[AnalysisConstruct]) -> dict[str, str]:
+def read_files(base_path: str, analysis_constructs: list['AnalysisConstruct']) -> dict[str, str]:
     """
     Reads all unique files referenced by analysis_constructs, using base_path as the root.
     Returns a dict mapping target_file to file contents.

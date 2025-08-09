@@ -7,9 +7,10 @@ from typing import Optional
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_PATH)
 
-from GenEC import utils                                 # noqa: E402
-from GenEC.core import analyze, manage_io               # noqa: E402
-from GenEC.core import FileID                           # noqa: E402
+from GenEC import utils                                    # noqa: E402
+from GenEC.core import analyze, manage_io                  # noqa: E402
+from GenEC.core import FileID                              # noqa: E402
+from GenEC.core.config_manager import ConfigManager        # noqa: E402
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -46,16 +47,16 @@ def main():
     elif args.preset:
         preset_param = {'type': 'preset', 'value': args.preset}
 
-    input_manager = manage_io.InputManager(preset_param, args.presets_directory)
+    config_manager = ConfigManager(preset_param, args.presets_directory)
     if not args.preset_list:
-        input_manager.set_config(preset_param.get('value', ''))
+        config_manager.set_config(preset_param.get('value', ''))
     extractor = analyze.Extractor()
     output_manager = manage_io.OutputManager(args.output_directory)
 
-    source_data = utils.read_files(args.source, input_manager.analysis_constructs)
-    ref_data = utils.read_files(args.reference, input_manager.analysis_constructs) if args.reference else None
+    source_data = utils.read_files(args.source, config_manager.analysis_constructs)
+    ref_data = utils.read_files(args.reference, config_manager.analysis_constructs) if args.reference else None
 
-    for analysis_construct in input_manager.analysis_constructs:
+    for analysis_construct in config_manager.analysis_constructs:
         source_text = source_data.get(analysis_construct.target_file, '')
         source_filtered_text = extractor.extract_from_data(analysis_construct.config, source_text, FileID.SOURCE)
         output_path = os.path.join(analysis_construct.preset, os.path.splitext(analysis_construct.target_file)[0])

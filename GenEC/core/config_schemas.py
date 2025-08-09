@@ -1,5 +1,4 @@
 from typing import Optional, TypedDict, Union
-from dataclasses import dataclass
 from GenEC.core.specs import PositionalFilterType
 
 
@@ -10,7 +9,7 @@ class PresetConfigInitialized(TypedDict):
     text_filter: Optional[Union[str, list[str], PositionalFilterType]]
     should_slice_clusters: Optional[bool]
     src_start_cluster_text: Optional[str]
-    source_end_cluster_text: Optional[str]
+    src_end_cluster_text: Optional[str]
     ref_start_cluster_text: Optional[str]
     ref_end_cluster_text: Optional[str]
 
@@ -21,13 +20,6 @@ class PresetConfigFinalized(TypedDict):
     text_filter: Union[str, list[str], PositionalFilterType]
     should_slice_clusters: bool
     src_start_cluster_text: Optional[str]
-    source_end_cluster_text: Optional[str]
+    src_end_cluster_text: Optional[str]
     ref_start_cluster_text: Optional[str]
     ref_end_cluster_text: Optional[str]
-
-
-@dataclass
-class AnalysisConstruct:
-    preset: str
-    config: PresetConfigFinalized
-    target_file: str
