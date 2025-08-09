@@ -3,7 +3,7 @@ import os
 from typing import Optional, Union
 
 from GenEC import utils
-from GenEC.core import PresetConfigInitialized, PositionalFilterType, ConfigOptions, TextFilterTypes
+from GenEC.core import PresetConfigInitialized, PositionalFilterType, ConfigOptions, TextFilterTypes, PresetEntry
 
 
 YES_INPUT = ['yes', 'y']
@@ -16,7 +16,8 @@ class InputManager:
                  presets_directory: Optional[str] = None
                  ) -> None:
         self.presets_directory = presets_directory if presets_directory else os.path.join(os.path.dirname(__file__), '../presets')
-        self.preset_file = self.preset_name = ''
+        self.preset_file = ''
+        self.preset_name = ''
         self.config = PresetConfigInitialized(
             cluster_filter=None,
             text_filter_type=None,
@@ -33,7 +34,7 @@ class InputManager:
                 self.preset_file, self.preset_name = self.parse_preset_param(preset_param['value'])
                 self.config = self.load_preset()
             elif preset_param['type'] == 'preset-list':
-                self.load_preset_list(preset_param['value'])
+                self.presets = self.load_presets(preset_param['value'])
             else:
                 raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
 
@@ -44,26 +45,33 @@ class InputManager:
         else:
             return tuple(preset_param.split('/', 1))  # type: ignore[return-value]  # Always returns 2 items
 
-    def load_preset_list(self, preset_list_file: str) -> None:
-        preset_list_construction = utils.read_yaml_file(os.path.join(self.presets_directory, preset_list_file + '.yaml'))
-        presets_list: defaultdict[str, list[str]] = defaultdict(list)
+    def load_presets(self, preset_list_file: str) -> list[PresetEntry]:
+        presets_list_file_path = os.path.join(self.presets_directory, preset_list_file + '.yaml')
+        presets_list = utils.read_yaml_file(presets_list_file_path)
+        presets_per_file = self._group_presets_by_file(presets_list['presets'])
+        return self._collect_presets(presets_per_file)
 
-        for entry in preset_list_construction['presets']:
+    def _group_presets_by_file(self, preset_entries: list[str]) -> dict[str, list[str]]:
+        presets_per_file: dict[str, list[str]] = defaultdict(list)
+        for entry in preset_entries:
             file_name, preset_name = self.parse_preset_param(entry)
             if not preset_name:
                 print(f'Preset name is not found in entry: {entry}')  # TODO: add proper logging mechanism
                 continue
-            presets_list[file_name].append(preset_name)
+            presets_per_file[file_name].append(preset_name)
+        return presets_per_file
 
-        self.presets = self.load_presets(presets_list)
-
-    def load_presets(self, presets_list: dict[str, list[str]]) -> dict[str, PresetConfigInitialized]:
-        presets: dict[str, PresetConfigInitialized] = {}
-        for file_name, preset_names in presets_list.items():
+    def _collect_presets(self, presets_per_file: dict[str, list[str]]) -> list[PresetEntry]:
+        presets: list[PresetEntry] = []
+        for file_name, preset_names in presets_per_file.items():
             loaded_presets = self.load_preset_file(file_name)
             for preset_name in preset_names:
                 if preset_name in loaded_presets:
-                    presets[file_name + '/' + preset_name] = loaded_presets[preset_name]
+                    presets.append(
+                        PresetEntry(
+                            preset=file_name + '/' + preset_name,
+                            config=loaded_presets[preset_name],
+                            target_file=file_name))
                 else:
                     print(f'preset {preset_name} not found in {file_name}. Skipping...')
         if not presets:

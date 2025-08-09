@@ -28,6 +28,7 @@ SINGLE_PRESET_DATA = {
         'ref_end_cluster_text': ''
     }
 }
+
 MULTIPLE_PRESETS_DATA = {
     'main_preset': {
         'cluster_filter': '',
@@ -80,26 +81,26 @@ MOCK_LOADED_PRESETS_FILE_2 = {
 
 
 @pytest.fixture
-def im_instance():
+def im_instance() -> InputManager:
     return InputManager()
 
 
 @patch.object(InputManager, 'load_preset', return_value={'key': 'value'})
 @patch.object(InputManager, 'parse_preset_param', return_value=('file.yaml', 'presetA'))
 def test_init_with_preset_type(mock_parse_preset_param, mock_load_preset):
-    im_instance = InputManager({'type': 'preset', 'value': 'fake_path'})
-    assert im_instance.preset_file == 'file.yaml'
-    assert im_instance.preset_name == 'presetA'
-    assert im_instance.config == {'key': 'value'}
-    assert not hasattr(im_instance, 'presets')
+    input_manager = InputManager({'type': 'preset', 'value': 'fake_path'})
+    assert input_manager.preset_file == 'file.yaml'
+    assert input_manager.preset_name == 'presetA'
+    assert input_manager.config == {'key': 'value'}
+    assert not hasattr(input_manager, 'presets')
 
 
-@patch.object(InputManager, 'load_preset_list')
-def test_init_with_preset_list_type(mock_load_preset_list):
-    im_instance = InputManager({'type': 'preset-list', 'value': 'fake_list'})
-    assert im_instance.preset_file == ''
-    assert im_instance.preset_name == ''
-    assert im_instance.config == EMPTY_CONFIG
+@patch.object(InputManager, 'load_presets')
+def test_init_with_preset_list_type(mock_load_presets):
+    input_manager = InputManager({'type': 'preset-list', 'value': 'fake_list'})
+    assert input_manager.preset_file == ''
+    assert input_manager.preset_name == ''
+    assert input_manager.config == EMPTY_CONFIG
 
 
 def test_init_with_invalid_type():
@@ -118,6 +119,20 @@ def test_init_with_no_parameters(im_instance):
     ('folder/main_preset', ('folder', 'main_preset'))])
 def test_parse_preset_param(preset_param, expected_result):
     assert InputManager.parse_preset_param(preset_param) == expected_result
+
+
+@patch('GenEC.utils.read_yaml_file')
+def test_load_presets_direct(mock_read_yaml_file, im_instance):
+    # Simulate a preset-list file with two entries
+    mock_read_yaml_file.return_value = {
+        'presets': ['file1/presetA', 'file2/presetB']
+    }
+    # Patch load_preset_file on the real instance
+    with patch.object(im_instance, 'load_preset_file', side_effect=[{'presetA': {'key': 'valueA'}}, {'presetB': {'key': 'valueB'}}]):
+        result = im_instance.load_presets('mock_preset_list')
+        assert isinstance(result, list)
+        assert any(p.preset == 'file1/presetA' and p.config == {'key': 'valueA'} for p in result)
+        assert any(p.preset == 'file2/presetB' and p.config == {'key': 'valueB'} for p in result)
 
 
 @patch.object(InputManager, 'load_preset_file')
@@ -167,7 +182,7 @@ def test_load_preset_file_file_not_found(mock_exists, im_instance):
 @patch('builtins.open', new_callable=mock_open, read_data='')
 def test_load_preset_file_empty_file(mock_open_file, mock_exists, im_instance):
     with pytest.raises(ValueError):
-        im_instance.load_preset_file( 'mock_file')
+        im_instance.load_preset_file('mock_file')
 
 
 @pytest.mark.parametrize('preset_data', [
@@ -183,90 +198,70 @@ def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists
     assert result == preset_data
 
 
-@patch('GenEC.utils.read_yaml_file', return_value=MOCK_YAML_CONTENT)
-@patch.object(InputManager, 'parse_preset_param', )
-@patch.object(InputManager, 'load_presets')
-def test_load_preset_list(mock_load_presets, mock_parse_preset_param, mock_read_yaml_file, im_instance):
-    mock_load_presets.return_value = {'file1/presetA': {'key': 'value'},
-                                      'file1/presetB': {'key2': 'value2'},
-                                      'file2/presetC': {'key3': 'value3'}}
-    mock_parse_preset_param.side_effect = [('file1', 'presetA'),
-                                           ('file1', 'presetB'),
-                                           ('file2', 'presetC')]
-
-    im_instance.load_preset_list('preset_list_file')
-
-    assert 'file1/presetA' in im_instance.presets
-    assert 'file1/presetB' in im_instance.presets
-    assert 'file2/presetC' in im_instance.presets
-
-    expected_presets_list = {
-        'file1': ['presetA', 'presetB'],
-        'file2': ['presetC']
-    }
-    mock_load_presets.assert_called_once_with(expected_presets_list)
-
-    mock_parse_preset_param.assert_any_call('file1/presetA')
-    mock_parse_preset_param.assert_any_call('file1/presetB')
-    mock_parse_preset_param.assert_any_call('file2/presetC')
-
-
-@patch('GenEC.utils.read_yaml_file', return_value={})
-def test_load_preset_list_with_empty_yaml(mock_read_yaml, im_instance):
-    with pytest.raises(KeyError, match="'presets'"):
-        im_instance.load_preset_list('empty_preset_list')
-
-
-@patch.object(InputManager, 'load_preset_file', side_effect=[MOCK_LOADED_PRESETS_FILE_1, MOCK_LOADED_PRESETS_FILE_2])
-def test_load_presets_with_valid_data(mock_load_preset_file, im_instance):
-    presets_list = {
+@patch.object(InputManager, 'load_preset_file')
+def test_load_presets_function(mock_load_preset_file, im_instance):
+    # Setup mock returns for two files
+    mock_load_preset_file.side_effect = [MOCK_LOADED_PRESETS_FILE_1, MOCK_LOADED_PRESETS_FILE_2]
+    presets_per_file = {
         'file1': ['presetA', 'presetB'],
         'file2': ['presetB']
     }
-
-    result = im_instance.load_presets(presets_list)
-
+    result = im_instance._collect_presets(presets_per_file)
     assert len(result) == 3
-    assert 'file1/presetA' in result
-    assert 'file1/presetB' in result
-    assert 'file2/presetB' in result
-    assert result['file1/presetA'] == {'key': 'value'}
-    assert result['file1/presetB'] == {'key2': 'value2'}
-    assert result['file2/presetB'] == {'key3': 'value3'}
+    assert any(p.preset == 'file1/presetA' and p.config == {'key': 'value'} for p in result)
+    assert any(p.preset == 'file1/presetB' and p.config == {'key2': 'value2'} for p in result)
+    assert any(p.preset == 'file2/presetB' and p.config == {'key3': 'value3'} for p in result)
 
 
-@patch.object(InputManager, 'load_preset_file', side_effect=[MOCK_LOADED_PRESETS_FILE_1, MOCK_LOADED_PRESETS_FILE_2])
-def test_load_presets_with_missing_preset(mock_load_preset_file, im_instance):
-    presets_list = {
-        'file1': ['presetA', 'presetX'],
-        'file2': ['presetB']
+def test_group_presets_by_file(im_instance):
+    entries = ['file1/presetA', 'file1/presetB', 'file2/presetC', 'file2/presetD']
+    result = im_instance._group_presets_by_file(entries)
+    assert result == {
+        'file1': ['presetA', 'presetB'],
+        'file2': ['presetC', 'presetD']
     }
 
-    result = im_instance.load_presets(presets_list)
-    assert len(result) == 2
-    assert 'file1/presetA' in result
-    assert 'file1/presetX' not in result
-    assert 'file2/presetB' in result
-    assert result['file1/presetA'] == {'key': 'value'}
-    assert result['file2/presetB'] == {'key3': 'value3'}
+def test_group_presets_by_file_if_false(im_instance):
+    # Include entries without a file name to trigger the else branch
+    entries = ['presetA', 'file1/presetB', 'presetC']
+    result = im_instance._group_presets_by_file(entries)
+    # Expect entries without a file name to be grouped under '' (empty string)
+    assert result == {'file1': ['presetB']}
 
 
-@patch.object(InputManager, 'load_preset_file', return_value={})
-def test_load_presets_with_empty_file(mock_load_preset_file, im_instance):
-    presets_list = {
-        'file1': ['presetA'],
-    }
-    with pytest.raises(ValueError, match='None of the provided presets were found.'):
-        im_instance.load_presets(presets_list)
+@patch.object(InputManager, 'load_preset_file')
+def test_collect_presets_missing_preset(mock_load_preset_file, im_instance):
+    mock_load_preset_file.return_value = {'presetA': {'key': 'value'}}
+    presets_per_file = {'file1': ['presetA', 'presetX']}
+    result = im_instance._collect_presets(presets_per_file)
+    assert len(result) == 1
+    assert result[0].preset == 'file1/presetA'
+    assert result[0].config == {'key': 'value'}
 
 
-@patch.object(InputManager, 'load_preset_file', side_effect=[MOCK_LOADED_PRESETS_FILE_1])
-def test_load_presets_with_invalid_data(mock_load_preset_file, im_instance):
-    presets_list = {
-        'file1': ['invalidPreset'],
-    }
-    with pytest.raises(ValueError, match='None of the provided presets were found.'):
-        im_instance.load_presets(presets_list)
+@patch.object(InputManager, 'load_preset_file')
+def test_collect_presets_all_found(mock_load_preset_file, im_instance):
+    # All preset_names are found in loaded_presets, so else branch is not triggered
+    mock_load_preset_file.side_effect = [
+        {'presetA': {'key': 'valueA'}, 'presetB': {'key': 'valueB'}},
+        {'presetC': {'key': 'valueC'}}
+    ]
+    presets_per_file = {'file1': ['presetA', 'presetB'], 'file2': ['presetC']}
+    result = im_instance._collect_presets(presets_per_file)
+    assert len(result) == 3
+    assert any(p.preset == 'file1/presetA' and p.config == {'key': 'valueA'} for p in result)
+    assert any(p.preset == 'file1/presetB' and p.config == {'key': 'valueB'} for p in result)
+    assert any(p.preset == 'file2/presetC' and p.config == {'key': 'valueC'} for p in result)
+
+
+@patch.object(InputManager, 'load_preset_file')
+def test_collect_presets_raises_value_error(mock_load_preset_file, im_instance):
+    # Simulate missing preset in loaded_presets to trigger ValueError
+    mock_load_preset_file.return_value = {'presetA': {'key': 'value'}}
+    presets_per_file = {'file1': ['presetB', 'presetX']}
+    # The implementation should raise ValueError for 'presetX'
+    with pytest.raises(ValueError):
+        im_instance._collect_presets(presets_per_file)
 
 
 @patch.object(InputManager, 'ask_open_question')

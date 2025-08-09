@@ -1,4 +1,5 @@
 from typing import Optional, TypedDict, Union
+from dataclasses import dataclass
 from GenEC.core.specs import PositionalFilterType
 
 
@@ -23,3 +24,9 @@ class PresetConfigFinalized(TypedDict):
     source_end_cluster_text: Optional[str]
     ref_start_cluster_text: Optional[str]
     ref_end_cluster_text: Optional[str]
+
+@dataclass
+class PresetEntry:
+    preset: str
+    config: PresetConfigInitialized
+    target_file: str

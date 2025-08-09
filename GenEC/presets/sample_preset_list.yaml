@@ -1,0 +1,8 @@
+- preset: sample_preset/main_preset
+  target: 'path/to/your/file.txt'
+
+- preset: sample_preset/sub_preset_A
+  target: 'path/to/your/file.txt'
+
+- preset: sample_preset/sub_preset_B
+  target: 'path/to/your/other/file2.txt'
