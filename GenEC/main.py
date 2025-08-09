@@ -2,14 +2,14 @@
 import argparse
 import os
 import sys
-from typing import cast, Optional
+from typing import Optional
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_PATH)
 
 from GenEC import utils                                 # noqa: E402
 from GenEC.core import analyze, manage_io               # noqa: E402
-from GenEC.core import PresetConfigFinalized, FileID    # noqa: E402
+from GenEC.core import FileID                           # noqa: E402
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -40,31 +40,35 @@ def parse_arguments() -> argparse.Namespace:
 
 def main():
     args = parse_arguments()
-    source = utils.read_file(args.source)
-    ref = utils.read_file(args.reference) if args.reference else None
-
-    preset_param: Optional[dict[str, str]] = None
+    preset_param: Optional[dict[str, str]] = {}
     if args.preset_list:
         preset_param = {'type': 'preset-list', 'value': args.preset_list}
     elif args.preset:
         preset_param = {'type': 'preset', 'value': args.preset}
 
     input_manager = manage_io.InputManager(preset_param, args.presets_directory)
-    input_manager.set_config()  # config is finalized for the remained of the execution
-    extractor = analyze.Extractor(cast(PresetConfigFinalized, input_manager.config))
+    if not args.preset_list:
+        input_manager.set_config(preset_param.get('value', ''))
+    extractor = analyze.Extractor()
     output_manager = manage_io.OutputManager(args.output_directory)
 
-    source_filtered_text = extractor.extract_from_data(source, FileID.SOURCE)
+    source_data = utils.read_files(args.source, input_manager.analysis_constructs)
+    ref_data = utils.read_files(args.reference, input_manager.analysis_constructs) if args.reference else None
 
-    if ref:
-        ref_filtered_text = extractor.extract_from_data(ref, FileID.REFERENCE)
-        comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
-        results = comparer.compare()
-        output_manager.process(results, is_comparison=True)
-    else:
-        results = utils.get_list_each_element_count(source_filtered_text)
-        output_results = {key: {'source': value} for key, value in results.items()}
-        output_manager.process(output_results, is_comparison=False)
+    for analysis_construct in input_manager.analysis_constructs:
+        source_text = source_data.get(analysis_construct.target_file, '')
+        source_filtered_text = extractor.extract_from_data(analysis_construct.config, source_text, FileID.SOURCE)
+        output_path = os.path.join(analysis_construct.preset, os.path.splitext(analysis_construct.target_file)[0])
+        if ref_data:
+            ref_text = ref_data.get(analysis_construct.target_file, '')
+            ref_filtered_text = extractor.extract_from_data(analysis_construct.config, ref_text, FileID.REFERENCE)
+            comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
+            results = comparer.compare()
+            output_manager.process(results, file_name=output_path, is_comparison=True)
+        else:
+            results = utils.get_list_each_element_count(source_filtered_text)
+            output_results = {key: {'source': value} for key, value in results.items()}
+            output_manager.process(output_results, file_name=output_path, is_comparison=False)
 
 
 if __name__ == '__main__':

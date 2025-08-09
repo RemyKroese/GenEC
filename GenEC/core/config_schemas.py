@@ -25,8 +25,9 @@ class PresetConfigFinalized(TypedDict):
     ref_start_cluster_text: Optional[str]
     ref_end_cluster_text: Optional[str]
 
+
 @dataclass
-class PresetEntry:
+class AnalysisConstruct:
     preset: str
-    config: PresetConfigInitialized
+    config: PresetConfigFinalized
     target_file: str
