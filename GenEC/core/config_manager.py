@@ -4,8 +4,9 @@ import os
 from typing import Optional
 
 from GenEC import utils
-from GenEC.core import PresetConfigFinalized, PresetConfigInitialized, ConfigOptions, PositionalFilterType
+from GenEC.core import ConfigOptions, PositionalFilterType
 from GenEC.core.manage_io import InputManager
+from GenEC.core.types.preset_config import Finalized, Initialized
 
 YES_INPUT = ['yes', 'y']
 NO_INPUT = ['no', 'n']
@@ -13,9 +14,10 @@ NO_INPUT = ['no', 'n']
 
 @dataclass
 class Configuration:
-    config: PresetConfigFinalized
+    config: Finalized
     preset: str
     target_file: str
+    group: str = ''
 
 
 class ConfigManager:
@@ -60,10 +62,10 @@ class ConfigManager:
                     print(f'Preset name missing in entry: {entry}')
                     continue
                 presets_per_target[target_file].append({
-                    'preset_group': group,
                     'preset_file': file_name,
                     'preset_name': preset_name,
-                    'target_file': target_file
+                    'target_file': target_file,
+                    'preset_group': group
                 })
         return presets_per_target
 
@@ -92,9 +94,10 @@ class ConfigManager:
         return Configuration(
             config=finalized_config,
             preset=f'{file_name}/{preset_name}',
-            target_file=target_file)
+            target_file=target_file,
+            group=entry.get('preset_group', ''))
 
-    def load_preset(self, preset_target: str) -> PresetConfigInitialized:
+    def load_preset(self, preset_target: str) -> Initialized:
         preset_file, preset_name = self.parse_preset_param(preset_target)
         presets = self.load_preset_file(preset_file)
         if not preset_name:
@@ -108,7 +111,7 @@ class ConfigManager:
 
         return presets[preset_name]
 
-    def load_preset_file(self, preset_file: str) -> dict[str, PresetConfigInitialized]:
+    def load_preset_file(self, preset_file: str) -> dict[str, Initialized]:
         presets_file_path = os.path.join(self.presets_directory, preset_file + '.yaml')
         presets = utils.read_yaml_file(presets_file_path)
 
@@ -123,13 +126,13 @@ class ConfigManager:
             return ''
         return cluster_filter.encode('utf-8').decode('unicode_escape')
 
-    def _set_simple_options(self, config: PresetConfigInitialized):
+    def _set_simple_options(self, config: Initialized):
         config[ConfigOptions.CLUSTER_FILTER.value] = InputManager.set_cluster_filter(config)
         config[ConfigOptions.TEXT_FILTER_TYPE.value] = InputManager.set_text_filter_type(config)
         config[ConfigOptions.TEXT_FILTER.value] = InputManager.set_text_filter(config)
         config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = InputManager.set_should_slice_clusters(config)
 
-    def _set_cluster_text_options(self, config: PresetConfigInitialized):
+    def _set_cluster_text_options(self, config: Initialized):
         cluster_text_options = [
                 (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
                 (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
@@ -142,9 +145,9 @@ class ConfigManager:
 
     def set_config(self, preset: str = '', target_file: str = '') -> None:
         if preset:
-            config: PresetConfigInitialized = self.load_preset(preset)
+            config: Initialized = self.load_preset(preset)
         else:
-            config: PresetConfigInitialized = PresetConfigInitialized(**{option.value: None for option in ConfigOptions})
+            config: Initialized = Initialized(**{option.value: None for option in ConfigOptions})
             self._set_simple_options(config)
 
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
@@ -154,7 +157,7 @@ class ConfigManager:
 
         self.configurations.append(Configuration(self._finalize_config(config), preset, target_file))
 
-    def _finalize_config(self, config: PresetConfigInitialized) -> PresetConfigFinalized:
+    def _finalize_config(self, config: Initialized) -> Finalized:
         cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
         text_filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
         text_filter = config.get(ConfigOptions.TEXT_FILTER.value)
@@ -165,7 +168,7 @@ class ConfigManager:
         assert isinstance(text_filter, str) or isinstance(text_filter, list) or isinstance(text_filter, PositionalFilterType)
         assert isinstance(should_slice_clusters, bool)
 
-        return PresetConfigFinalized(
+        return Finalized(
             cluster_filter=cluster_filter,
             text_filter_type=text_filter_type,
             text_filter=text_filter,

@@ -1,11 +1,13 @@
 from typing import Optional
 
 from GenEC import utils
-from GenEC.core import extraction_filters, PresetConfigFinalized, FileID, ConfigOptions, TextFilterTypes
+from GenEC.core import extraction_filters, FileID, ConfigOptions, TextFilterTypes
+from GenEC.core.types.preset_config import Finalized
+from GenEC.core.types.output import DataCompare
 
 
 class Extractor:
-    def extract_from_data(self, config: PresetConfigFinalized, data: str, file: int) -> list[str]:
+    def extract_from_data(self, config: Finalized, data: str, file: int) -> list[str]:
         clusters = self.get_clusters(config, data, file)
         filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
         if filter_type not in [t.value for t in TextFilterTypes] or 'UNSUPPORTED' in filter_type:
@@ -13,7 +15,7 @@ class Extractor:
         extractor = extraction_filters.get_extractor(filter_type, config)
         return extractor.extract(clusters)
 
-    def get_clusters(self, config: PresetConfigFinalized, data: str, file: int) -> list[str]:
+    def get_clusters(self, config: Finalized, data: str, file: int) -> list[str]:
         clusters = data.split(config.get(ConfigOptions.CLUSTER_FILTER.value))
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
             if file == FileID.SOURCE:
@@ -48,8 +50,8 @@ class Comparer:
         self.reference_counts = utils.get_list_each_element_count(reference)
         self.unique_elements = set(self.source_counts.keys()).union(self.reference_counts.keys())
 
-    def compare(self) -> dict[str, dict[str, int]]:
-        differences: dict[str, dict[str, int]] = {}
+    def compare(self) -> dict[str, DataCompare]:
+        differences: dict[str, DataCompare] = {}
         for element in self.unique_elements:
             src_count = self.source_counts.get(element, 0)
             ref_count = self.reference_counts.get(element, 0)

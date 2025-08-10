@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import patch, mock_open
 
-from GenEC.core import PresetConfigInitialized
 from GenEC.core.config_manager import ConfigManager, Configuration
 from GenEC.core.manage_io import InputManager
+from GenEC.core.types.preset_config import Initialized
 
 
-EMPTY_CONFIG = PresetConfigInitialized(
+EMPTY_CONFIG = Initialized(
             cluster_filter=None,
             text_filter_type=None,
             text_filter=None,
@@ -227,7 +227,7 @@ def test_set_config_no_preset(mock_set_cluster_filter, mock_set_text_filter_type
 
 @patch.object(InputManager, 'set_cluster_text', side_effect=['startA', 'endA', 'startB', 'endB'])
 def test_set_cluster_text_options(mock_cluster_text, c_instance):
-    config = PresetConfigInitialized(
+    config = Initialized(
         cluster_filter='\n',
         text_filter_type='regex',
         text_filter='[a-z]+',
@@ -249,7 +249,7 @@ def test_set_cluster_text_options(mock_cluster_text, c_instance):
 @patch.object(InputManager, 'set_should_slice_clusters', return_value=True)
 def test_set_simple_options(mock_should_slice, mock_text_filter, mock_text_type, mock_cluster_filter, c_instance):
     # All config options missing
-    config = PresetConfigInitialized(
+    config = Initialized(
         cluster_filter=None,
         text_filter_type=None,
         text_filter=None,
@@ -300,8 +300,8 @@ def test_process_preset_entry_not_found(mock_load_preset_file, c_instance, capsy
 def test_collect_presets_all_found(mock_process_entry, c_instance):
     entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
-    mock_ac1 = Configuration(PresetConfigInitialized(), 'fileA/presetA', 'targetA.txt')
-    mock_ac2 = Configuration(PresetConfigInitialized(), 'fileB/presetB', 'targetB.txt')
+    mock_ac1 = Configuration(Initialized(), 'fileA/presetA', 'targetA.txt')
+    mock_ac2 = Configuration(Initialized(), 'fileB/presetB', 'targetB.txt')
     mock_process_entry.side_effect = [mock_ac1, mock_ac2]
     presets_per_target = {
         'targetA.txt': [entry1],
@@ -318,7 +318,7 @@ def test_collect_presets_all_found(mock_process_entry, c_instance):
 def test_collect_presets_some_missing(mock_process_entry, c_instance):
     entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
-    mock_ac1 = Configuration(PresetConfigInitialized(), 'fileA/presetA', 'targetA.txt')
+    mock_ac1 = Configuration(Initialized(), 'fileA/presetA', 'targetA.txt')
     mock_process_entry.side_effect = [mock_ac1, None]
     presets_per_target = {
         'targetA.txt': [entry1],
