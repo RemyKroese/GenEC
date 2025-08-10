@@ -25,13 +25,16 @@ def parse_arguments() -> argparse.Namespace:
                         help='Source file to extract data from.')
     parser.add_argument('-r', '--reference', type=str, required=False,
                         help='Reference file to extract data from and compare against source.')
+
     parser.add_argument('-o', '--output-directory', type=str, required=False,
                         help='Output directory to store results (json and txt).')
+    parser.add_argument('-t', '--output-types', type=str, nargs='+', required=False,
+                        choices=['csv', 'json', 'txt', 'yaml'],
+                        help='Output file types to generate. Provide at least one if --output-directory is set.')
 
     parser.add_argument('-x', '--presets-directory', type=str, required=False,
                         default=os.path.abspath(os.path.join(PROJECT_PATH, 'GenEC', 'presets')),
                         help='Directory where presets are stored. default: %(default)s')
-
     # Only a preset, or a preset-list should be provided
     preset_group = parser.add_mutually_exclusive_group(required=False)
     preset_group.add_argument('-p', '--preset', type=str, required=False,
@@ -39,7 +42,10 @@ def parse_arguments() -> argparse.Namespace:
     preset_group.add_argument('-l', '--preset-list', type=str, required=False,
                               help='A list of presets to perform a larger scale analysis.')
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if (args.output_directory is None) != (args.output_types is None):
+        parser.error('Arguments --output-directory and --output-types must be provided together.')
+    return args
 
 
 def build_preset_param(args: argparse.Namespace) -> Optional[dict[str, str]]:
@@ -92,7 +98,7 @@ def main():
 
     results = run_analysis(config_manager.configurations, source_data, ref_data)
 
-    output_manager = OutputManager(args.output_directory)
+    output_manager = OutputManager(args.output_directory, args.output_types)
     output_manager.process(results, root=args.source, is_comparison=bool(ref_data))
 
 
