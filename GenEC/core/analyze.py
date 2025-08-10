@@ -5,26 +5,23 @@ from GenEC.core import extraction_filters, PresetConfigFinalized, FileID, Config
 
 
 class Extractor:
-    def __init__(self, config: PresetConfigFinalized) -> None:
-        self.config = config
-
-    def extract_from_data(self, data: str, file: int) -> list[str]:
-        clusters = self.get_clusters(data, file)
-        filter_type = self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+    def extract_from_data(self, config: PresetConfigFinalized, data: str, file: int) -> list[str]:
+        clusters = self.get_clusters(config, data, file)
+        filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
         if filter_type not in [t.value for t in TextFilterTypes] or 'UNSUPPORTED' in filter_type:
-            raise ValueError("Unsupported filter type: %s" % self.config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
-        extractor = extraction_filters.get_extractor(filter_type, self.config)
+            raise ValueError("Unsupported filter type: %s" % config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
+        extractor = extraction_filters.get_extractor(filter_type, config)
         return extractor.extract(clusters)
 
-    def get_clusters(self, data: str, file: int) -> list[str]:
-        clusters = data.split(self.config.get(ConfigOptions.CLUSTER_FILTER.value))
-        if self.config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
+    def get_clusters(self, config: PresetConfigFinalized, data: str, file: int) -> list[str]:
+        clusters = data.split(config.get(ConfigOptions.CLUSTER_FILTER.value))
+        if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
             if file == FileID.SOURCE:
-                start_keyword = self.config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value)
-                end_keyword = self.config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value)
+                start_keyword = config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value)
+                end_keyword = config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value)
             else:
-                start_keyword = self.config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value)
-                end_keyword = self.config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
+                start_keyword = config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value)
+                end_keyword = config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
             return self.get_sliced_clusters(clusters, start_keyword, end_keyword)
         else:
             return clusters

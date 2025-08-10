@@ -13,7 +13,7 @@ pycodestyle = "*"
 flake8 = "*"
 autopep8 = "*"
 pyinstaller = "*"
-coverage = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3"

@@ -11,8 +11,8 @@
 ### 1.0.0 release progress
 
 `████████████████████████████████████████████████████████████                                        `
-          
-                                            
+
+
 &#x20;
 
 ## Overview
@@ -97,7 +97,7 @@ main_preset: &main_preset
   text_filter: ''
   should_slice_clusters: false
   src_start_cluster_text: ''
-  source_end_cluster_text: ''
+  src_end_cluster_text: ''
   ref_start_cluster_text: ''
   ref_end_cluster_text: ''
 

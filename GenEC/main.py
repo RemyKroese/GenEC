@@ -2,14 +2,15 @@
 import argparse
 import os
 import sys
-from typing import cast, Optional
+from typing import Optional
 
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_PATH)
 
-from GenEC import utils                                 # noqa: E402
-from GenEC.core import analyze, manage_io               # noqa: E402
-from GenEC.core import PresetConfigFinalized, FileID    # noqa: E402
+from GenEC import utils                                    # noqa: E402
+from GenEC.core import analyze, manage_io                  # noqa: E402
+from GenEC.core import FileID                              # noqa: E402
+from GenEC.core.config_manager import ConfigManager        # noqa: E402
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -38,33 +39,40 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def build_preset_param(args: argparse.Namespace) -> Optional[dict[str, str]]:
+    if args.preset_list:
+        return {'type': 'preset-list', 'value': args.preset_list}
+    if args.preset:
+        return {'type': 'preset', 'value': args.preset}
+    return None
+
+
 def main():
     args = parse_arguments()
-    source = utils.read_file(args.source)
-    ref = utils.read_file(args.reference) if args.reference else None
+    preset_param = build_preset_param(args)
 
-    preset_param: Optional[dict[str, str]] = None
-    if args.preset_list:
-        preset_param = {'type': 'preset-list', 'value': args.preset_list}
-    elif args.preset:
-        preset_param = {'type': 'preset', 'value': args.preset}
-
-    input_manager = manage_io.InputManager(preset_param, args.presets_directory)
-    input_manager.set_config()  # config is finalized for the remained of the execution
-    extractor = analyze.Extractor(cast(PresetConfigFinalized, input_manager.config))
+    config_manager = ConfigManager(preset_param, args.presets_directory)
+    extractor = analyze.Extractor()
     output_manager = manage_io.OutputManager(args.output_directory)
 
-    source_filtered_text = extractor.extract_from_data(source, FileID.SOURCE)
+    source_data = utils.read_files(args.source, config_manager.configurations)
+    ref_data = utils.read_files(args.reference, config_manager.configurations) if args.reference else None
 
-    if ref:
-        ref_filtered_text = extractor.extract_from_data(ref, FileID.REFERENCE)
-        comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
-        results = comparer.compare()
-        output_manager.process(results, is_comparison=True)
-    else:
-        results = utils.get_list_each_element_count(source_filtered_text)
-        output_results = {key: {'source': value} for key, value in results.items()}
-        output_manager.process(output_results, is_comparison=False)
+    for configuration in config_manager.configurations:
+        source_text = source_data.get(configuration.target_file, '')
+        source_filtered = extractor.extract_from_data(configuration.config, source_text, FileID.SOURCE)
+        output_path = os.path.join(configuration.preset, os.path.splitext(configuration.target_file)[0])
+
+        if ref_data:  # extract and compare
+            ref_text = ref_data.get(configuration.target_file, '')
+            ref_filtered = extractor.extract_from_data(configuration.config, ref_text, FileID.REFERENCE)
+            comparer = analyze.Comparer(source_filtered, ref_filtered)
+            results = comparer.compare()
+            output_manager.process(results, file_name=output_path, is_comparison=True)
+        else:  # extract only
+            results = utils.get_list_each_element_count(source_filtered)
+            output_results = {key: {'source': value} for key, value in results.items()}
+            output_manager.process(output_results, file_name=output_path, is_comparison=False)
 
 
 if __name__ == '__main__':

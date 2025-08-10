@@ -22,7 +22,7 @@ main_preset: &main_preset
   text_filter: ''                           # The actual data that needs to be analyzed
   should_slice_clusters: false              # specify whether only a subsection of the clusters should be analyzed
   src_start_cluster_text: ''                # Source file: text that should be in the cluster where analysis needs to start, (leave empty to start from the first cluster of the file)
-  source_end_cluster_text: ''               # Source file: text that should be in the cluster where analysis needs to end, (leave empty to continue until the last cluster of the file)
+  src_end_cluster_text: ''               # Source file: text that should be in the cluster where analysis needs to end, (leave empty to continue until the last cluster of the file)
   ref_start_cluster_text: ''                # Reference file: text that should be in the cluster where analysis needs to start, (leave empty to start from the first cluster of the file)
   ref_end_cluster_text: ''                  # Reference file: text that should be in the cluster where analysis needs to end, (leave empty to continue until the last cluster of the file)
 

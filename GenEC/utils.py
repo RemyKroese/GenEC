@@ -1,10 +1,14 @@
 from collections import Counter
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import json
 import os
 
 from prettytable import PrettyTable  # type: ignore
 import yaml
+
+if TYPE_CHECKING:
+    from GenEC.core.config_manager import Configuration
+
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
@@ -13,11 +17,20 @@ def get_list_each_element_count(elements: list[str]) -> dict[str, int]:
     return dict(Counter(elements))
 
 
-def read_files(file_paths: list[str]) -> list[str]:
-    files: list[str] = []
-    for file in file_paths:
-        files.append(read_file(file))
-    return files
+def read_files(base_path: str, configurations: list['Configuration']) -> dict[str, str]:
+    """
+    Reads all unique files referenced by configurations, using base_path as the root.
+    Returns a dict mapping target_file to file contents.
+    """
+    unique_files: set[str] = set(c.target_file for c in configurations)
+    file_data: dict[str, str] = {}
+    for target_file in unique_files:
+        if target_file == '':
+            file_path = base_path
+        else:
+            file_path = os.path.join(os.path.dirname(base_path), target_file)
+        file_data[target_file] = read_file(file_path)
+    return file_data
 
 
 def read_file(file_path: str) -> str:
