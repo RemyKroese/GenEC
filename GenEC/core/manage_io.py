@@ -2,7 +2,9 @@ import os
 from typing import cast, Optional, Union
 
 from GenEC import utils
-from GenEC.core import PresetConfigInitialized, PositionalFilterType, ConfigOptions, TextFilterTypes
+from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
+from GenEC.core.types.preset_config import Initialized
+from GenEC.core.types.output import DataCompare, DataExtract, Entry
 
 
 YES_INPUT = ['yes', 'y']
@@ -11,7 +13,7 @@ NO_INPUT = ['no', 'n']
 
 class InputManager:
     @staticmethod
-    def set_cluster_filter(config: PresetConfigInitialized) -> str:
+    def set_cluster_filter(config: Initialized) -> str:
         if not config.get(ConfigOptions.CLUSTER_FILTER.value):
             input_string: str = InputManager.ask_open_question(
                 'Please indicate the character(s) to split text clusters on (Default: Newline [\\n]): ')
@@ -20,13 +22,13 @@ class InputManager:
         return input_string
 
     @staticmethod
-    def set_text_filter_type(config: PresetConfigInitialized) -> str:
+    def set_text_filter_type(config: Initialized) -> str:
         if not config.get(ConfigOptions.TEXT_FILTER_TYPE.value):
             return InputManager.ask_mpc_question('Please choose a filter type:\n', [t.value for t in TextFilterTypes])
         return cast(str, config[ConfigOptions.TEXT_FILTER_TYPE.value])
 
     @staticmethod
-    def set_text_filter(config: PresetConfigInitialized) -> Union[
+    def set_text_filter(config: Initialized) -> Union[
             str,                   # Regex
             PositionalFilterType,  # positional
             list[str]]:            # combi-search
@@ -35,7 +37,7 @@ class InputManager:
         return cast(Union[str, PositionalFilterType, list[str]], config[ConfigOptions.TEXT_FILTER.value])
 
     @staticmethod
-    def set_should_slice_clusters(config: PresetConfigInitialized) -> bool:
+    def set_should_slice_clusters(config: Initialized) -> bool:
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value) is None:  # False is a valid value
             response = InputManager.ask_open_question(
                 'Do you want to compare only a subsection of the clusters (press enter to skip)? [yes/y]: ').lower()
@@ -43,14 +45,14 @@ class InputManager:
         return cast(bool, config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value])
 
     @staticmethod
-    def set_cluster_text(config: PresetConfigInitialized, config_option: str, position: str, src_or_ref: str) -> str:
+    def set_cluster_text(config: Initialized, config_option: str, position: str, src_or_ref: str) -> str:
         if not config.get(config_option):
             return InputManager.ask_open_question(
                 f'Text in the {src_or_ref.lower()} cluster where the subsection should {position} (press enter to skip): ')
         return cast(str, config[config_option])
 
     @staticmethod
-    def request_text_filter(config: PresetConfigInitialized) -> Union[
+    def request_text_filter(config: Initialized) -> Union[
             str,                   # Regex
             PositionalFilterType,  # positional
             list[str]]:            # combi-search
@@ -112,16 +114,35 @@ class OutputManager:
         self.should_print_results = should_print_results
 
     def process(self,
-                results: dict[str, dict[str, int]],
-                file_name: str = 'results',
+                results: dict[str, list[Entry]],
+                root: str,
+                file_name: str = 'result',
                 is_comparison: bool = False
                 ) -> None:
-        if is_comparison:
-            ascii_table = utils.create_comparison_ascii_table(results)
-        else:
-            ascii_table = utils.create_extraction_ascii_table(results)
-        if self.should_print_results:
-            print(ascii_table)
-        if self.output_directory:
-            utils.write_to_txt_file(ascii_table, os.path.join(self.output_directory, file_name + '.txt'))
-            utils.write_to_json_file(results, os.path.join(self.output_directory,  file_name + '.json'))
+
+        for group, entries in results.items():
+            ascii_tables = ''
+            for entry in entries:
+                title = f"{entry['preset']}"
+                if entry['target']:
+                    title += f" - {entry['target']}"
+                if is_comparison:
+                    ascii_tables += utils.create_comparison_ascii_table(cast(dict[str, DataCompare], entry['data']), title)
+                else:
+                    ascii_tables += utils.create_extraction_ascii_table(cast(dict[str, DataExtract], entry['data']), title)
+                ascii_tables += '\n\n'
+            if self.should_print_results:
+                print(ascii_tables)
+            if self.output_directory:
+                output_path = self._create_output_path(group, root, file_name=file_name)
+                utils.write_to_txt_file(ascii_tables, output_path + '.txt')
+                utils.write_to_json_file(entries, output_path + '.json')
+
+    def _create_output_path(self, group: str, root: str, file_name: str = 'result') -> str:
+        root_path = os.path.basename(os.path.normpath(root))
+        root_path_without_extension = os.path.splitext(root_path)[0]
+        group_dir = os.path.join(
+            cast(str, self.output_directory),  # this function is only called when output_directory is set
+            root_path_without_extension,
+            group)
+        return os.path.join(group_dir, file_name)

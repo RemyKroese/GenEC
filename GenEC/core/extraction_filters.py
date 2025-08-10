@@ -2,11 +2,12 @@ from abc import ABC, abstractmethod
 import re
 from typing import Callable, Dict, Type, TypeVar
 
-from GenEC.core import PresetConfigFinalized, PositionalFilterType, ConfigOptions, TextFilterTypes
+from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
+from GenEC.core.types.preset_config import Finalized
 
 
 class BaseExtractor(ABC):
-    def __init__(self, config: PresetConfigFinalized):
+    def __init__(self, config: Finalized):
         self.config = config
 
     @abstractmethod
@@ -25,7 +26,7 @@ def register_extractor(name: str) -> Callable[[Type[E]], Type[E]]:
     return decorator
 
 
-def get_extractor(name: str, config: PresetConfigFinalized) -> BaseExtractor:
+def get_extractor(name: str, config: Finalized) -> BaseExtractor:
     try:
         return _extractor_registry[name](config)
     except KeyError:
@@ -82,7 +83,7 @@ class CombiSearchExtractor(BaseExtractor):
             clusters = [cluster for cluster in clusters if pattern.search(cluster)]
 
         # copy the config for safe modification
-        new_config: PresetConfigFinalized = {
+        new_config: Finalized = {
             **self.config,
             ConfigOptions.TEXT_FILTER_TYPE.value: TextFilterTypes.REGEX.value,
             ConfigOptions.TEXT_FILTER.value: text_filters[-1]}

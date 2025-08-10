@@ -3,32 +3,33 @@ import pytest
 from unittest.mock import patch
 
 from GenEC.core import ConfigOptions, TextFilterTypes, PositionalFilterType
-from GenEC.core.manage_io import InputManager, PresetConfigInitialized
+from GenEC.core.manage_io import InputManager
+from GenEC.core.types.preset_config import Initialized
 
 
 @patch.object(InputManager, 'ask_open_question')
 def test_set_cluster_filter(mock_ask_open_question):
     mock_ask_open_question.return_value = ';'
-    config = PresetConfigInitialized(cluster_filter=None)
+    config = Initialized(cluster_filter=None)
     assert InputManager.set_cluster_filter(config) == ';'
 
 
 def test_set_cluster_filter_from_config():
-    config = PresetConfigInitialized(cluster_filter='\n')
+    config = Initialized(cluster_filter='\n')
     assert InputManager.set_cluster_filter(config) == '\n'
 
 
 @patch.object(InputManager, 'ask_mpc_question')
 def test_set_text_filter_type(mock_ask_mpc_question):
     mock_ask_mpc_question.return_value = 'type1'
-    config = PresetConfigInitialized(text_filter_type=None)
+    config = Initialized(text_filter_type=None)
     assert InputManager.set_text_filter_type(config) == 'type1'
 
 
 @patch.object(InputManager, 'request_text_filter')
 def test_set_text_filter(mock_request_text_filter):
     mock_request_text_filter.return_value = 'filter1'
-    config = PresetConfigInitialized(text_filter=None)
+    config = Initialized(text_filter=None)
     assert InputManager.set_text_filter(config) == 'filter1'
 
 
@@ -39,7 +40,7 @@ def test_set_text_filter(mock_request_text_filter):
 @patch.object(InputManager, 'ask_open_question')
 def test_set_should_slice_clusters(mock_ask_open_question, response, expected):
     mock_ask_open_question.return_value = response
-    config = PresetConfigInitialized(should_slice_clusters=None)
+    config = Initialized(should_slice_clusters=None)
     assert InputManager.set_should_slice_clusters(config) == expected
 
 
@@ -52,7 +53,7 @@ def test_set_should_slice_clusters(mock_ask_open_question, response, expected):
 @patch.object(InputManager, 'ask_open_question')
 def test_set_cluster_text(mock_ask_open_question, config_option, start_end, src_ref):
     mock_ask_open_question.return_value = 'some text'
-    config = PresetConfigInitialized()
+    config = Initialized()
     assert InputManager.set_cluster_text(config, config_option, start_end, src_ref) == 'some text'
 
 
@@ -89,7 +90,7 @@ def test_ask_mpc_question_exit(mock_input, mock_stdout):
 @patch.object(InputManager, 'ask_open_question')
 def test_request_REGEX_filter_type(mock_input):
     mock_input.return_value = USER_INPUT = 'my_filter'
-    config = PresetConfigInitialized(text_filter_type=TextFilterTypes.REGEX.value)
+    config = Initialized(text_filter_type=TextFilterTypes.REGEX.value)
     assert InputManager.request_text_filter(config) == USER_INPUT
 
 
@@ -101,7 +102,7 @@ def test_request_REGEX_filter_type(mock_input):
 @patch.object(InputManager, 'ask_open_question')
 def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_output):
     mock_input.side_effect = mock_side_effect
-    config = PresetConfigInitialized(text_filter_type=TextFilterTypes.POSITIONAL.value)
+    config = Initialized(text_filter_type=TextFilterTypes.POSITIONAL.value)
     assert InputManager.request_text_filter(config) == PositionalFilterType(separator=mock_output[0], line=mock_output[1], occurrence=mock_output[2])
 
 
@@ -113,7 +114,7 @@ def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_outpu
 @patch.object(InputManager, 'ask_open_question')
 def test_request_COMBI_SEARCH_filter_type(mock_input, mock_side_effect, mock_output):
     mock_input.side_effect = mock_side_effect
-    config = PresetConfigInitialized(text_filter_type=TextFilterTypes.COMBI_SEARCH.value)
+    config = Initialized(text_filter_type=TextFilterTypes.COMBI_SEARCH.value)
     assert InputManager.request_text_filter(config) == mock_output
 
 
@@ -121,6 +122,6 @@ def test_request_COMBI_SEARCH_filter_type(mock_input, mock_side_effect, mock_out
     (TextFilterTypes.KEYWORD.value),
     (TextFilterTypes.SPLIT_KEYWORDS.value)])
 def test_request_unsupported_filter_type(filter_type):
-    config = PresetConfigInitialized(text_filter_type=filter_type)
+    config = Initialized(text_filter_type=filter_type)
     with pytest.raises(ValueError, match='Unsupported filter type: %s' % filter_type):
         InputManager.request_text_filter(config)

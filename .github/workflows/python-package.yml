@@ -1,8 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint with Python 3.11
 
 name: Python pytest, coverage, and flake8 linting
-permissions:
-  contents: read
 on:
   push:
     branches: [ main ]

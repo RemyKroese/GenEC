@@ -3,7 +3,7 @@ from GenEC.core.specs import PositionalFilterType
 
 
 # Even though some values end up always filled in, they can start out empty in the logic
-class PresetConfigInitialized(TypedDict):
+class Initialized(TypedDict):
     cluster_filter: Optional[str]
     text_filter_type: Optional[str]
     text_filter: Optional[Union[str, list[str], PositionalFilterType]]
@@ -14,7 +14,7 @@ class PresetConfigInitialized(TypedDict):
     ref_end_cluster_text: Optional[str]
 
 
-class PresetConfigFinalized(TypedDict):
+class Finalized(TypedDict):
     cluster_filter: str
     text_filter_type: str
     text_filter: Union[str, list[str], PositionalFilterType]

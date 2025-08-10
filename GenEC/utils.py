@@ -8,6 +8,7 @@ import yaml
 
 if TYPE_CHECKING:
     from GenEC.core.config_manager import Configuration
+    from GenEC.core.types.output import DataCompare, DataExtract, Entry
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
@@ -47,9 +48,9 @@ def read_yaml_file(file_path: str):
         return yaml.safe_load(file)
 
 
-def create_extraction_ascii_table(data: dict[str, dict[str, int]]) -> str:
+def create_extraction_ascii_table(data: dict[str, 'DataExtract'], title: str = 'GenEC results') -> str:
     table: Any = PrettyTable()
-    table.title = 'GenEC results'
+    table.title = title
     table.field_names = ['Data', 'Source count']
     table.align = 'l'
 
@@ -59,9 +60,9 @@ def create_extraction_ascii_table(data: dict[str, dict[str, int]]) -> str:
     return table.get_string(sortby='Source count', reversesort=True)
 
 
-def create_comparison_ascii_table(data: dict[str, dict[str, int]]) -> str:
+def create_comparison_ascii_table(data: dict[str, 'DataCompare'], title: str = 'GenEC results') -> str:
     table: Any = PrettyTable()
-    table.title = 'GenEC results'
+    table.title = title
     table.field_names = ['Data', 'Source count', 'Reference count', 'Difference']
     table.align = 'l'
 
@@ -80,7 +81,7 @@ def write_to_txt_file(data: str, file_path: str) -> None:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
 
-def write_to_json_file(data: dict[str, dict[str, int]], file_path: str) -> None:
+def write_to_json_file(data: list['Entry'], file_path: str) -> None:
     try:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as file:

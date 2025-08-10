@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+from collections import defaultdict
 import os
 import sys
 from typing import Optional
@@ -7,10 +8,12 @@ from typing import Optional
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_PATH)
 
-from GenEC import utils                                    # noqa: E402
-from GenEC.core import analyze, manage_io                  # noqa: E402
-from GenEC.core import FileID                              # noqa: E402
-from GenEC.core.config_manager import ConfigManager        # noqa: E402
+from GenEC import utils                                             # noqa: E402
+from GenEC.core import FileID                                       # noqa: E402
+from GenEC.core.analyze import Extractor, Comparer                  # noqa: E402
+from GenEC.core.config_manager import ConfigManager, Configuration  # noqa: E402
+from GenEC.core.manage_io import OutputManager                      # noqa: E402
+from GenEC.core.types.output import DataExtract, Entry              # noqa: E402
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -47,32 +50,50 @@ def build_preset_param(args: argparse.Namespace) -> Optional[dict[str, str]]:
     return None
 
 
+def run_analysis(
+        configurations: list[Configuration],
+        source_data: dict[str, str],
+        ref_data: Optional[dict[str, str]] = None
+        ) -> defaultdict[str, list[Entry]]:
+    results: defaultdict[str, list[Entry]] = defaultdict(list)
+    extractor = Extractor()
+
+    for configuration in configurations:
+        source_text = source_data.get(configuration.target_file, '')
+        source_filtered = extractor.extract_from_data(configuration.config, source_text, FileID.SOURCE)
+
+        if ref_data:  # extract and compare
+            ref_text = ref_data.get(configuration.target_file, '')
+            ref_filtered = extractor.extract_from_data(configuration.config, ref_text, FileID.REFERENCE)
+            comparer = Comparer(source_filtered, ref_filtered)
+            result = comparer.compare()
+            results[configuration.group].append(Entry(
+                preset=configuration.preset,
+                target=configuration.target_file,
+                data=result))
+        else:  # extract only
+            result = utils.get_list_each_element_count(source_filtered)
+            output_result: dict[str, DataExtract] = {key: {'source': value} for key, value in result.items()}
+            results[configuration.group].append(Entry(
+                preset=configuration.preset,
+                target=configuration.target_file,
+                data=output_result))
+    return results
+
+
 def main():
     args = parse_arguments()
     preset_param = build_preset_param(args)
 
     config_manager = ConfigManager(preset_param, args.presets_directory)
-    extractor = analyze.Extractor()
-    output_manager = manage_io.OutputManager(args.output_directory)
 
     source_data = utils.read_files(args.source, config_manager.configurations)
     ref_data = utils.read_files(args.reference, config_manager.configurations) if args.reference else None
 
-    for configuration in config_manager.configurations:
-        source_text = source_data.get(configuration.target_file, '')
-        source_filtered = extractor.extract_from_data(configuration.config, source_text, FileID.SOURCE)
-        output_path = os.path.join(configuration.preset, os.path.splitext(configuration.target_file)[0])
+    results = run_analysis(config_manager.configurations, source_data, ref_data)
 
-        if ref_data:  # extract and compare
-            ref_text = ref_data.get(configuration.target_file, '')
-            ref_filtered = extractor.extract_from_data(configuration.config, ref_text, FileID.REFERENCE)
-            comparer = analyze.Comparer(source_filtered, ref_filtered)
-            results = comparer.compare()
-            output_manager.process(results, file_name=output_path, is_comparison=True)
-        else:  # extract only
-            results = utils.get_list_each_element_count(source_filtered)
-            output_results = {key: {'source': value} for key, value in results.items()}
-            output_manager.process(output_results, file_name=output_path, is_comparison=False)
+    output_manager = OutputManager(args.output_directory)
+    output_manager.process(results, root=args.source, is_comparison=bool(ref_data))
 
 
 if __name__ == '__main__':
