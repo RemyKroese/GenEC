@@ -46,23 +46,25 @@ class ConfigManager:
         presets_per_file = self._group_presets_by_file(presets_list)
         return self._collect_presets(presets_per_file)
 
-    def _group_presets_by_file(self, presets_list: list[dict[str, str]]) -> dict[str, list[dict[str, str]]]:
+    def _group_presets_by_file(self, presets_list: dict[str, list[dict[str, str]]]) -> dict[str, list[dict[str, str]]]:
         presets_per_target: dict[str, list[dict[str, str]]] = defaultdict(list)
-        for entry in presets_list:
-            target_file = entry.get('target', '')
-            preset = entry.get('preset', '')
-            if not preset:
-                print(f'Preset missing in entry: {entry}')
-                continue
-            file_name, preset_name = self.parse_preset_param(preset)
-            if not preset_name:
-                print(f'Preset name missing in entry: {entry}')
-                continue
-            presets_per_target[target_file].append({
-                'preset_file': file_name,
-                'preset_name': preset_name,
-                'target_file': target_file
-            })
+        for group, presets in presets_list.items():
+            for entry in presets:
+                target_file = entry.get('target', '')
+                preset = entry.get('preset', '')
+                if not preset:
+                    print(f'Preset missing in entry: {entry}')
+                    continue
+                file_name, preset_name = self.parse_preset_param(preset)
+                if not preset_name:
+                    print(f'Preset name missing in entry: {entry}')
+                    continue
+                presets_per_target[target_file].append({
+                    'preset_group': group,
+                    'preset_file': file_name,
+                    'preset_name': preset_name,
+                    'target_file': target_file
+                })
         return presets_per_target
 
     def _collect_presets(self, presets_per_target: dict[str, list[dict[str, str]]]) -> list[Configuration]:

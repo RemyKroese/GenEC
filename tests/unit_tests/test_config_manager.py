@@ -175,19 +175,29 @@ def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists
     assert result == preset_data
 
 
-def test_group_presets_by_file(c_instance):
-    entries = [{'preset': 'p/preset_numbers', 'target': 'file1.txt'},
-               {'preset': 'p/preset_letters', 'target': 'file2.txt'},
-               {'preset': 'p/preset_dates', 'target': 'file3.txt'},
-               {'preset': 'p/preset_code_value', 'target': 'file2.txt'},
-               {'preset': 'p/preset_code_value', 'target': 'file3.txt'}]
-    result = c_instance._group_presets_by_file(entries)
-    assert result == {
-        'file1.txt': [{'preset_file': 'p', 'preset_name': 'preset_numbers', 'target_file': 'file1.txt'}],
-        'file2.txt': [{'preset_file': 'p', 'preset_name': 'preset_letters', 'target_file': 'file2.txt'},
-                      {'preset_file': 'p', 'preset_name': 'preset_code_value', 'target_file': 'file2.txt'}],
-        'file3.txt': [{'preset_file': 'p', 'preset_name': 'preset_dates', 'target_file': 'file3.txt'},
-                      {'preset_file': 'p', 'preset_name': 'preset_code_value', 'target_file': 'file3.txt'}]}
+def test_load_presets_grouped(c_instance):
+    grouped_entries = {
+        'group_1': [
+            {'preset': 'p/preset_numbers', 'target': 'file1.txt'},
+            {'preset': 'p/preset_letters', 'target': 'file2.txt'}
+        ],
+        'group_2': [
+            {'preset': 'p/preset_dates', 'target': 'file3.txt'},
+            {'preset': 'p/preset_code_value', 'target': 'file2.txt'},
+            {'preset': 'p/preset_code_value', 'target': 'file3.txt'}
+        ]
+    }
+
+    results = c_instance._group_presets_by_file(grouped_entries)
+
+    assert results == {
+        'file1.txt': [
+            {'preset_group': 'group_1', 'preset_file': 'p', 'preset_name': 'preset_numbers', 'target_file': 'file1.txt'}],
+        'file2.txt': [
+            {'preset_group': 'group_1', 'preset_file': 'p', 'preset_name': 'preset_letters', 'target_file': 'file2.txt'},
+            {'preset_group': 'group_2', 'preset_file': 'p', 'preset_name': 'preset_code_value', 'target_file': 'file2.txt'}],
+        'file3.txt': [{'preset_group': 'group_2', 'preset_file': 'p', 'preset_name': 'preset_dates', 'target_file': 'file3.txt'},
+                      {'preset_group': 'group_2', 'preset_file': 'p', 'preset_name': 'preset_code_value', 'target_file': 'file3.txt'}]}
 
 
 @patch.object(ConfigManager, '_set_cluster_text_options')
