@@ -34,79 +34,17 @@ def om_instance():
     (MOCK_RESULTS_GROUPED_COMPARISON, True),
     (MOCK_RESULTS_GROUPED_EXTRACTION, False),
 ])
-@patch('builtins.print')
-@patch('GenEC.utils.write_to_json_file')
-@patch('GenEC.utils.write_to_txt_file')
-def test_process_print_only(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
-                            mock_results, is_comparison, om_instance):
-    patch_target = ('GenEC.utils.create_comparison_ascii_table'
-                    if is_comparison else 'GenEC.utils.create_extraction_ascii_table')
-
-    with patch(patch_target, return_value=MOCK_ASCII_TABLE) as mock_create_table:
-        om_instance.process(mock_results, root='', is_comparison=is_comparison)
-
-        expected_calls = []
-        expected_print = ''
-        for entry in mock_results['group1']:
-            title = f"{entry['preset']} - {entry['target']}" if entry['target'] else entry['preset']
-            expected_calls.append(call(entry['data'], title))
-            expected_print += MOCK_ASCII_TABLE + '\n\n'
-
-        mock_create_table.assert_has_calls(expected_calls, any_order=False)
-        assert mock_create_table.call_count == len(expected_calls)
-        mock_print.assert_called_once_with(expected_print)
-
-        mock_write_to_txt_file.assert_not_called()
-        mock_write_to_json_file.assert_not_called()
-
-
-@pytest.mark.parametrize('mock_results, is_comparison', [
-    (MOCK_RESULTS_GROUPED_COMPARISON, True),
-    (MOCK_RESULTS_GROUPED_EXTRACTION, False),
+@pytest.mark.parametrize('output_types', [
+    ['txt'],
+    ['json'],
+    ['yaml', 'csv'],
+    ['txt', 'json', 'yaml', 'csv']
 ])
 @patch('builtins.print')
-@patch('GenEC.utils.write_to_json_file')
-@patch('GenEC.utils.write_to_txt_file')
-def test_process_write_only(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
-                            mock_results, is_comparison, om_instance):
+@patch('GenEC.utils.write_output')
+def test_process_various_output_types(mock_write_output, mock_print, mock_results, is_comparison, output_types, om_instance):
     om_instance.output_directory = MOCK_OUTPUT_DIRECTORY
-    om_instance.should_print_results = False
-
-    patch_target = ('GenEC.utils.create_comparison_ascii_table'
-                    if is_comparison else 'GenEC.utils.create_extraction_ascii_table')
-
-    with patch(patch_target, return_value=MOCK_ASCII_TABLE) as mock_create_table:
-        om_instance.process(mock_results, root='', is_comparison=is_comparison)
-
-        expected_calls = []
-        expected_print = ''
-        for entry in mock_results['group1']:
-            title = f"{entry['preset']} - {entry['target']}" if entry['target'] else entry['preset']
-            expected_calls.append(call(entry['data'], title))
-            expected_print += MOCK_ASCII_TABLE + '\n\n'
-
-        mock_create_table.assert_has_calls(expected_calls, any_order=False)
-        assert mock_create_table.call_count == len(expected_calls)
-
-        expected_txt_path = os.path.join(MOCK_OUTPUT_DIRECTORY, os.path.basename(os.path.normpath('')), 'group1', 'result.txt')
-        expected_json_path = os.path.join(MOCK_OUTPUT_DIRECTORY, os.path.basename(os.path.normpath('')), 'group1', 'result.json')
-
-        mock_write_to_txt_file.assert_called_once_with(expected_print, expected_txt_path)
-        mock_write_to_json_file.assert_called_once_with(mock_results['group1'], expected_json_path)
-
-        mock_print.assert_not_called()
-
-
-@pytest.mark.parametrize('mock_results, is_comparison', [
-    (MOCK_RESULTS_GROUPED_COMPARISON, True),
-    (MOCK_RESULTS_GROUPED_EXTRACTION, False),
-])
-@patch('builtins.print')
-@patch('GenEC.utils.write_to_json_file')
-@patch('GenEC.utils.write_to_txt_file')
-def test_process_write_and_print(mock_write_to_txt_file, mock_write_to_json_file, mock_print,
-                                 mock_results, is_comparison, om_instance):
-    om_instance.output_directory = MOCK_OUTPUT_DIRECTORY
+    om_instance.output_types = output_types
     om_instance.should_print_results = True
 
     patch_target = ('GenEC.utils.create_comparison_ascii_table'
@@ -115,20 +53,47 @@ def test_process_write_and_print(mock_write_to_txt_file, mock_write_to_json_file
     with patch(patch_target, return_value=MOCK_ASCII_TABLE) as mock_create_table:
         om_instance.process(mock_results, root='', is_comparison=is_comparison)
 
-        expected_calls = []
-        expected_print = ''
+        # Build expected calls to create_table
+        expected_create_calls = []
+        expected_print_str = ''
         for entry in mock_results['group1']:
-            title = f"{entry['preset']} - {entry['target']}" if entry['target'] else entry['preset']
-            expected_calls.append(call(entry['data'], title))
-            expected_print += MOCK_ASCII_TABLE + '\n\n'
+            title = entry['preset']
+            if entry['target']:
+                title += f" - {entry['target']}"
+            expected_create_calls.append(call(entry['data'], title))
+            expected_print_str += MOCK_ASCII_TABLE + '\n\n'
 
-        mock_create_table.assert_has_calls(expected_calls, any_order=False)
-        assert mock_create_table.call_count == len(expected_calls)
+        mock_create_table.assert_has_calls(expected_create_calls, any_order=False)
+        assert mock_create_table.call_count == len(expected_create_calls)
 
-        mock_print.assert_called_once_with(expected_print)
+        # Assert print is called once with full ascii tables string
+        mock_print.assert_called_once_with(expected_print_str)
 
-        expected_txt_path = os.path.join(MOCK_OUTPUT_DIRECTORY, os.path.basename(os.path.normpath('')), 'group1', 'result.txt')
-        expected_json_path = os.path.join(MOCK_OUTPUT_DIRECTORY, os.path.basename(os.path.normpath('')), 'group1', 'result.json')
+        # Assert write_output called with entries, ascii_tables string, output_path, and output_types
+        expected_output_path = os.path.join(
+            MOCK_OUTPUT_DIRECTORY,
+            os.path.splitext(os.path.basename(os.path.normpath('')))[0],
+            'group1',
+            'result'
+        )
+        mock_write_output.assert_called_once_with(
+            mock_results['group1'], expected_print_str, expected_output_path, output_types
+        )
 
-        mock_write_to_txt_file.assert_called_once_with(expected_print, expected_txt_path)
-        mock_write_to_json_file.assert_called_once_with(mock_results['group1'], expected_json_path)
+
+@pytest.mark.parametrize('should_print', [True, False])
+@patch('builtins.print')
+@patch('GenEC.utils.write_output')
+def test_process_no_output_directory_no_write(mock_write_output, mock_print, should_print, om_instance):
+    om_instance.output_directory = None
+    om_instance.output_types = ['txt', 'json']
+    om_instance.should_print_results = should_print
+
+    with patch('GenEC.utils.create_extraction_ascii_table', return_value=MOCK_ASCII_TABLE) as mock_create_table:
+        om_instance.process(MOCK_RESULTS_GROUPED_EXTRACTION, root='')
+        assert mock_create_table.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'])
+        if should_print:
+            mock_print.assert_called_once()
+        else:
+            mock_print.assert_not_called()
+        mock_write_output.assert_not_called()

@@ -109,8 +109,12 @@ class InputManager:
 
 
 class OutputManager:
-    def __init__(self, output_directory: Optional[str] = None, should_print_results: bool = True) -> None:
+    def __init__(self,
+                 output_directory: Optional[str] = None,
+                 output_types: Optional[list[str]] = None,
+                 should_print_results: bool = True) -> None:
         self.output_directory = output_directory
+        self.output_types = output_types
         self.should_print_results = should_print_results
 
     def process(self,
@@ -133,10 +137,9 @@ class OutputManager:
                 ascii_tables += '\n\n'
             if self.should_print_results:
                 print(ascii_tables)
-            if self.output_directory:
+            if self.output_directory and self.output_types:
                 output_path = self._create_output_path(group, root, file_name=file_name)
-                utils.write_to_txt_file(ascii_tables, output_path + '.txt')
-                utils.write_to_json_file(entries, output_path + '.json')
+                utils.write_output(entries, ascii_tables, output_path, self.output_types)
 
     def _create_output_path(self, group: str, root: str, file_name: str = 'result') -> str:
         root_path = os.path.basename(os.path.normpath(root))
