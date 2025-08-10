@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Union
+from typing import cast, Optional, Union
 
 from GenEC import utils
 from GenEC.core import PresetConfigInitialized, PositionalFilterType, ConfigOptions, TextFilterTypes
@@ -13,16 +13,17 @@ class InputManager:
     @staticmethod
     def set_cluster_filter(config: PresetConfigInitialized) -> str:
         if not config.get(ConfigOptions.CLUSTER_FILTER.value):
-            input_string = InputManager.ask_open_question(
+            input_string: str = InputManager.ask_open_question(
                 'Please indicate the character(s) to split text clusters on (Default: Newline [\\n]): ')
         else:
-            input_string = config.get(ConfigOptions.CLUSTER_FILTER.value)
+            input_string: str = cast(str, config[ConfigOptions.CLUSTER_FILTER.value])
         return input_string
 
     @staticmethod
     def set_text_filter_type(config: PresetConfigInitialized) -> str:
         if not config.get(ConfigOptions.TEXT_FILTER_TYPE.value):
             return InputManager.ask_mpc_question('Please choose a filter type:\n', [t.value for t in TextFilterTypes])
+        return cast(str, config[ConfigOptions.TEXT_FILTER_TYPE.value])
 
     @staticmethod
     def set_text_filter(config: PresetConfigInitialized) -> Union[
@@ -31,6 +32,7 @@ class InputManager:
             list[str]]:            # combi-search
         if not config.get(ConfigOptions.TEXT_FILTER.value):
             return InputManager.request_text_filter(config)
+        return cast(Union[str, PositionalFilterType, list[str]], config[ConfigOptions.TEXT_FILTER.value])
 
     @staticmethod
     def set_should_slice_clusters(config: PresetConfigInitialized) -> bool:
@@ -38,12 +40,14 @@ class InputManager:
             response = InputManager.ask_open_question(
                 'Do you want to compare only a subsection of the clusters (press enter to skip)? [yes/y]: ').lower()
             return response in YES_INPUT
+        return cast(bool, config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value])
 
     @staticmethod
     def set_cluster_text(config: PresetConfigInitialized, config_option: str, position: str, src_or_ref: str) -> str:
         if not config.get(config_option):
             return InputManager.ask_open_question(
                 f'Text in the {src_or_ref.lower()} cluster where the subsection should {position} (press enter to skip): ')
+        return cast(str, config[config_option])
 
     @staticmethod
     def request_text_filter(config: PresetConfigInitialized) -> Union[

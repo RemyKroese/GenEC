@@ -39,35 +39,38 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def build_preset_param(args: argparse.Namespace) -> Optional[dict[str, str]]:
+    if args.preset_list:
+        return {'type': 'preset-list', 'value': args.preset_list}
+    if args.preset:
+        return {'type': 'preset', 'value': args.preset}
+    return None
+
+
 def main():
     args = parse_arguments()
-    preset_param: Optional[dict[str, str]] = {}
-    if args.preset_list:
-        preset_param = {'type': 'preset-list', 'value': args.preset_list}
-    elif args.preset:
-        preset_param = {'type': 'preset', 'value': args.preset}
+    preset_param = build_preset_param(args)
 
     config_manager = ConfigManager(preset_param, args.presets_directory)
-    if not args.preset_list:
-        config_manager.set_config(preset_param.get('value', ''))
     extractor = analyze.Extractor()
     output_manager = manage_io.OutputManager(args.output_directory)
 
-    source_data = utils.read_files(args.source, config_manager.analysis_constructs)
-    ref_data = utils.read_files(args.reference, config_manager.analysis_constructs) if args.reference else None
+    source_data = utils.read_files(args.source, config_manager.configurations)
+    ref_data = utils.read_files(args.reference, config_manager.configurations) if args.reference else None
 
-    for analysis_construct in config_manager.analysis_constructs:
-        source_text = source_data.get(analysis_construct.target_file, '')
-        source_filtered_text = extractor.extract_from_data(analysis_construct.config, source_text, FileID.SOURCE)
-        output_path = os.path.join(analysis_construct.preset, os.path.splitext(analysis_construct.target_file)[0])
-        if ref_data:
-            ref_text = ref_data.get(analysis_construct.target_file, '')
-            ref_filtered_text = extractor.extract_from_data(analysis_construct.config, ref_text, FileID.REFERENCE)
-            comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
+    for configuration in config_manager.configurations:
+        source_text = source_data.get(configuration.target_file, '')
+        source_filtered = extractor.extract_from_data(configuration.config, source_text, FileID.SOURCE)
+        output_path = os.path.join(configuration.preset, os.path.splitext(configuration.target_file)[0])
+
+        if ref_data:  # extract and compare
+            ref_text = ref_data.get(configuration.target_file, '')
+            ref_filtered = extractor.extract_from_data(configuration.config, ref_text, FileID.REFERENCE)
+            comparer = analyze.Comparer(source_filtered, ref_filtered)
             results = comparer.compare()
             output_manager.process(results, file_name=output_path, is_comparison=True)
-        else:
-            results = utils.get_list_each_element_count(source_filtered_text)
+        else:  # extract only
+            results = utils.get_list_each_element_count(source_filtered)
             output_results = {key: {'source': value} for key, value in results.items()}
             output_manager.process(output_results, file_name=output_path, is_comparison=False)
 

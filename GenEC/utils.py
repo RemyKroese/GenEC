@@ -7,7 +7,7 @@ from prettytable import PrettyTable  # type: ignore
 import yaml
 
 if TYPE_CHECKING:
-    from GenEC.core.config_manager import AnalysisConstruct
+    from GenEC.core.config_manager import Configuration
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
@@ -17,12 +17,12 @@ def get_list_each_element_count(elements: list[str]) -> dict[str, int]:
     return dict(Counter(elements))
 
 
-def read_files(base_path: str, analysis_constructs: list['AnalysisConstruct']) -> dict[str, str]:
+def read_files(base_path: str, configurations: list['Configuration']) -> dict[str, str]:
     """
-    Reads all unique files referenced by analysis_constructs, using base_path as the root.
+    Reads all unique files referenced by configurations, using base_path as the root.
     Returns a dict mapping target_file to file contents.
     """
-    unique_files: set[str] = set(ac.target_file for ac in analysis_constructs)
+    unique_files: set[str] = set(c.target_file for c in configurations)
     file_data: dict[str, str] = {}
     for target_file in unique_files:
         if target_file == '':
