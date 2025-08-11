@@ -81,7 +81,7 @@ class ConfigManager:
             raise ValueError('None of the provided presets were found.')
         return configurations
 
-    def _process_preset_entry(self, entry: dict[str, str], target_file: str) -> Configuration | None:
+    def _process_preset_entry(self, entry: dict[str, str], target_file: str) -> Optional[Configuration]:
         file_name = entry['preset_file']
         preset_name = entry['preset_name']
         loaded_presets = self.load_preset_file(file_name)
