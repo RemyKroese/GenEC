@@ -23,7 +23,7 @@ jobs:
       run: |
         python --version
         pip install pipenv
-        pipenv --python ${{ matrix.python-version }} install --deploy --dev
+        pipenv --python ${{ matrix.python-version }} install --deploy --dev --skip-lock
         pipenv run pip list
     - name: Lint with flake8
       run: |
