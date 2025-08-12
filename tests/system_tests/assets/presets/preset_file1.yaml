@@ -1,0 +1,19 @@
+preset_a:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex'
+  text_filter: '\| ([A-Za-z]+) \|'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+preset_b:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Regex'
+  text_filter: '\| ([A-Za-z]+) \|'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
