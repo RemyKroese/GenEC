@@ -36,16 +36,14 @@ def read_files(base_path: str, configurations: list['Configuration']) -> dict[st
     return file_data
 
 
-def read_file(file_path: str | Path) -> str:
-    file_path = Path(file_path)
+def read_file(file_path: Path) -> str:
     if not file_path.exists():
         raise FileNotFoundError(f'File {file_path} not found.')
     with file_path.open('r', encoding='utf-8') as data:
         return data.read()
 
 
-def read_yaml_file(file_path: str | Path):
-    file_path = Path(file_path)
+def read_yaml_file(file_path: Path):
     if not file_path.exists():
         raise FileNotFoundError(f'File {file_path} not found.')
     with file_path.open('r') as file:
@@ -103,9 +101,8 @@ def get_writer(name: str):
 
 
 @register_writer('json')
-def write_json(data: list['Entry'], file_path: str | Path) -> None:
+def write_json(data: list['Entry'], file_path: Path) -> None:
     try:
-        file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         data_processed = [sort_entry_data_keys(e) for e in data]
         with file_path.open('w', encoding='utf-8') as file:
@@ -115,9 +112,8 @@ def write_json(data: list['Entry'], file_path: str | Path) -> None:
 
 
 @register_writer('yaml')
-def write_yaml(data: list['Entry'], file_path: str | Path) -> None:
+def write_yaml(data: list['Entry'], file_path: Path) -> None:
     try:
-        file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         data_processed = [sort_entry_data_keys(e) for e in data]
         with file_path.open('w', encoding='utf-8') as file:
@@ -127,9 +123,8 @@ def write_yaml(data: list['Entry'], file_path: str | Path) -> None:
 
 
 @register_writer('csv')
-def write_csv(data: list['Entry'], file_path: str | Path) -> None:
+def write_csv(data: list['Entry'], file_path: Path) -> None:
     try:
-        file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         all_columns: Set[str] = set()
         rows: list[dict[str, Any]] = []
@@ -150,9 +145,8 @@ def write_csv(data: list['Entry'], file_path: str | Path) -> None:
 
 
 @register_writer('txt')
-def write_txt(data: str, file_path: str | Path) -> None:
+def write_txt(data: str, file_path: Path) -> None:
     try:
-        file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with file_path.open('w', encoding='utf-8') as file:
             file.write(data)
@@ -160,10 +154,11 @@ def write_txt(data: str, file_path: str | Path) -> None:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
 
-def write_output(data: list['Entry'], ascii_tables: str, file_path: str, output_types: list[str]):
+def write_output(data: list['Entry'], ascii_tables: str, file_path: Path, output_types: list[str]):
     for output_type in output_types:
         writer = get_writer(output_type)
+        file_path_with_extension = file_path.with_suffix(f'.{output_type}')
         if output_type == 'txt':
-            writer(ascii_tables, f"{file_path}.{output_type}")
+            writer(ascii_tables, file_path_with_extension)
         else:
-            writer(data, f"{file_path}.{output_type}")
+            writer(data, file_path_with_extension)

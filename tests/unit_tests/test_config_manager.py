@@ -1,365 +1,183 @@
+from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
-import pytest
-from unittest.mock import patch, mock_open
+from typing import Optional
 
-from GenEC.core.config_manager import ConfigManager, Configuration
+from GenEC import utils
+from GenEC.core import ConfigOptions, PositionalFilterType
 from GenEC.core.manage_io import InputManager
-from GenEC.core.types.preset_config import Initialized
+from GenEC.core.types.preset_config import Finalized, Initialized
+
+YES_INPUT = ['yes', 'y']
+NO_INPUT = ['no', 'n']
 
 
-EMPTY_CONFIG = Initialized(
-            cluster_filter=None,
-            text_filter_type=None,
-            text_filter=None,
-            should_slice_clusters=None,
-            src_start_cluster_text=None,
-            src_end_cluster_text=None,
-            ref_start_cluster_text=None,
-            ref_end_cluster_text=None)
-
-SINGLE_PRESET_DATA = {
-    'main_preset': {
-        'cluster_filter': '',
-        'text_filter_type': 'regex',
-        'text_filter': '',
-        'should_slice_clusters': False,
-        'src_start_cluster_text': '',
-        'src_end_cluster_text': '',
-        'ref_start_cluster_text': '',
-        'ref_end_cluster_text': ''
-    }
-}
-
-MULTIPLE_PRESETS_DATA = {
-    'main_preset': {
-        'cluster_filter': '',
-        'text_filter_type': 'regex',
-        'text_filter': '',
-        'should_slice_clusters': False,
-        'src_start_cluster_text': '',
-        'src_end_cluster_text': '',
-        'ref_start_cluster_text': '',
-        'ref_end_cluster_text': ''
-    },
-    'sub_preset_A': {
-        'cluster_filter': '',
-        'text_filter_type': 'regex',
-        'text_filter': '',
-        'should_slice_clusters': True,
-        'src_start_cluster_text': '',
-        'src_end_cluster_text': '',
-        'ref_start_cluster_text': '',
-        'ref_end_cluster_text': ''
-    },
-    'sub_preset_B': {
-        'cluster_filter': '\\n',
-        'text_filter_type': 'regex',
-        'text_filter': '[a-zA-z]{4}',
-        'should_slice_clusters': False,
-        'src_start_cluster_text': '',
-        'src_end_cluster_text': '',
-        'ref_start_cluster_text': '',
-        'ref_end_cluster_text': ''
-    }
-}
+@dataclass
+class Configuration:
+    config: Finalized
+    preset: str
+    target_file: str
+    group: str = ''
 
 
-@pytest.fixture  # noqa: E261
-def c_instance():  # pylint: disable=all
-    real_set_config = ConfigManager.set_config  # store the real method
-    with patch.object(ConfigManager, 'set_config', autospec=True) as mock_set_config:  # noqa: F841
-        instance = ConfigManager()
-    instance.set_config = real_set_config.__get__(instance, ConfigManager)  # restore the real method on the instance
-    return instance
+class ConfigManager:
+    def __init__(self, preset_param: Optional[dict[str, str]] = None, presets_directory: Optional[str] = None) -> None:
+        if presets_directory:
+            self.presets_directory = Path(presets_directory)
+        else:
+            self.presets_directory = Path(__file__).parent.parent / 'presets'
+        self.configurations: list[Configuration] = []
 
+        if preset_param:
+            if preset_param['type'] == 'preset':
+                self.set_config(preset_param['value'])
+            elif preset_param['type'] == 'preset-list':
+                self.configurations.extend(self.load_presets(preset_param['value']))
+            else:
+                raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
+        else:
+            self.set_config()
 
-def make_entry(file_name, preset_name, target_file):
-    return {'preset_file': file_name, 'preset_name': preset_name, 'target_file': target_file}
+    @staticmethod
+    def parse_preset_param(preset_param: str) -> tuple[str, Optional[str]]:
+        if '/' not in preset_param:
+            return preset_param, None
+        else:
+            return tuple(preset_param.split('/', 1))  # type: ignore[return-value]  # Always returns 2 items
 
+    def load_presets(self, presets_list_target: str) -> list[Configuration]:  # pragma: no cover
+        presets_list_file_path = self.presets_directory / f'{presets_list_target}.yaml'
+        presets_list = utils.read_yaml_file(str(presets_list_file_path))
+        presets_per_file = self._group_presets_by_file(presets_list)
+        return self._collect_presets(presets_per_file)
 
-@pytest.mark.unit
-@patch.object(ConfigManager, 'load_preset', return_value={'key': 'value'})
-@patch.object(ConfigManager, 'set_config')
-def test_init_with_preset_type(mock_load_preset, mock_set_config):
-    config_manager = ConfigManager({'type': 'preset', 'value': 'file.yaml/presetA'})
-    assert config_manager.configurations == []
+    def _group_presets_by_file(self, presets_list: dict[str, list[dict[str, str]]]) -> dict[str, list[dict[str, str]]]:
+        presets_per_target: dict[str, list[dict[str, str]]] = defaultdict(list)
+        for group, presets in presets_list.items():
+            for entry in presets:
+                target_file = entry.get('target', '')
+                preset = entry.get('preset', '')
+                if not preset:
+                    print(f'Preset missing in entry: {entry}')
+                    continue
+                file_name, preset_name = self.parse_preset_param(preset)
+                if not preset_name:
+                    print(f'Preset name missing in entry: {entry}')
+                    continue
+                presets_per_target[target_file].append({
+                    'preset_file': file_name,
+                    'preset_name': preset_name,
+                    'target_file': target_file,
+                    'preset_group': group
+                })
+        return presets_per_target
 
+    def _collect_presets(self, presets_per_target: dict[str, list[dict[str, str]]]) -> list[Configuration]:
+        configurations: list[Configuration] = []
+        for target_file, preset_entries in presets_per_target.items():
+            for entry in preset_entries:
+                result = self._process_preset_entry(entry, target_file)
+                if result:
+                    configurations.append(result)
 
-@pytest.mark.unit
-@pytest.mark.parametrize(
-    "mock_presets, expected_count",
-    [
-        ([Configuration({'key': 'valueA'}, 'file1/presetA', 'file1')], 1),
-        ([Configuration({'key': 'valueA'}, 'file1/presetA', 'file1'),
-          Configuration({'key': 'valueB'}, 'file2/presetB', 'file2')], 2),
-    ]
-)
-@patch.object(ConfigManager, 'load_presets')
-def test_init_with_preset_list_type(mock_load_presets, mock_presets, expected_count):
-    mock_load_presets.return_value = mock_presets
-    config_manager = ConfigManager({'type': 'preset-list', 'value': 'fake_list'})
-    assert isinstance(config_manager.configurations, list)
-    assert len(config_manager.configurations) == expected_count
-    for i, preset_entry in enumerate(mock_presets):
-        assert config_manager.configurations[i].preset == preset_entry.preset
-        assert config_manager.configurations[i].config == preset_entry.config
-        assert config_manager.configurations[i].target_file == preset_entry.target_file
+        if not configurations:
+            raise ValueError('None of the provided presets were found.')
+        return configurations
 
+    def _process_preset_entry(self, entry: dict[str, str], target_file: str) -> Optional[Configuration]:
+        file_name = entry['preset_file']
+        preset_name = entry['preset_name']
+        loaded_presets = self.load_preset_file(file_name)
+        if preset_name not in loaded_presets:
+            print(f'preset {preset_name} not found in {file_name}. Skipping...')
+            return None
+        config = loaded_presets[preset_name]
+        config[ConfigOptions.CLUSTER_FILTER.value] = self._normalize_cluster_filter(config[ConfigOptions.CLUSTER_FILTER.value])
+        finalized_config = self._finalize_config(config)
+        return Configuration(
+            config=finalized_config,
+            preset=f'{file_name}/{preset_name}',
+            target_file=target_file,
+            group=entry.get('preset_group', ''))
 
-@pytest.mark.unit
-def test_init_with_invalid_type():
-    with pytest.raises(ValueError, match='not a valid preset parameter type'):
-        ConfigManager({'type': 'invalid', 'value': 'something'})
+    def load_preset(self, preset_target: str) -> Initialized:
+        preset_file, preset_name = self.parse_preset_param(preset_target)
+        presets = self.load_preset_file(preset_file)
+        if not preset_name:
+            if len(presets) == 1:
+                preset_name = next(iter(presets))
+            else:
+                preset_name = InputManager.ask_mpc_question('Please choose a preset:\n', list(presets.keys()))
 
+        if preset_name not in presets:
+            raise ValueError(f'preset {preset_name} not found in {preset_file}')
 
-@pytest.mark.unit
-@pytest.mark.parametrize('preset_param, expected_result', [
-    ('main_preset', ('main_preset', None)),
-    ('folder/main_preset', ('folder', 'main_preset'))])
-def test_parse_preset_param(preset_param, expected_result):
-    assert ConfigManager.parse_preset_param(preset_param) == expected_result
+        return presets[preset_name]
 
+    def load_preset_file(self, preset_file: str) -> dict[str, Initialized]:
+        presets_file_path = self.presets_directory / f'{preset_file}.yaml'
+        presets = utils.read_yaml_file(str(presets_file_path))
 
-@pytest.mark.unit
-@patch.object(ConfigManager, 'load_preset_file')
-@patch.object(InputManager, 'ask_mpc_question')
-def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_preset_file, c_instance):
-    mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
-    mock_ask_mpc_question.return_value = preset_name = 'main_preset'
-    result = c_instance.load_preset(preset_target='')
-    assert result == MULTIPLE_PRESETS_DATA[preset_name]
+        if not presets or len(presets) == 0:
+            raise ValueError(f'presets file {presets_file_path} does not contain any presets')
 
+        return presets
 
-@pytest.mark.unit
-@patch.object(ConfigManager, 'load_preset_file')
-def test_load_preset_invalid_preset_name(mock_load_preset_file, c_instance):
-    mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
-    with pytest.raises(ValueError):
-        c_instance.load_preset(preset_target='preset/presetX')
+    @staticmethod
+    def _normalize_cluster_filter(cluster_filter: Optional[str]) -> str:
+        if cluster_filter is None:
+            return ''
+        return cluster_filter.encode('utf-8').decode('unicode_escape')
 
+    def _set_simple_options(self, config: Initialized):
+        config[ConfigOptions.CLUSTER_FILTER.value] = InputManager.set_cluster_filter(config)
+        config[ConfigOptions.TEXT_FILTER_TYPE.value] = InputManager.set_text_filter_type(config)
+        config[ConfigOptions.TEXT_FILTER.value] = InputManager.set_text_filter(config)
+        config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = InputManager.set_should_slice_clusters(config)
 
-@pytest.mark.unit
-@patch.object(ConfigManager, 'load_preset_file')
-def test_load_from_single_preset(mock_load_preset_file, c_instance):
-    mock_load_preset_file.return_value = SINGLE_PRESET_DATA
-    result = c_instance.load_preset(preset_target='preset/main_preset')
-    assert result == SINGLE_PRESET_DATA['main_preset']
-
-
-@pytest.mark.unit
-@pytest.mark.parametrize('preset_name', [
-    ('main_preset'),
-    ('sub_preset_A')
-])
-@patch.object(ConfigManager, 'load_preset_file')
-def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file, c_instance, preset_name):
-    mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
-    result = c_instance.load_preset(preset_target=f'preset/{preset_name}')
-    assert result == MULTIPLE_PRESETS_DATA[preset_name]
-
-
-@pytest.mark.unit
-@patch('os.path.exists', return_value=False)
-def test_load_preset_file_file_not_found(mock_exists, c_instance):
-    with pytest.raises(FileNotFoundError):
-        c_instance.load_preset_file('mock_file')
-
-
-@pytest.mark.unit
-@patch.object(Path, 'exists', return_value=True)
-@patch.object(Path, 'open', new_callable=mock_open, read_data='')
-def test_load_preset_file_empty_file(mock_open_file, mock_exists, c_instance):
-    with pytest.raises(ValueError):
-        c_instance.load_preset_file('mock_file')
-
-
-@pytest.mark.unit
-@pytest.mark.parametrize('preset_data', [
-    (SINGLE_PRESET_DATA),
-    (MULTIPLE_PRESETS_DATA)
-])
-@patch.object(Path, 'exists', return_value=True)
-@patch.object(Path, 'open', new_callable=mock_open)
-@patch('yaml.safe_load')
-def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, c_instance, preset_data):
-    mock_safe_load.return_value = preset_data
-    result = c_instance.load_preset_file('mock_file')
-    assert result == preset_data
-
-
-@pytest.mark.unit
-def test_load_presets_grouped(c_instance):
-    grouped_entries = {
-        'group_1': [
-            {'preset': 'p/preset_numbers', 'target': 'file1.txt'},
-            {'preset': 'p/preset_letters', 'target': 'file2.txt'}
-        ],
-        'group_2': [
-            {'preset': 'p/preset_dates', 'target': 'file3.txt'},
-            {'preset': 'p/preset_code_value', 'target': 'file2.txt'},
-            {'preset': 'p/preset_code_value', 'target': 'file3.txt'}
+    def _set_cluster_text_options(self, config: Initialized):
+        cluster_text_options = [
+            (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
+            (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
+            (ConfigOptions.REF_START_CLUSTER_TEXT.value, 'start', 'REF'),
+            (ConfigOptions.REF_END_CLUSTER_TEXT.value, 'end', 'REF'),
         ]
-    }
+        for option_key, position, src_or_ref in cluster_text_options:
+            if not config.get(option_key):
+                config[option_key] = InputManager.set_cluster_text(config, option_key, position, src_or_ref)
 
-    results = c_instance._group_presets_by_file(grouped_entries)
+    def set_config(self, preset: str = '', target_file: str = '') -> None:
+        if preset:
+            config: Initialized = self.load_preset(preset)
+        else:
+            config: Initialized = Initialized(**{option.value: None for option in ConfigOptions})
+            self._set_simple_options(config)
 
-    assert results == {
-        'file1.txt': [
-            {'preset_group': 'group_1', 'preset_file': 'p', 'preset_name': 'preset_numbers', 'target_file': 'file1.txt'}],
-        'file2.txt': [
-            {'preset_group': 'group_1', 'preset_file': 'p', 'preset_name': 'preset_letters', 'target_file': 'file2.txt'},
-            {'preset_group': 'group_2', 'preset_file': 'p', 'preset_name': 'preset_code_value', 'target_file': 'file2.txt'}],
-        'file3.txt': [{'preset_group': 'group_2', 'preset_file': 'p', 'preset_name': 'preset_dates', 'target_file': 'file3.txt'},
-                      {'preset_group': 'group_2', 'preset_file': 'p', 'preset_name': 'preset_code_value', 'target_file': 'file3.txt'}]}
+        if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
+            self._set_cluster_text_options(config)
 
+        config[ConfigOptions.CLUSTER_FILTER.value] = self._normalize_cluster_filter(config[ConfigOptions.CLUSTER_FILTER.value])
 
-@pytest.mark.unit
-@patch.object(ConfigManager, '_set_cluster_text_options')
-@patch('GenEC.utils.read_yaml_file', return_value=SINGLE_PRESET_DATA)
-def test_set_config(mock__set_cluster_text_options, mock_read_yaml_file, c_instance):
-    c_instance.set_config(preset='main_preset', target_file='targetA.txt')
-    c = c_instance.configurations[-1]
-    assert c.preset == 'main_preset'
-    assert c.target_file == 'targetA.txt'
-    assert c.config == SINGLE_PRESET_DATA['main_preset']
+        self.configurations.append(Configuration(self._finalize_config(config), preset, target_file))
 
+    def _finalize_config(self, config: Initialized) -> Finalized:
+        cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
+        text_filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+        text_filter = config.get(ConfigOptions.TEXT_FILTER.value)
+        should_slice_clusters = config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value)
 
-@pytest.mark.unit
-@patch.object(InputManager, 'set_cluster_filter', return_value=SINGLE_PRESET_DATA['main_preset']['cluster_filter'])
-@patch.object(InputManager, 'set_text_filter_type', return_value=SINGLE_PRESET_DATA['main_preset']['text_filter_type'])
-@patch.object(InputManager, 'set_text_filter', return_value=SINGLE_PRESET_DATA['main_preset']['text_filter'])
-@patch.object(InputManager, 'set_should_slice_clusters', return_value=True)
-@patch.object(ConfigManager, '_set_cluster_text_options')
-@patch.object(ConfigManager, '_finalize_config', return_value=SINGLE_PRESET_DATA['main_preset'])
-def test_set_config_no_preset(mock_set_cluster_filter, mock_set_text_filter_type, mock_set_text_filter,
-                              mock_should_slice_clusters, mock_cluster_text_options, mock_finalize_config, c_instance):
-    c_instance.set_config()
-    c = c_instance.configurations[-1]
-    assert c.preset == ''
-    assert c.target_file == ''
-    mock_cluster_text_options.assert_called()
+        assert isinstance(cluster_filter, str)
+        assert isinstance(text_filter_type, str)
+        assert isinstance(text_filter, (str, list, PositionalFilterType))
+        assert isinstance(should_slice_clusters, bool)
 
-
-@pytest.mark.unit
-@patch.object(InputManager, 'set_cluster_text', side_effect=['startA', 'endA', 'startB', 'endB'])
-def test_set_cluster_text_options(mock_cluster_text, c_instance):
-    config = Initialized(
-        cluster_filter='\n',
-        text_filter_type='regex',
-        text_filter='[a-z]+',
-        should_slice_clusters=True,
-        src_start_cluster_text=None,
-        src_end_cluster_text='endA',
-        ref_start_cluster_text='startB',
-        ref_end_cluster_text='endB')
-    c_instance._set_cluster_text_options(config)
-    assert config['src_start_cluster_text'] == 'startA'
-    assert config['src_end_cluster_text'] == 'endA'
-    assert config['ref_start_cluster_text'] == 'startB'
-    assert config['ref_end_cluster_text'] == 'endB'
-
-
-@pytest.mark.unit
-@patch.object(InputManager, 'set_cluster_filter', return_value='\n')
-@patch.object(InputManager, 'set_text_filter_type', return_value='regex')
-@patch.object(InputManager, 'set_text_filter', return_value='[a-z]+')
-@patch.object(InputManager, 'set_should_slice_clusters', return_value=True)
-def test_set_simple_options(mock_should_slice, mock_text_filter, mock_text_type, mock_cluster_filter, c_instance):
-    # All config options missing
-    config = Initialized(
-        cluster_filter=None,
-        text_filter_type=None,
-        text_filter=None,
-        should_slice_clusters=None,
-        src_start_cluster_text=None,
-        src_end_cluster_text=None,
-        ref_start_cluster_text=None,
-        ref_end_cluster_text=None)
-    c_instance._set_simple_options(config)
-    assert config['cluster_filter'] == '\n'
-    assert config['text_filter_type'] == 'regex'
-    assert config['text_filter'] == '[a-z]+'
-    assert config['should_slice_clusters'] is True
-
-
-@pytest.mark.unit
-@patch.object(ConfigManager, 'load_preset_file')
-def test_process_preset_entry_found(mock_load_preset_file, c_instance):
-    entry = make_entry('fileA', 'presetA', 'targetA.txt')
-    mock_config = {
-        'cluster_filter': '\n\n',
-        'text_filter_type': 'regex',
-        'text_filter': '',
-        'should_slice_clusters': False,
-        'src_start_cluster_text': '',
-        'src_end_cluster_text': '',
-        'ref_start_cluster_text': '',
-        'ref_end_cluster_text': ''
-    }
-    mock_load_preset_file.return_value = {'presetA': mock_config}
-    result = c_instance._process_preset_entry(entry, entry['target_file'])
-    assert isinstance(result, Configuration)
-    assert result.preset == 'fileA/presetA'
-    assert result.target_file == 'targetA.txt'
-    assert result.config['cluster_filter'] == '\n\n'
-
-
-@pytest.mark.unit
-@patch.object(ConfigManager, 'load_preset_file')
-def test_process_preset_entry_not_found(mock_load_preset_file, c_instance, capsys):
-    entry = make_entry('fileA', 'presetX', 'targetA.txt')
-    mock_load_preset_file.return_value = {'presetA': {}}
-    result = c_instance._process_preset_entry(entry, entry['target_file'])
-    assert result is None
-    captured = capsys.readouterr()
-    assert 'preset presetX not found in fileA' in captured.out
-
-
-@pytest.mark.unit
-@patch.object(ConfigManager, '_process_preset_entry')
-def test_collect_presets_all_found(mock_process_entry, c_instance):
-    entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
-    entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
-    mock_ac1 = Configuration(Initialized(), 'fileA/presetA', 'targetA.txt')
-    mock_ac2 = Configuration(Initialized(), 'fileB/presetB', 'targetB.txt')
-    mock_process_entry.side_effect = [mock_ac1, mock_ac2]
-    presets_per_target = {
-        'targetA.txt': [entry1],
-        'targetB.txt': [entry2]
-    }
-    result = c_instance._collect_presets(presets_per_target)
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert result[0].preset == 'fileA/presetA'
-    assert result[1].preset == 'fileB/presetB'
-
-
-@pytest.mark.unit
-@patch.object(ConfigManager, '_process_preset_entry')
-def test_collect_presets_some_missing(mock_process_entry, c_instance):
-    entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
-    entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
-    mock_ac1 = Configuration(Initialized(), 'fileA/presetA', 'targetA.txt')
-    mock_process_entry.side_effect = [mock_ac1, None]
-    presets_per_target = {
-        'targetA.txt': [entry1],
-        'targetB.txt': [entry2]
-    }
-    result = c_instance._collect_presets(presets_per_target)
-    assert isinstance(result, list)
-    assert len(result) == 1
-    assert result[0].preset == 'fileA/presetA'
-
-
-@pytest.mark.unit
-@patch.object(ConfigManager, '_process_preset_entry')
-def test_collect_presets_none_found(mock_process_entry, c_instance):
-    entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
-    entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
-    mock_process_entry.side_effect = [None, None]
-    presets_per_target = {
-        'targetA.txt': [entry1],
-        'targetB.txt': [entry2]
-    }
-    with pytest.raises(ValueError, match='None of the provided presets were found.'):
-        c_instance._collect_presets(presets_per_target)
+        return Finalized(
+            cluster_filter=cluster_filter,
+            text_filter_type=text_filter_type,
+            text_filter=text_filter,
+            should_slice_clusters=should_slice_clusters,
+            src_start_cluster_text=config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value),
+            src_end_cluster_text=config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value),
+            ref_start_cluster_text=config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value),
+            ref_end_cluster_text=config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
+        )

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import pytest
 from unittest.mock import patch, call
 
@@ -20,9 +20,9 @@ MOCK_RESULTS_GROUPED_COMPARISON = {'group1': MOCK_RESULTS_COMPARISON}
 MOCK_RESULTS_GROUPED_EXTRACTION = {'group1': MOCK_RESULTS_EXTRACTION}
 
 MOCK_ASCII_TABLE = 'ASCII_TABLE'
-MOCK_OUTPUT_DIRECTORY = 'directory/path'
-JSON_RESULTS_PATH = os.path.join(MOCK_OUTPUT_DIRECTORY, 'results.json')
-TXT_RESULTS_PATH = os.path.join(MOCK_OUTPUT_DIRECTORY, 'results.txt')
+MOCK_OUTPUT_DIRECTORY = Path('directory/path')  # now a Path object
+JSON_RESULTS_PATH = MOCK_OUTPUT_DIRECTORY / 'results.json'
+TXT_RESULTS_PATH = MOCK_OUTPUT_DIRECTORY / 'results.txt'
 
 
 @pytest.fixture
@@ -54,7 +54,6 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
     with patch(patch_target, return_value=MOCK_ASCII_TABLE) as mock_create_table:
         om_instance.process(mock_results, root='', is_comparison=is_comparison)
 
-        # Build expected calls to create_table
         expected_create_calls = []
         expected_print_str = ''
         for entry in mock_results['group1']:
@@ -67,16 +66,13 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
         mock_create_table.assert_has_calls(expected_create_calls, any_order=False)
         assert mock_create_table.call_count == len(expected_create_calls)
 
-        # Assert print is called once with full ascii tables string
         mock_print.assert_called_once_with(expected_print_str)
 
-        # Assert write_output called with entries, ascii_tables string, output_path, and output_types
-        expected_output_path = os.path.join(
-            MOCK_OUTPUT_DIRECTORY,
-            os.path.splitext(os.path.basename(os.path.normpath('')))[0],
-            'group1',
-            'result'
-        )
+        # Build expected_output_path using pathlib to mirror your code logic
+        root_path = Path('').name  # empty string here
+        root_path_without_extension = Path(root_path).stem  # also empty string
+        expected_output_path = MOCK_OUTPUT_DIRECTORY / root_path_without_extension / 'group1' / 'result'
+
         mock_write_output.assert_called_once_with(
             mock_results['group1'], expected_print_str, expected_output_path, output_types
         )
