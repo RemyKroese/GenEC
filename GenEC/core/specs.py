@@ -34,6 +34,6 @@ class ConfigOptions(Enum):
 class TextFilterTypes(Enum):
     REGEX = 'Regex'
     POSITIONAL = 'Positional'
-    COMBI_SEARCH = 'Combi-search'
+    REGEX_LIST = 'regex-list'
     KEYWORD = 'Keyword_UNSUPPORTED'
     SPLIT_KEYWORDS = 'Split-keywords_UNSUPPORTED'

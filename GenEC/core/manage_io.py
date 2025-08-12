@@ -29,9 +29,9 @@ class InputManager:
 
     @staticmethod
     def set_text_filter(config: Initialized) -> Union[
-            str,                   # Regex
+            str,                   # regex
             PositionalFilterType,  # positional
-            list[str]]:            # combi-search
+            list[str]]:            # regex-list
         if not config.get(ConfigOptions.TEXT_FILTER.value):
             return InputManager.request_text_filter(config)
         return cast(Union[str, PositionalFilterType, list[str]], config[ConfigOptions.TEXT_FILTER.value])
@@ -53,9 +53,9 @@ class InputManager:
 
     @staticmethod
     def request_text_filter(config: Initialized) -> Union[
-            str,                   # Regex
+            str,                   # regex
             PositionalFilterType,  # positional
-            list[str]]:            # combi-search
+            list[str]]:            # regex-lsit
         if config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
             return InputManager.ask_open_question('Please provide a regex filter: ')
         elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
@@ -65,15 +65,15 @@ class InputManager:
                 line=int(InputManager.ask_open_question('Please provide the line number in the cluster: ')),
                 occurrence=int(InputManager.ask_open_question('Please provide the occurrence number: ')))
             return positional_text_filter
-        elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.COMBI_SEARCH.value:
-            combi_search_filters: list[str] = []
+        elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX_LIST.value:
+            regex_list_filters: list[str] = []
             index = 1
             while True:
-                combi_search_filters.append(InputManager.ask_open_question('Please provide a regex filter for search {0}: '.format(index)))
+                regex_list_filters.append(InputManager.ask_open_question('Please provide a regex filter for search {0}: '.format(index)))
                 index += 1
                 if InputManager.ask_open_question('Do you wish to provide a next search parameter [yes/y]: ').lower() not in YES_INPUT:
                     break
-            return combi_search_filters
+            return regex_list_filters
         else:
             raise ValueError('Unsupported filter type: %s' % config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
 

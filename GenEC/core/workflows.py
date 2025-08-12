@@ -29,14 +29,15 @@ class Workflow(ABC):
         ref_data = utils.read_files(self.reference, configurations) if self.reference else None
         return source_data, ref_data
 
-    def run(self) -> None:
-        config_manager = self._get_config_manager()
-
-        source_data, ref_data = self._get_data(config_manager.configurations)
+    def _process_configurations(self,
+                                configurations: list[Configuration],
+                                source_data: dict[str, str],
+                                ref_data: Optional[dict[str, str]]
+                                ) -> defaultdict[str, list[Entry]]:
         results: defaultdict[str, list[Entry]] = defaultdict(list)
         extractor = Extractor()
 
-        for configuration in config_manager.configurations:
+        for configuration in configurations:
             source_text = source_data.get(configuration.target_file, '')
             source_filtered = extractor.extract_from_data(configuration.config, source_text, FileID.SOURCE)
 
@@ -56,6 +57,14 @@ class Workflow(ABC):
                     preset=configuration.preset,
                     target=configuration.target_file,
                     data=output_result))
+
+        return results
+
+    def run(self) -> None:
+        config_manager = self._get_config_manager()
+
+        source_data, ref_data = self._get_data(config_manager.configurations)
+        results = self._process_configurations(config_manager.configurations, source_data, ref_data)
 
         output_manager = OutputManager(self.output_directory, self.output_types)
         output_manager.process(results, root=self.source, is_comparison=bool(ref_data))
@@ -93,7 +102,7 @@ class Preset(Workflow):
         self.presets_directory = args.presets_directory
 
     def _get_config_manager(self) -> ConfigManager:
-        preset_param: dict[str, str] = {'type': 'preset', 'value': self.preset}
+        preset_param: dict[str, str] = {'type': Workflows.PRESET.value, 'value': self.preset}
         return ConfigManager(preset_param, self.presets_directory)
 
 
@@ -105,5 +114,5 @@ class PresetList(Workflow):
         self.presets_directory = args.presets_directory
 
     def _get_config_manager(self) -> ConfigManager:
-        preset_param: dict[str, str] = {'type': 'preset-list', 'value': self.preset_list}
+        preset_param: dict[str, str] = {'type': Workflows.PRESET_LIST.value, 'value': self.preset_list}
         return ConfigManager(preset_param, self.presets_directory)

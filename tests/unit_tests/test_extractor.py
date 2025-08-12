@@ -50,7 +50,7 @@ def test_get_clusters(extractor_instance, config_fixture, data, cluster_filter, 
 @pytest.mark.parametrize("filter_type", [
     TextFilterTypes.REGEX,
     TextFilterTypes.POSITIONAL,
-    TextFilterTypes.COMBI_SEARCH,
+    TextFilterTypes.REGEX_LIST,
 ])
 @patch("GenEC.core.extraction_filters.get_extractor")
 def test_extract_from_data(mock_get_extractor, filter_type, extractor_instance, config_fixture):
