@@ -17,73 +17,81 @@
 
 ## Overview
 
-GenEC (Generic Extraction & Comparison) is a Python-based tool designed for extracting structured data from source and reference files, then comparing their contents based on defined rules. It allows customization through YAML-based configuration files and supports both command-line and programmatic usage.
+GenEC (Generic Extraction & Comparison) is a Python-based tool for extracting structured data from files or folders.
+It offers a flexible, one-size-fits-all extraction framework that you can tailor precisely using configuration parameters.
+
+With presets and preset lists, you can easily repeat your extraction methods on single files or entire directories.
+Beyond extraction, GenEC can also compare the extracted data against reference files or folders to highlight differences.
+
+Designed for users of all technical levels, GenEC supports both manual workflows and automated pipelines,
+making data analysis straightforward and accessible.
 
 ## Installation
 
-GenEC requires Python 3.7 or later. Install dependencies from the root directory (GenEC) using Pipenv:
+GenEC requires **Python 3.9 or higher**
+
+### Using pipenv (recommended)
 
 ```
 pipenv install
+pipenv shell
 ```
 
 ## Usage
 
-GenEC can be used via the command line or directly in Python scripts.
+GenEC supports three workflows with different CLI arguments:
+- **basic** — define extraction and comparison directly at runtime.
+- **preset** — use a single YAML preset for configuration.
+- **preset-list** — run bulk analysis with multiple presets listed in a YAML file.
 
-### Command-Line Interface (CLI)
+---
 
-Run GenEC from the command line as follows:
+### Common Arguments
 
+| Argument             | Short | Required | Description                                                        |
+|----------------------|-------|----------|--------------------------------------------------------------------|
+| `--source`*           | `-s`  | Yes      | Path to the source for data extraction.                      |
+| `--reference`        | `-r`  | No       | Path to the reference for comparison. |
+| `--output-directory`* | `-o`  | No       | Directory to save output files. |
+| `--output-types`*     | `-t`  | No       | List of output file types to generate. Choices: `csv`, `json`, `txt`, `yaml`. Note that multiple can be selected. |
+
+*`--source` and `--reference` arguments accept **file paths** for the basic and preset workflows, and **directory paths** when using `preset-list` workflow.
+**`--output-directory` and `--output-types` must be used together.
+
+---
+
+### Workflow-Specific Arguments
+
+| Workflow       | Argument              | Short | Required | Description                                               |
+|----------------|-----------------------|-------|----------|-----------------------------------------------------------|
+| **basic**      | (none additional)     |       |          | Extraction strategy defined at runtime.     |
+| **preset**     | `--preset`            | `-p`  | Yes      | Extraction strategy determined through a preset.     |
+|                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
+| **preset-list**| `--preset-list`       | `-l`  | Yes      | YAML file listing multiple presets for batch processing.  |
+|                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
+
+---
+
+### Example Commands
+
+#### Basic workflow
+
+```bash
+python -m GenEC.main basic -s <source_file> [options]
+
+python -m GenEC.main basic -s <source_file> -r <reference_file> -o <output_directory> -t txt csv json yaml
 ```
-python -m GenEC.main --source <source_file> --reference <reference_file> [--preset <preset_file_name/preset_name>] [--output_dir <output_directory>]
+
+#### Preset workflow
+
+```bash
+python -m GenEC.main preset -s <source_file> -r <reference_file> -p <file_name_without_extension/preset_name> -x <preset_directory> [options]
 ```
 
-**Arguments:**
+#### Preset-list workflow
 
-- `--source` (`-s`): Path to the source file for data extraction.
-- `--reference` (`-r`): Path to the reference file for comparison.
-- `--preset` (`-t`): (Optional) YAML preset specifying extraction rules.
-- `--output_dir` (`-o`): (Optional) Directory where the output files should be stored.
-
-**Example:**
-
-```
-python -m GenEC.main --source /source.txt --reference reference.txt --preset sample_preset/sub_preset_A --output_dir results/
-```
-
-### Python Integration
-
-For advanced users, GenEC can be imported into Python scripts to allow deeper customization:
-
-```python
-import GenEC.core.analyze as analyze
-import GenEC.utils as utils
-
-# Define file paths
-source_file = 'source.txt'
-reference_file = 'reference.txt'
-
-# Define preset
-preset = 'sample_preset/sub_preset_A'
-
-# Read files
-source, reference = utils.read_files([source_file, reference_file])
-
-# Initialize InputManager with preset
-input_manager = analyze.InputManager(preset_file)
-input_manager.set_config()
-
-# Initialize Extractor with configuration
-extractor = analyze.Extractor(input_manager.config)
-
-# Extract data
-source_data = extractor.extract_from_data(source, analyze.Files.SOURCE)
-reference_data = extractor.extract_from_data(reference, analyze.Files.REFERENCE)
-
-# Compare data
-comparer = analyze.Comparer(source_filtered_text, ref_filtered_text)
-differences = comparer.compare()
+```bash
+python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> -l <file_name_without_extension> -x <preset_directory> [options]
 ```
 
 ## Configuration
@@ -91,35 +99,44 @@ differences = comparer.compare()
 GenEC allows customization through YAML configuration files. A sample preset  may look like:
 
 ```yaml
-main_preset: &main_preset
-  cluster_filter: ''
-  text_filter_type: 0
-  text_filter: ''
+preset_a:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex'
+  text_filter: '\| ([A-Za-z]+) \|'
   should_slice_clusters: false
   src_start_cluster_text: ''
   src_end_cluster_text: ''
   ref_start_cluster_text: ''
   ref_end_cluster_text: ''
-
-sub_preset_A:
-  <<: *main_preset
-  should_slice_clusters: true
-
-sub_preset_B:
-  <<: *main_preset
-  cluster_filter: '\n'
-  text_filter_type: 1
-  text_filter: '[a-zA-z]{4}'
 ```
 
-Modify these parameters according to your extraction and comparison needs. Please see the [Sample preset YAML](GenEC/presets/sample_preset.yaml) for more information.
+Note that GenEC can use grouping within the Regex filter type `()` to construct more complex output data.
+
+Modify these parameters according to your extraction and comparison needs. Please see the [Sample preset
+YAML](GenEC/presets/sample_preset.yaml) for more information. Creation of more in-depth documentation on these yaml configurations
+files is still in progress.
 
 ## Testing
 
 Run the test suite from the root directory using:
 
-```
+### Full test
+```bash
 pipenv run pytest
+
+pipenv shell && pytest
+```
+
+### Subtests
+```bash
+pipenv run pytest -m system    # Runs system-level tests
+
+pipenv run pytest -m unit      # Runs unit tests
+```
+
+### Repeat tests
+```bash
+pipenv run pytest --count 10
 ```
 
 ## License
@@ -136,4 +153,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-This project is licensed under the MIT License.
