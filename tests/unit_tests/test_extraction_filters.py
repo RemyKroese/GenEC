@@ -69,10 +69,10 @@ def test_extract_text_from_clusters_by_position(tst_config):
     ]
 )
 @patch('GenEC.core.extraction_filters.RegexExtractor')
-def test_extract_text_from_clusters_by_combi_search(mock_regex_extractor, tst_config, clusters, regex_filters, expected_filtered_clusters):
+def test_extract_text_from_clusters_by_regex_list(mock_regex_extractor, tst_config, clusters, regex_filters, expected_filtered_clusters):
     mock_regex_instance = MagicMock()
     mock_regex_extractor.return_value = mock_regex_instance
-    extractor = extraction_filters.CombiSearchExtractor(tst_config)
+    extractor = extraction_filters.RegexListExtractor(tst_config)
     extractor.config[ConfigOptions.TEXT_FILTER.value] = regex_filters
 
     extractor.extract(clusters)

@@ -112,9 +112,9 @@ def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_outpu
     (['regex_1', 'Y', 'regex_2', 'YeS', 'regex_3', ''], ['regex_1', 'regex_2', 'regex_3']),
 ])
 @patch.object(InputManager, 'ask_open_question')
-def test_request_COMBI_SEARCH_filter_type(mock_input, mock_side_effect, mock_output):
+def test_request_REGEX_LIST_filter_type(mock_input, mock_side_effect, mock_output):
     mock_input.side_effect = mock_side_effect
-    config = Initialized(text_filter_type=TextFilterTypes.COMBI_SEARCH.value)
+    config = Initialized(text_filter_type=TextFilterTypes.REGEX_LIST.value)
     assert InputManager.request_text_filter(config) == mock_output
 
 

@@ -70,13 +70,13 @@ class PositionalExtractor(BaseExtractor):
         return filtered_text
 
 
-@register_extractor(TextFilterTypes.COMBI_SEARCH.value)
-class CombiSearchExtractor(BaseExtractor):
+@register_extractor(TextFilterTypes.REGEX_LIST.value)
+class RegexListExtractor(BaseExtractor):
     def extract(self, clusters: list[str]) -> list[str]:
         text_filters = self.config.get(ConfigOptions.TEXT_FILTER.value)
         if not isinstance(text_filters, list):  # pragma: no cover
             # Regex pattern should always be a string due to input_manager logic, so there will be a bug if this error is raised
-            raise TypeError('Incorrect text filter type for Combi-Search, expected a list of regex patterns.')
+            raise TypeError('Incorrect text filter type for regex-list, expected a list of regex patterns.')
 
         for text_filter in text_filters[:-1]:
             pattern = re.compile(text_filter)

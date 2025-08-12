@@ -18,7 +18,7 @@
 # This preset can be used by executiong the tool with the parameter "--preset sample_preset/main_preset"
 main_preset: &main_preset
   cluster_filter: ''                        # Characters to split clusters on, e.g. "\\n" for newline characters
-  text_filter_type: ''                       # REGEX, KEYWORD, COMBI_SEARCH, POSITIONAL, SPLIT KEYWORDS
+  text_filter_type: ''                      # REGEX, REGEX_LIST, POSITIONAL
   text_filter: ''                           # The actual data that needs to be analyzed
   should_slice_clusters: false              # specify whether only a subsection of the clusters should be analyzed
   src_start_cluster_text: ''                # Source file: text that should be in the cluster where analysis needs to start, (leave empty to start from the first cluster of the file)
