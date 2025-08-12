@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
-import os
+from pathlib import Path
 from typing import Optional
 
 from GenEC import utils
@@ -22,7 +22,10 @@ class Configuration:
 
 class ConfigManager:
     def __init__(self, preset_param: Optional[dict[str, str]] = None, presets_directory: Optional[str] = None) -> None:
-        self.presets_directory = presets_directory if presets_directory else os.path.join(os.path.dirname(__file__), '../presets')
+        if presets_directory:
+            self.presets_directory = Path(presets_directory)
+        else:
+            self.presets_directory = Path(__file__).parent.parent / 'presets'
         self.configurations: list[Configuration] = []
 
         if preset_param:
@@ -43,7 +46,7 @@ class ConfigManager:
             return tuple(preset_param.split('/', 1))  # type: ignore[return-value]  # Always returns 2 items
 
     def load_presets(self, presets_list_target: str) -> list[Configuration]:  # pragma: no cover
-        presets_list_file_path = os.path.join(self.presets_directory, presets_list_target + '.yaml')
+        presets_list_file_path = self.presets_directory / f'{presets_list_target}.yaml'
         presets_list = utils.read_yaml_file(presets_list_file_path)
         presets_per_file = self._group_presets_by_file(presets_list)
         return self._collect_presets(presets_per_file)
@@ -112,7 +115,7 @@ class ConfigManager:
         return presets[preset_name]
 
     def load_preset_file(self, preset_file: str) -> dict[str, Initialized]:
-        presets_file_path = os.path.join(self.presets_directory, preset_file + '.yaml')
+        presets_file_path = self.presets_directory / f'{preset_file}.yaml'
         presets = utils.read_yaml_file(presets_file_path)
 
         if not presets or len(presets) == 0:
@@ -165,7 +168,7 @@ class ConfigManager:
 
         assert isinstance(cluster_filter, str)
         assert isinstance(text_filter_type, str)
-        assert isinstance(text_filter, str) or isinstance(text_filter, list) or isinstance(text_filter, PositionalFilterType)
+        assert isinstance(text_filter, (str, list, PositionalFilterType))
         assert isinstance(should_slice_clusters, bool)
 
         return Finalized(

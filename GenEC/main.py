@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import argparse
-import os
 import sys
+from pathlib import Path
 
-PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(PROJECT_PATH)
+PROJECT_PATH = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_PATH))
 
 from GenEC.core import workflows, Workflows  # noqa: E402
 
@@ -23,13 +23,13 @@ def parse_arguments() -> argparse.Namespace:
 
     common_preset = argparse.ArgumentParser(add_help=False)
     common_preset.add_argument('-x', '--presets-directory', type=str, required=False,
-                               default=os.path.abspath(os.path.join(PROJECT_PATH, 'GenEC', 'presets')),
+                               default=str(PROJECT_PATH / 'GenEC' / 'presets'),
                                help='Directory where presets are stored. default: %(default)s')
 
     parser = argparse.ArgumentParser(
         prog='GenEC',
         description='Extract specific data from files and ' +
-        'compare the differences between these two files based on the data.')
+                    'compare the differences between these two files based on the data.')
     subparsers = parser.add_subparsers(dest='workflow', required=True)
 
     # basic workflow: analysis construction through CLI

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import cast, Optional, Union
 
 from GenEC import utils
@@ -69,7 +69,7 @@ class InputManager:
             regex_list_filters: list[str] = []
             index = 1
             while True:
-                regex_list_filters.append(InputManager.ask_open_question('Please provide a regex filter for search {0}: '.format(index)))
+                regex_list_filters.append(InputManager.ask_open_question(f'Please provide a regex filter for search {index}: '))
                 index += 1
                 if InputManager.ask_open_question('Do you wish to provide a next search parameter [yes/y]: ').lower() not in YES_INPUT:
                     break
@@ -113,7 +113,7 @@ class OutputManager:
                  output_directory: Optional[str] = None,
                  output_types: Optional[list[str]] = None,
                  should_print_results: bool = True) -> None:
-        self.output_directory = output_directory
+        self.output_directory = Path(output_directory) if output_directory else None
         self.output_types = output_types
         self.should_print_results = should_print_results
 
@@ -141,11 +141,8 @@ class OutputManager:
                 output_path = self._create_output_path(group, root, file_name=file_name)
                 utils.write_output(entries, ascii_tables, output_path, self.output_types)
 
-    def _create_output_path(self, group: str, root: str, file_name: str = 'result') -> str:
-        root_path = os.path.basename(os.path.normpath(root))
-        root_path_without_extension = os.path.splitext(root_path)[0]
-        group_dir = os.path.join(
-            cast(str, self.output_directory),  # this function is only called when output_directory is set
-            root_path_without_extension,
-            group)
-        return os.path.join(group_dir, file_name)
+    def _create_output_path(self, group: str, root: str, file_name: str = 'result') -> Path:
+        root_path = Path(root).name
+        root_path_without_extension = Path(root_path).stem
+        group_dir = cast(Path, self.output_directory) / root_path_without_extension / group
+        return group_dir / file_name
