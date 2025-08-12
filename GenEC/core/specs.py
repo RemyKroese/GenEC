@@ -14,6 +14,12 @@ class FileID(IntEnum):
     REFERENCE = 2
 
 
+class Workflows(Enum):
+    BASIC = 'basic'
+    PRESET = 'preset'
+    PRESET_LIST = 'preset-list'
+
+
 class ConfigOptions(Enum):
     CLUSTER_FILTER = 'cluster_filter'
     TEXT_FILTER_TYPE = 'text_filter_type'
