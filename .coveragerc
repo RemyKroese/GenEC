@@ -1,7 +1,5 @@
 [run]
 omit =
-    main.py
-    */GenEC/utils.py
     */tests/*
     */__init__.py
 

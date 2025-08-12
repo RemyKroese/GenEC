@@ -1,0 +1,7 @@
+data,difference,preset,reference,source,target
+ERROR,0,preset_file1/preset_a,157,157,input\file1.txt
+ERROR,0,preset_file1/preset_a,157,157,input\file3.txt
+INFO,0,preset_file1/preset_a,1174,1174,input\file1.txt
+INFO,0,preset_file1/preset_a,1174,1174,input\file3.txt
+WARNING,0,preset_file1/preset_a,322,322,input\file1.txt
+WARNING,0,preset_file1/preset_a,322,322,input\file3.txt
