@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 from unittest.mock import patch, mock_open
 
@@ -165,8 +166,8 @@ def test_load_preset_file_file_not_found(mock_exists, c_instance):
 
 
 @pytest.mark.unit
-@patch('os.path.exists', return_value=True)
-@patch('builtins.open', new_callable=mock_open, read_data='')
+@patch.object(Path, 'exists', return_value=True)
+@patch.object(Path, 'open', new_callable=mock_open, read_data='')
 def test_load_preset_file_empty_file(mock_open_file, mock_exists, c_instance):
     with pytest.raises(ValueError):
         c_instance.load_preset_file('mock_file')
@@ -177,8 +178,8 @@ def test_load_preset_file_empty_file(mock_open_file, mock_exists, c_instance):
     (SINGLE_PRESET_DATA),
     (MULTIPLE_PRESETS_DATA)
 ])
-@patch('os.path.exists', return_value=True)
-@patch('builtins.open', new_callable=mock_open)
+@patch.object(Path, 'exists', return_value=True)
+@patch.object(Path, 'open', new_callable=mock_open)
 @patch('yaml.safe_load')
 def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, c_instance, preset_data):
     mock_safe_load.return_value = preset_data

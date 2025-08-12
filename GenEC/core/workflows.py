@@ -9,7 +9,7 @@ from GenEC.core.config_manager import ConfigManager, Configuration
 from GenEC.core.manage_io import OutputManager
 from GenEC.core.types.output import DataExtract, Entry
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import argparse
 
 
@@ -22,7 +22,7 @@ class Workflow(ABC):
 
     @abstractmethod
     def _get_config_manager(self) -> ConfigManager:
-        pass
+        pass  # pragma: no cover
 
     def _get_data(self, configurations: list[Configuration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
         source_data = utils.read_files(self.source, configurations)
@@ -84,7 +84,7 @@ def register_workflow(name: str) -> Callable[[Type[E]], Type[E]]:
 def get_workflow(name: str, args: 'argparse.Namespace') -> Workflow:
     try:
         return _workflow_registry[name](args)
-    except KeyError:
+    except KeyError:  # pragma: no cover
         raise ValueError(f'Workflow [{name}] is not registered.')
 
 

@@ -1,0 +1,11 @@
+group_1:
+  - preset: preset_file1/preset_a
+    target: 'input\file1.txt'
+  - preset: preset_file1/preset_a
+    target: 'input\file3.txt'
+
+group_2:
+  - preset: preset_file1/preset_b
+    target: 'input\file2.txt'
+  - preset: preset_file1/preset_b
+    target: 'input\file4.txt'

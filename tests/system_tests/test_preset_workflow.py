@@ -25,7 +25,7 @@ def run_preset_workflow_test(
 
     source_file = ASSETS_DIR / 'input' / 'file1.txt'
     output_dir = tmp_path / 'output'
-    presets_dir = ASSETS_DIR / 'presets'
+    presets_dir = ASSETS_DIR / 'input' / 'presets'
     preset_path = 'preset_file1/preset_a'
 
     test_args = [
