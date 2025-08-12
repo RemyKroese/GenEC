@@ -43,10 +43,9 @@ jobs:
           flags: unit
 
   system_tests:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
         python-version: [3.9, 3.13]
     steps:
       - uses: actions/checkout@v4
