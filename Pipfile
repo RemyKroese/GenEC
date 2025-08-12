@@ -14,6 +14,7 @@ flake8 = "*"
 autopep8 = "*"
 pyinstaller = "*"
 pytest-cov = "*"
+pytest-repeat = "*"
 
 [requires]
 python_version = "3"
