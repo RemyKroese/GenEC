@@ -1,4 +1,4 @@
-- preset: ''
+- preset: preset_file1/preset_a
   target: ''
   data:
     ERROR:
