@@ -30,6 +30,7 @@ def om_instance():
     return OutputManager()
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('mock_results, is_comparison', [
     (MOCK_RESULTS_GROUPED_COMPARISON, True),
     (MOCK_RESULTS_GROUPED_EXTRACTION, False),
@@ -81,6 +82,7 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
         )
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('should_print', [True, False])
 @patch('builtins.print')
 @patch('GenEC.utils.write_output')
