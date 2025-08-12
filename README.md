@@ -1,6 +1,6 @@
 # GenEC: Generic Extraction & Comparison Tool
 
-![1.0.0 Release Progress](https://img.shields.io/badge/progress-78%25-brightgreen)
+![1.0.0 Release Progress](https://img.shields.io/badge/progress-82%25-brightgreen)
 [![Build](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg)](https://github.com/RemyKroese/GenEC/actions)
 [![Last Commit](https://img.shields.io/github/last-commit/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC/commits)
 ![Contributors](https://img.shields.io/github/contributors/RemyKroese/GenEC)
@@ -10,7 +10,7 @@
 
 ### 1.0.0 release progress
 
-`██████████████████████████████████████████████████████████████████████████████                      `
+`██████████████████████████████████████████████████████████████████████████████████                  `
 
 
 &#x20;
