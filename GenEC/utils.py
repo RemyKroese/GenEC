@@ -77,6 +77,14 @@ F = TypeVar('F', bound=Callable[..., None])
 _writer_registry: Dict[str, Callable[..., None]] = {}
 
 
+def sort_entry_data_keys(entry: 'Entry') -> 'Entry':
+    data = entry.get('data', {})
+    sorted_data = dict(sorted(data.items()))  # sort keys alphabetically
+    new_entry = entry.copy()
+    new_entry['data'] = sorted_data
+    return new_entry
+
+
 def register_writer(name: str) -> Callable[[F], F]:
     def decorator(func: F) -> F:
         _writer_registry[name] = func
@@ -95,8 +103,9 @@ def get_writer(name: str):
 def write_json(data: list['Entry'], file_path: str) -> None:
     try:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        data_processed = [sort_entry_data_keys(e) for e in data]
         with open(file_path, 'w', encoding='utf-8') as file:
-            json.dump(data, file, indent=4)
+            json.dump(data_processed, file, indent=4)
     except OSError as err:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
@@ -105,8 +114,9 @@ def write_json(data: list['Entry'], file_path: str) -> None:
 def write_yaml(data: list['Entry'], file_path: str) -> None:
     try:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        data_processed = [sort_entry_data_keys(e) for e in data]
         with open(file_path, 'w', encoding='utf-8') as file:
-            yaml.dump(data, file, default_flow_style=False, allow_unicode=True, sort_keys=False)
+            yaml.dump(data_processed, file, default_flow_style=False, allow_unicode=True, sort_keys=False)
     except OSError as err:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
@@ -122,6 +132,9 @@ def write_csv(data: list['Entry'], file_path: str) -> None:
                 row: dict[str, Any] = {**entry, 'data': data_key, **values}
                 rows.append(row)
                 all_columns.update(row.keys())
+
+        rows.sort(key=lambda r: r['data'])
+
         with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=sorted(all_columns))
             writer.writeheader()
