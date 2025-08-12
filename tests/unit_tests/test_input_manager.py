@@ -7,6 +7,7 @@ from GenEC.core.manage_io import InputManager
 from GenEC.core.types.preset_config import Initialized
 
 
+@pytest.mark.unit
 @patch.object(InputManager, 'ask_open_question')
 def test_set_cluster_filter(mock_ask_open_question):
     mock_ask_open_question.return_value = ';'
@@ -14,11 +15,13 @@ def test_set_cluster_filter(mock_ask_open_question):
     assert InputManager.set_cluster_filter(config) == ';'
 
 
+@pytest.mark.unit
 def test_set_cluster_filter_from_config():
     config = Initialized(cluster_filter='\n')
     assert InputManager.set_cluster_filter(config) == '\n'
 
 
+@pytest.mark.unit
 @patch.object(InputManager, 'ask_mpc_question')
 def test_set_text_filter_type(mock_ask_mpc_question):
     mock_ask_mpc_question.return_value = 'type1'
@@ -26,6 +29,7 @@ def test_set_text_filter_type(mock_ask_mpc_question):
     assert InputManager.set_text_filter_type(config) == 'type1'
 
 
+@pytest.mark.unit
 @patch.object(InputManager, 'request_text_filter')
 def test_set_text_filter(mock_request_text_filter):
     mock_request_text_filter.return_value = 'filter1'
@@ -33,6 +37,7 @@ def test_set_text_filter(mock_request_text_filter):
     assert InputManager.set_text_filter(config) == 'filter1'
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('response, expected', [
     ('yes', True),
     ('no', False)
@@ -44,6 +49,7 @@ def test_set_should_slice_clusters(mock_ask_open_question, response, expected):
     assert InputManager.set_should_slice_clusters(config) == expected
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('config_option, start_end, src_ref', [
     (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
     (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
@@ -57,11 +63,13 @@ def test_set_cluster_text(mock_ask_open_question, config_option, start_end, src_
     assert InputManager.set_cluster_text(config, config_option, start_end, src_ref) == 'some text'
 
 
+@pytest.mark.unit
 @patch('builtins.input', return_value='user_input')
 def test_ask_open_question(mock_input):
     assert InputManager.ask_open_question('Prompt: ') == 'user_input'
 
 
+@pytest.mark.unit
 @patch('sys.stdout', new_callable=StringIO)
 @patch('builtins.input')
 def test_ask_mpc_question_valid_choice(mock_input, mock_stdout):
@@ -70,6 +78,7 @@ def test_ask_mpc_question_valid_choice(mock_input, mock_stdout):
     assert mock_stdout.getvalue().strip() == 'Choose a number:\n0. Exit\n1. Option 1\n2. Option 2\n3. Option 3'
 
 
+@pytest.mark.unit
 @patch('sys.stdout', new_callable=StringIO)
 @patch('builtins.input')
 def test_ask_mpc_question_invalid_choice(mock_input, mock_stdout):
@@ -78,6 +87,7 @@ def test_ask_mpc_question_invalid_choice(mock_input, mock_stdout):
     assert 'Please enter a valid number.' in mock_stdout.getvalue().strip()
 
 
+@pytest.mark.unit
 @patch('sys.stdout', new_callable=StringIO)
 @patch('builtins.input')
 def test_ask_mpc_question_exit(mock_input, mock_stdout):
@@ -87,6 +97,7 @@ def test_ask_mpc_question_exit(mock_input, mock_stdout):
     assert mock_stdout.getvalue().strip() == 'Choose a number:\n0. Exit\n1. Option 1\n2. Option 2'
 
 
+@pytest.mark.unit
 @patch.object(InputManager, 'ask_open_question')
 def test_request_REGEX_filter_type(mock_input):
     mock_input.return_value = USER_INPUT = 'my_filter'
@@ -94,6 +105,7 @@ def test_request_REGEX_filter_type(mock_input):
     assert InputManager.request_text_filter(config) == USER_INPUT
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('mock_side_effect, mock_output', [
     ([' ', '2', '4'], [' ', 2, 4]),
     (['', '3', '8'], [' ', 3, 8]),
@@ -106,6 +118,7 @@ def test_request_POSITIONAL_filter_type(mock_input, mock_side_effect, mock_outpu
     assert InputManager.request_text_filter(config) == PositionalFilterType(separator=mock_output[0], line=mock_output[1], occurrence=mock_output[2])
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('mock_side_effect, mock_output', [
     (['regex_1', 'y', 'regex_2', 'done'], ['regex_1', 'regex_2']),
     (['regex_1', 'n'], ['regex_1']),
@@ -118,6 +131,7 @@ def test_request_REGEX_LIST_filter_type(mock_input, mock_side_effect, mock_outpu
     assert InputManager.request_text_filter(config) == mock_output
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('filter_type', [
     (TextFilterTypes.KEYWORD.value),
     (TextFilterTypes.SPLIT_KEYWORDS.value)])

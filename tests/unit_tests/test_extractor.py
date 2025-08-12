@@ -38,6 +38,7 @@ def extractor_instance():
     return Extractor()
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('data, cluster_filter, expected_result', [
     (BASIC_TEXT, '\n', ['a b c', 'd e', 'f g h i', 'j']),
     (WHITELINES_TEXT, '\n\n', ['a b c\nd e', 'f g h i', 'j\nk l m n o p\nq'])])
@@ -47,6 +48,7 @@ def test_get_clusters(extractor_instance, config_fixture, data, cluster_filter, 
     assert extractor_instance.get_clusters(config, data, FileID.SOURCE) == expected_result
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("filter_type", [
     TextFilterTypes.REGEX,
     TextFilterTypes.POSITIONAL,
@@ -67,6 +69,7 @@ def test_extract_from_data(mock_get_extractor, filter_type, extractor_instance, 
     fake_extractor.extract.assert_called_once()
 
 
+@pytest.mark.unit
 def test_extract_from_data_unsupported_filter_type(extractor_instance, config_fixture):
     data = 'saiucdjh1\ndusi2hiuw\n3134ferw\n4waijc\ndjhe56fk7\niuaijaudc'
     config = config_fixture.copy()
@@ -77,6 +80,7 @@ def test_extract_from_data_unsupported_filter_type(extractor_instance, config_fi
         extractor_instance.extract_from_data(config, data, FileID.SOURCE)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('input_side_effects, clusters,expected_result', [
     (['start', 'end'],
      ['This is the first cluster', 'This is the start cluster',
@@ -97,6 +101,7 @@ def test_get_sliced_clusters(extractor_instance, input_side_effects, clusters, e
     assert result == expected_result
 
 
+@pytest.mark.unit
 def test_get_src_clusters_with_slicing(extractor_instance, config_fixture):
     data = 'This is the first cluster\nThis is the start cluster\nThis is another cluster\nThis is the end cluster\nThis is the last cluster'
     expected_result = ['This is the start cluster', 'This is another cluster', 'This is the end cluster']
@@ -108,6 +113,7 @@ def test_get_src_clusters_with_slicing(extractor_instance, config_fixture):
     assert extractor_instance.get_clusters(config, data, FileID.SOURCE) == expected_result
 
 
+@pytest.mark.unit
 def test_get_ref_clusters_with_slicing(extractor_instance, config_fixture):
     data = 'This is the first cluster\nThis is the start cluster\nThis is another cluster\nThis is the end cluster\nThis is the last cluster'
     expected_result = ['This is the start cluster', 'This is another cluster', 'This is the end cluster']

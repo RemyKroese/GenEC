@@ -47,6 +47,7 @@ DIFFERENCES_3 = {
 }
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('source, reference, expected_unique_elements', [
     (SRC_1, REF_1, {'1', '2', '3'}),
     (SRC_1, REF_1, {'3', '2', '1'}),  # set order should not matter
@@ -58,6 +59,7 @@ def test_init_comparer(source, reference, expected_unique_elements):
     assert c.unique_elements == expected_unique_elements
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('source, reference, expected_source_counter, expected_reference_counter', [
     (SRC_1, REF_1, EXPECTED_SRC_1, EXPECTED_REF_1),
     (SRC_2, REF_2, EXPECTED_SRC_2, EXPECTED_REF_2),
@@ -69,6 +71,7 @@ def test_counters(source, reference, expected_source_counter, expected_reference
     assert c.reference_counts == expected_reference_counter
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize('source, reference, expected_diff', [
     (SRC_1, REF_1, DIFFERENCES_1),
     (SRC_2, REF_2, DIFFERENCES_2),

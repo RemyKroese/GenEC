@@ -23,6 +23,7 @@ class DummyExtractor(extraction_filters.BaseExtractor):
         return ['dummy']
 
 
+@pytest.mark.unit
 def test_get_extractor_returns_registered_extractor(monkeypatch, tst_config):
     monkeypatch.setitem(extraction_filters._extractor_registry, 'dummy', DummyExtractor)
     extractor = extraction_filters.get_extractor('dummy', tst_config)
@@ -30,12 +31,14 @@ def test_get_extractor_returns_registered_extractor(monkeypatch, tst_config):
     assert extractor.config == tst_config
 
 
+@pytest.mark.unit
 def test_get_extractor_raises_for_unregistered_name(tst_config):
     with pytest.raises(ValueError) as exc_info:
         extraction_filters.get_extractor('nonexistent', tst_config)
     assert 'Extractor type "nonexistent" is not registered.' in str(exc_info.value)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     'regex_pattern, expected',
     [
@@ -53,6 +56,7 @@ def test_extract_text_from_clusters_by_regex(tst_config, regex_pattern, expected
     assert extractor.extract(clusters) == expected
 
 
+@pytest.mark.unit
 def test_extract_text_from_clusters_by_position(tst_config):
     clusters = ['line_1\nline_2 word_1 word_2', 'line_3\nline_4 word_3 word_4', 'line_5']
     extractor = extraction_filters.PositionalExtractor(tst_config)
@@ -60,6 +64,7 @@ def test_extract_text_from_clusters_by_position(tst_config):
     assert extractor.extract(clusters) == ['word_2', 'word_4']
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     'clusters, regex_filters, expected_filtered_clusters',
     [
