@@ -1,0 +1,9 @@
+name: Setup environment
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup environment
+      run: |
+        pip install pipenv
+        pipenv install --deploy --dev --skip-lock
+      shell: bash
