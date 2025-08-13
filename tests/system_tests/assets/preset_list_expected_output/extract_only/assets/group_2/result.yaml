@@ -1,5 +1,5 @@
 - preset: preset_file1/preset_b
-  target: input\file2.txt
+  target: input/file2.txt
   data:
     BOOT:
       source: 69
@@ -12,7 +12,7 @@
     SYNC:
       source: 80
 - preset: preset_file1/preset_b
-  target: input\file4.txt
+  target: input/file4.txt
   data:
     BOOT:
       source: 69

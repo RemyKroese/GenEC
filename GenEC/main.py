@@ -1,12 +1,39 @@
 #!/usr/bin/env python
 import argparse
 import sys
+from typing import cast, Optional, Sequence, Union
 from pathlib import Path
 
 PROJECT_PATH = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_PATH))
 
 from GenEC.core import workflows, Workflows  # noqa: E402
+
+
+def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for pair in pairs:
+        if '=' not in pair:
+            raise argparse.ArgumentTypeError(f'Invalid format for path-var [{pair}]. Expected key=value.')
+        key, value = pair.split('=', 1)
+        if not key:
+            raise argparse.ArgumentTypeError(f'Empty key in path-var [{pair}].')
+        result[key] = value
+    return result
+
+
+class TargetVariablesAction(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Optional[Union[str, Sequence[str]]],
+        option_string: Optional[str] = None,
+    ) -> None:
+        current_dict = getattr(namespace, self.dest, {}) or {}
+        parsed = parse_target_variables(cast(Sequence[str], values))
+        current_dict.update(parsed)
+        setattr(namespace, self.dest, current_dict)
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -47,6 +74,9 @@ def parse_arguments() -> argparse.Namespace:
                                         help='Define multiple extraction methods through a preset list.')
     preset_list.add_argument('-l', '--preset-list', type=str, required=True,
                              help='A list of presets to perform a larger scale analysis.')
+    preset_list.add_argument('-v', '--target-variables', type=str, nargs='+',
+                             action=TargetVariablesAction, metavar='VARIABLE=VALUE',
+                             help='Variable=value pairs for dynamic path substitution in preset-list workflow.')
 
     args = parser.parse_args()
     if (args.output_directory is None) != (args.output_types is None):

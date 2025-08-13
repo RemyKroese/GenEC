@@ -69,6 +69,7 @@ GenEC supports three workflows with different CLI arguments:
 |                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
 | **preset-list**| `--preset-list`       | `-l`  | Yes      | YAML file listing multiple presets for batch processing.  |
 |                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
+|                | `--target-variables`  |       | No       | Key-value pairs (`key=value`) to dynamically substitute variables in preset target paths. Can be specified multiple times.|
 
 ---
 
@@ -92,6 +93,8 @@ python -m GenEC.main preset -s <source_file> -r <reference_file> -p <file_name_w
 
 ```bash
 python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> -l <file_name_without_extension> -x <preset_directory> [options]
+
+python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> -l <file_name_without_extension> -x <preset_directory> -v myvar1=value1 myvar2=value2
 ```
 
 ## Configuration
