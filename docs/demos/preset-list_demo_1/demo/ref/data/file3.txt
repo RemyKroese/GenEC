@@ -1,0 +1,23 @@
+2025-07-10 21:35:05 | CODE | Code=word | Desc=First word event
+
+2025-07-10 21:35:06 | NOTE | Message=test
+
+2025-07-10 21:35:07 | CODE | Code=date | Desc=Second word event
+
+2025-07-10 21:35:08 | NOTE | Message=2025/07/10
+
+2025-07-10 21:35:09 | CODE | Code=word | Desc=Third word event
+
+2025-07-10 21:35:10 | NOTE | Message=abcd
+
+2025-07-10 21:35:11 | CODE | Code=date | Desc=Fourth word event
+
+2025-07-10 21:35:12 | NOTE | Message=10/07/2025
+
+2025-07-10 21:35:13 | CODE | Code=word | Desc=Fifth word event
+
+2025-07-10 21:35:14 | NOTE | Message=wxyz
+
+2025-07-10 21:35:15 | CODE | Code=date | Desc=Sixth word event
+
+2025-07-10 21:35:16 | NOTE | Message=01/01/2025
