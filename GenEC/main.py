@@ -4,8 +4,8 @@ import sys
 from typing import cast, Optional, Sequence, Union
 from pathlib import Path
 
-PROJECT_PATH = Path(__file__).resolve().parent.parent
-sys.path.append(str(PROJECT_PATH))
+# Prevent pyinstaller from persisting the build path
+PROJECT_PATH = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).resolve().parent
 
 from GenEC.core import workflows, Workflows  # noqa: E402
 
