@@ -1,0 +1,43 @@
+# Preset file sample for quicker tool execution
+
+# a Parent preset can be filled in, in case several different presets with overlapping answers are desired
+# A preset can be partially filled in, then unanswers values will be asked by the tool on execution
+# for "should_slice_clusters":
+# - when the value is false, this question will not be asked
+# - when the value is true, the cluster filter questiosn will be asked if left unanswered
+#   this could be useful when for example wanting to filter on timestamps, which differ per file
+
+# This preset file can be used by executiong the tool with the parameter "--preset sample_preset"
+# since no file is specified, the tool will then ask which preset should be used:
+# 1. main_preset
+# 2. sub_preset_A
+# 3. sub_preset_B
+
+# A preset can also be specified directly, by by executiong the tool with the parameter "--preset <preset_file_name/<preset_name>"
+
+# This preset can be used by executiong the tool with the parameter "--preset sample_preset/main_preset"
+main_preset: &main_preset
+  cluster_filter: ''                        # Characters to split clusters on, e.g. "\\n" for newline characters
+  text_filter_type: ''                      # REGEX, REGEX_LIST, POSITIONAL
+  text_filter: ''                           # The actual data that needs to be analyzed
+  should_slice_clusters: false              # specify whether only a subsection of the clusters should be analyzed
+  src_start_cluster_text: ''                # Source file: text that should be in the cluster where analysis needs to start, (leave empty to start from the first cluster of the file)
+  src_end_cluster_text: ''               # Source file: text that should be in the cluster where analysis needs to end, (leave empty to continue until the last cluster of the file)
+  ref_start_cluster_text: ''                # Reference file: text that should be in the cluster where analysis needs to start, (leave empty to start from the first cluster of the file)
+  ref_end_cluster_text: ''                  # Reference file: text that should be in the cluster where analysis needs to end, (leave empty to continue until the last cluster of the file)
+
+# In case you want to use a preset as a "parent preset", and create other presets around it, this can be done as seen below with "sub_preset_A" and "sub_preset_B"
+
+# This preset can be used by executiong the tool with the parameter "--preset sample_preset/sub_preset_A
+sub_preset_A:
+  <<: *main_preset
+  # Overwrite the parent preset
+  should_slice_clusters: true
+
+# This preset can be used by executiong the tool with the parameter "--preset sample_preset/sub_preset_B
+sub_preset_B:
+  <<: *main_preset
+  # Overwrite the parent preset
+  cluster_filter: '\n'
+  text_filter_type: 1
+  text_filter: '[a-zA-z]{4}'
