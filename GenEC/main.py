@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 import argparse
 from typing import cast, Optional, Sequence, Union
+from pathlib import Path
+import sys
+
+PROJECT_PATH = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_PATH))
+
 from GenEC.core import workflows, Workflows  # noqa: E402
 
 
