@@ -24,14 +24,14 @@ def read_files(base_path: str, configurations: list['Configuration']) -> dict[st
     Reads all unique files referenced by configurations, using base_path as the root.
     Returns a dict mapping target_file to file contents.
     '''
-    path = Path(base_path)  # convert to Path once
+    path = Path(base_path)
     unique_files: set[str] = set(c.target_file for c in configurations)
     file_data: dict[str, str] = {}
     for target_file in unique_files:
         if target_file == '':
             file_path = path
         else:
-            file_path = path / target_file  # pathlib join with /
+            file_path = path / target_file
         file_data[target_file] = read_file(file_path)
     return file_data
 
