@@ -6,8 +6,8 @@ COPY . .
 
 RUN apt-get update && apt-get install -y --no-install-recommends binutils build-essential && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
-RUN pip install uv
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir uv
 RUN uv sync --group dist
 
 CMD ["bash"]
