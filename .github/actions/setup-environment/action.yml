@@ -4,6 +4,6 @@ runs:
   steps:
     - name: Setup environment
       run: |
-        pip install pipenv
-        pipenv install --deploy --dev --skip-lock
+        pip install uv
+        uv sync --group dist
       shell: bash
