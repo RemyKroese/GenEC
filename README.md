@@ -1,16 +1,18 @@
 # GenEC: Generic Extraction & Comparison Tool
 
-![1.0.0 Release Progress](https://img.shields.io/badge/progress-82%25-brightgreen)
+![1.0.0 Release Progress](https://img.shields.io/badge/progress-88%25-brightgreen)
 [![Build](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg)](https://github.com/RemyKroese/GenEC/actions)
 [![Last Commit](https://img.shields.io/github/last-commit/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC/commits)
 ![Contributors](https://img.shields.io/github/contributors/RemyKroese/GenEC)
 [![License: Apache 2.0](https://img.shields.io/github/license/RemyKroese/GenEC)](./LICENSE)
 [![Top Language](https://img.shields.io/github/languages/top/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC)
+<!-- [![codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg)](https://codecov.io/gh/RemyKroese/GenEC) -->
+
 
 
 ### 1.0.0 release progress
 
-`██████████████████████████████████████████████████████████████████████████████████                  `
+`████████████████████████████████████████████████████████████████████████████████████████            `
 
 
 &#x20;
@@ -30,21 +32,31 @@ making data analysis straightforward and accessible.
 
 GenEC requires **Python 3.9 or higher**
 
-### Using pipenv (recommended)
+### Using uv (recommended)
 
+For execution:
+```bash
+pip install uv
+uv sync
+uv run <command>
 ```
-pipenv install
-pipenv shell
+
+For developing:
+```bash
+uv sync --group dev   # include dev packages
+uv sync --group dist  # include distribution packages
 ```
+
+---
+
 
 ## Usage
 
-GenEC supports three workflows with different CLI arguments:
+GenEC supports three workflow commands, which utilize different CLI arguments:
 - **basic** — define extraction and comparison directly at runtime.
 - **preset** — use a single YAML preset for configuration.
 - **preset-list** — run bulk analysis with multiple presets listed in a YAML file.
 
----
 
 ### Common Arguments
 
@@ -58,8 +70,6 @@ GenEC supports three workflows with different CLI arguments:
 *`--source` and `--reference` arguments accept **file paths** for the basic and preset workflows, and **directory paths** when using `preset-list` workflow.
 **`--output-directory` and `--output-types` must be used together.
 
----
-
 ### Workflow-Specific Arguments
 
 | Workflow       | Argument              | Short | Required | Description                                               |
@@ -70,8 +80,6 @@ GenEC supports three workflows with different CLI arguments:
 | **preset-list**| `--preset-list`       | `-l`  | Yes      | YAML file listing multiple presets for batch processing.  |
 |                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
 |                | `--target-variables`  |       | No       | Key-value pairs (`key=value`) to dynamically substitute variables in preset target paths. Can be specified multiple times.|
-
----
 
 ### Example Commands
 
@@ -97,6 +105,8 @@ python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> 
 python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> -l <file_name_without_extension> -x <preset_directory> -v myvar1=value1 myvar2=value2
 ```
 
+---
+
 ## Configuration
 
 GenEC allows customization through YAML configuration files. A sample preset  may look like:
@@ -119,27 +129,33 @@ Modify these parameters according to your extraction and comparison needs. Pleas
 YAML](GenEC/presets/sample_preset.yaml) for more information. Creation of more in-depth documentation on these yaml configurations
 files is still in progress.
 
+---
+
 ## Testing
 
-Run the test suite from the root directory using:
+Run the test suite from the root directory. Requires dev packages to be installed
 
 ### Full test
 ```bash
-pipenv run pytest
-
-pipenv shell && pytest
+uv run pytest
 ```
+
+### Coverage
+```bash
+uv run pytest --cov=. --cov-branch
+```
+
 
 ### Subtests
 ```bash
-pipenv run pytest -m system    # Runs system-level tests
+uv run pytest -m system    # Runs system-level tests
 
-pipenv run pytest -m unit      # Runs unit tests
+uv run pytest -m unit      # Runs unit tests
 ```
 
 ### Repeat tests
 ```bash
-pipenv run pytest --count 10
+uv run pytest --count 10
 ```
 
 ## License
