@@ -1,0 +1,19 @@
+preset_dates:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Regex'
+  text_filter: '\d{2}/\d{2}/\d{4}'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+preset_code_value:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Regex'
+  text_filter: '(?<=(Code)=)([^ |]+)'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''

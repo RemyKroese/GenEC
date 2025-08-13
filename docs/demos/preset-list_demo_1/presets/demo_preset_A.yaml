@@ -1,0 +1,19 @@
+preset_numbers:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Regex'
+  text_filter: '\d{4}'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+preset_letters:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Regex'
+  text_filter: '[A-Za-z]{4}'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''

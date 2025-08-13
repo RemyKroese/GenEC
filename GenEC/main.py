@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import argparse
-import sys
 from typing import cast, Optional, Sequence, Union
 from pathlib import Path
+import sys
 
-# Prevent pyinstaller from persisting the build path
-PROJECT_PATH = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).resolve().parent
+PROJECT_PATH = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_PATH))
 
 from GenEC.core import workflows, Workflows  # noqa: E402
 
@@ -50,7 +50,7 @@ def parse_arguments() -> argparse.Namespace:
 
     common_preset = argparse.ArgumentParser(add_help=False)
     common_preset.add_argument('-x', '--presets-directory', type=str, required=False,
-                               default=str(PROJECT_PATH / 'GenEC' / 'presets'),
+                               default='presets',
                                help='Directory where presets are stored. default: %(default)s')
 
     parser = argparse.ArgumentParser(

@@ -1,0 +1,27 @@
+2025-07-10 21:33:05 | CODE | Code=1234 | Desc=First event
+
+2025-07-10 21:33:06 | NOTE | Message=abcd
+
+2025-07-10 21:33:07 | CODE | Code=5678 | Desc=Second event
+
+2025-07-10 21:33:08 | NOTE | Message=wxyz
+
+2025-07-10 21:33:09 | CODE | Code=9012 | Desc=Third event
+
+2025-07-10 21:33:10 | NOTE | Message=lmno
+
+2025-07-10 21:33:11 | CODE | Code=3456 | Desc=Fourth event
+
+2025-07-10 21:33:12 | NOTE | Message=qrst
+
+2025-07-10 21:33:13 | CODE | Code=7890 | Desc=Fifth event
+
+2025-07-10 21:33:14 | NOTE | Message=uvwx
+
+2025-07-10 21:33:15 | CODE | Code=2345 | Desc=Sixth event
+
+2025-07-10 21:33:16 | NOTE | Message=yzab
+
+2025-07-10 21:33:17 | CODE | Code=6789 | Desc=Seventh event
+
+2025-07-10 21:33:18 | NOTE | Message=cdef

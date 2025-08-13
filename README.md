@@ -131,6 +131,15 @@ files is still in progress.
 
 ---
 
+## Demos
+
+### Preset-list demo
+Comparison of multiple files using the `preset-list` workflow with regex configurations:
+
+![preset-list demo](docs/demos/preset-list_demo_1/output.png)
+
+---
+
 ## Testing
 
 Run the test suite from the root directory. Requires dev packages to be installed
