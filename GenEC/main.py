@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 from typing import cast, Optional, Sequence, Union
-
 from GenEC.core import workflows, Workflows  # noqa: E402
 
 
