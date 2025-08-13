@@ -1,5 +1,5 @@
 - preset: preset_file1/preset_a
-  target: input\file1.txt
+  target: input/file1.txt
   data:
     ERROR:
       source: 157
@@ -14,7 +14,7 @@
       reference: 322
       difference: 0
 - preset: preset_file1/preset_a
-  target: input\file3.txt
+  target: input/file3.txt
   data:
     ERROR:
       source: 157

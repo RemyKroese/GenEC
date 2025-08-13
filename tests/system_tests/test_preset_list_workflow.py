@@ -10,7 +10,7 @@ from GenEC import main as genec_main
 ASSETS_DIR: Path = Path('tests/system_tests/assets').resolve()
 EXPECTED_OUTPUT_DIR: Path = ASSETS_DIR / 'preset_list_expected_output'
 OUTPUT_TYPES = ['txt', 'csv', 'json', 'yaml']
-
+TARGET_VARIABLES = ['loc=input', 'prefix=file']
 
 def run_preset_list_test(
     mock_input: Mock,
@@ -41,12 +41,8 @@ def run_preset_list_test(
     with patch.object(sys, 'argv', test_args):
         genec_main.main()
 
-    gen_tab = mock_stdout.getvalue()
     assert expected_output_table in mock_stdout.getvalue()
 
-    # Check output files existence and content.
-    # The output folder structure uses group_1, group_2 etc., not input filenames directly.
-    # Expected files are under EXPECTED_OUTPUT_DIR / expected_output_subdir / group_1 (or group_2) / result.*
     for group in ['group_1', 'group_2']:
         for ext in OUTPUT_TYPES:
             generated_file = output_dir / 'assets' / group / f'result.{ext}'
@@ -67,7 +63,7 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
     ]
     expected_table = (
         '+---------------------------------------+\n'
-        '| preset_file1/preset_a - input\\file1.txt |\n'
+        '| preset_file1/preset_a - input/file1.txt |\n'
         '+---------------+-----------------------+\n'
         '| Data          | Source count          |\n'
         '+---------------+-----------------------+\n'
@@ -77,7 +73,7 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
         '+---------------+-----------------------+\n'
         '\n'
         '+---------------------------------------+\n'
-        '| preset_file1/preset_a - input\\file3.txt |\n'
+        '| preset_file1/preset_a - input/file3.txt |\n'
         '+---------------+-----------------------+\n'
         '| Data          | Source count          |\n'
         '+---------------+-----------------------+\n'
@@ -87,7 +83,7 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
         '+---------------+-----------------------+\n'
         '\n\n'
         '+----------------------------------------+\n'
-        '| preset_file1/preset_b - input\\file2.txt |\n'
+        '| preset_file1/preset_b - input/file2.txt |\n'
         '+-------------------+--------------------+\n'
         '| Data              | Source count       |\n'
         '+-------------------+--------------------+\n'
@@ -99,7 +95,7 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
         '+-------------------+--------------------+\n'
         '\n'
         '+----------------------------------------+\n'
-        '| preset_file1/preset_b - input\\file4.txt |\n'
+        '| preset_file1/preset_b - input/file4.txt |\n'
         '+-------------------+--------------------+\n'
         '| Data              | Source count       |\n'
         '+-------------------+--------------------+\n'
@@ -116,7 +112,8 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
         tmp_path,
         input_side_effect,
         expected_table,
-        expected_output_subdir='extract_only'
+        expected_output_subdir='extract_only',
+        extra_cli_args=['--target-variables', *TARGET_VARIABLES]
     )
 
 
@@ -132,7 +129,7 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
     ]
     expected_table = (
         '+-------------------------------------------------------+\n'
-        '|        preset_file1/preset_a - input\\file1.txt        |\n'
+        '|        preset_file1/preset_a - input/file1.txt        |\n'
         '+---------+--------------+-----------------+------------+\n'
         '| Data    | Source count | Reference count | Difference |\n'
         '+---------+--------------+-----------------+------------+\n'
@@ -142,7 +139,7 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
         '+---------+--------------+-----------------+------------+\n'
         '\n'
         '+-------------------------------------------------------+\n'
-        '|        preset_file1/preset_a - input\\file3.txt        |\n'
+        '|        preset_file1/preset_a - input/file3.txt        |\n'
         '+---------+--------------+-----------------+------------+\n'
         '| Data    | Source count | Reference count | Difference |\n'
         '+---------+--------------+-----------------+------------+\n'
@@ -152,7 +149,7 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
         '+---------+--------------+-----------------+------------+\n'
         '\n\n'
         '+-----------------------------------------------------------+\n'
-        '|          preset_file1/preset_b - input\\file2.txt          |\n'
+        '|          preset_file1/preset_b - input/file2.txt          |\n'
         '+-------------+--------------+-----------------+------------+\n'
         '| Data        | Source count | Reference count | Difference |\n'
         '+-------------+--------------+-----------------+------------+\n'
@@ -164,7 +161,7 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
         '+-------------+--------------+-----------------+------------+\n'
         '\n'
         '+-----------------------------------------------------------+\n'
-        '|          preset_file1/preset_b - input\\file4.txt          |\n'
+        '|          preset_file1/preset_b - input/file4.txt          |\n'
         '+-------------+--------------+-----------------+------------+\n'
         '| Data        | Source count | Reference count | Difference |\n'
         '+-------------+--------------+-----------------+------------+\n'
@@ -182,5 +179,6 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
         input_side_effect,
         expected_table,
         expected_output_subdir='extract_and_compare',
-        extra_cli_args=['--reference', str(ASSETS_DIR)]
+        extra_cli_args=['--reference', str(ASSETS_DIR),
+                        '--target-variables', *TARGET_VARIABLES]
     )

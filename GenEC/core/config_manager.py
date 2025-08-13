@@ -21,7 +21,10 @@ class Configuration:
 
 
 class ConfigManager:
-    def __init__(self, preset_param: Optional[dict[str, str]] = None, presets_directory: Optional[str] = None) -> None:
+    def __init__(self,
+                 preset_param: Optional[dict[str, str]] = None,
+                 presets_directory: Optional[str] = None,
+                 target_variables: Optional[dict[str, str]] = None) -> None:
         if presets_directory:
             self.presets_directory = Path(presets_directory)
         else:
@@ -32,7 +35,7 @@ class ConfigManager:
             if preset_param['type'] == 'preset':
                 self.set_config(preset_param['value'])
             elif preset_param['type'] == 'preset-list':
-                self.configurations.extend(self.load_presets(preset_param['value']))
+                self.configurations.extend(self.load_presets(preset_param['value'], target_variables))
             else:
                 raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
         else:
@@ -45,17 +48,26 @@ class ConfigManager:
         else:
             return tuple(preset_param.split('/', 1))  # type: ignore[return-value]  # Always returns 2 items
 
-    def load_presets(self, presets_list_target: str) -> list[Configuration]:  # pragma: no cover
+    def load_presets(self, presets_list_target: str, target_variables: Optional[dict[str, str]] = None) -> list[Configuration]:  # pragma: no cover
         presets_list_file_path = self.presets_directory / f'{presets_list_target}.yaml'
         presets_list = utils.read_yaml_file(presets_list_file_path)
-        presets_per_file = self._group_presets_by_file(presets_list)
+        presets_per_file = self._group_presets_by_file(presets_list, target_variables)
         return self._collect_presets(presets_per_file)
 
-    def _group_presets_by_file(self, presets_list: dict[str, list[dict[str, str]]]) -> dict[str, list[dict[str, str]]]:
+    def _group_presets_by_file(self,
+                               presets_list: dict[str, list[dict[str, str]]],
+                               target_variables: Optional[dict[str, str]] = None
+                               ) -> dict[str, list[dict[str, str]]]:
         presets_per_target: dict[str, list[dict[str, str]]] = defaultdict(list)
         for group, presets in presets_list.items():
             for entry in presets:
                 target_file = entry.get('target', '')
+                if target_variables:
+                    try:
+                        target_file = target_file.format(**target_variables)
+                    except KeyError as e:
+                        print(f'Missing target variable for placeholder {e} in target [{target_file}]')
+                        continue
                 preset = entry.get('preset', '')
                 if not preset:
                     print(f'Preset missing in entry: {entry}')

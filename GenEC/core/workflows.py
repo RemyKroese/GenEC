@@ -112,7 +112,8 @@ class PresetList(Workflow):
         super().__init__(args)
         self.preset_list = args.preset_list
         self.presets_directory = args.presets_directory
+        self.target_variables = args.target_variables
 
     def _get_config_manager(self) -> ConfigManager:
         preset_param: dict[str, str] = {'type': Workflows.PRESET_LIST.value, 'value': self.preset_list}
-        return ConfigManager(preset_param, self.presets_directory)
+        return ConfigManager(preset_param, self.presets_directory, self.target_variables)
