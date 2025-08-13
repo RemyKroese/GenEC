@@ -1,0 +1,49 @@
+[project]
+name = "GenEC"
+version = "0.1.0"
+description = "Generic Extraction & Comparison Tool"
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "ptable>=0.9.2",
+    "pyyaml>=6.0.2",
+]
+
+[dependency-groups]
+dev = [
+    "autopep8>=2.3.2",
+    "flake8>=7.3.0",
+    "pycodestyle>=2.14.0",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "pytest-repeat>=0.9.4",
+]
+dist = [
+    "pyinstaller>=6.15.0",
+]
+
+
+[tool.pytest.ini_options]
+markers = [
+    "unit",
+    "system"
+]
+filterwarnings = [
+    "ignore::UserWarning:prettytable"
+]
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/__init__.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:"
+]
+
+[tool.uv.sources]
+pypi = { url = "https://pypi.org/simple" }
