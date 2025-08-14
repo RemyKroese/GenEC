@@ -1,4 +1,4 @@
-# ![GenEC: Generic Extraction & Comparison Tool](https://github.com/RemyKroese/GenEC)
+# [GenEC: Generic Extraction & Comparison Tool](https://github.com/RemyKroese/GenEC)
 
 [![Latest](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
 ![Next](https://img.shields.io/badge/1.0.0_release-88%25-brightgreen)
