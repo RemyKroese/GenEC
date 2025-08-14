@@ -1,9 +1,9 @@
-# GenEC: Generic Extraction & Comparison Tool
+# ![GenEC: Generic Extraction & Comparison Tool](https://github.com/RemyKroese/GenEC)
 
-![1.0.0 Release Progress](https://img.shields.io/badge/progress-88%25-brightgreen)
+[![Latest](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
+![Next](https://img.shields.io/badge/1.0.0_release-88%25-brightgreen)
 [![Build](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg)](https://github.com/RemyKroese/GenEC/actions)
 [![Last Commit](https://img.shields.io/github/last-commit/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC/commits)
-![Contributors](https://img.shields.io/github/contributors/RemyKroese/GenEC)
 [![License: Apache 2.0](https://img.shields.io/github/license/RemyKroese/GenEC)](./LICENSE)
 [![Top Language](https://img.shields.io/github/languages/top/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC)
 <!-- [![codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg)](https://codecov.io/gh/RemyKroese/GenEC) -->
