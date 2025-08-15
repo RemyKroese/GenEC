@@ -70,7 +70,9 @@ class Extractor:
         list[str]
             A list of text clusters, optionally sliced based on keywords.
         """
-        clusters = data.split(config.get(ConfigOptions.CLUSTER_FILTER.value))
+        cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
+        # Using '' is not a valid argument for split(). So None is used instead
+        clusters = data.split(utils.normalize_cluster_filter(cluster_filter) if cluster_filter else None)
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
             if file == FileID.SOURCE:
                 start_keyword = config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value)

@@ -7,11 +7,8 @@ from typing import Optional
 
 from GenEC import utils
 from GenEC.core import ConfigOptions, PositionalFilterType
-from GenEC.core.manage_io import InputManager
+from GenEC.core.manage_io import InputManager, YES_INPUT
 from GenEC.core.types.preset_config import Finalized, Initialized
-
-YES_INPUT = ['yes', 'y']
-NO_INPUT = ['no', 'n']
 
 
 @dataclass
@@ -225,7 +222,6 @@ class ConfigManager:
             print(f'preset {preset_name} not found in {file_name}. Skipping...')
             return None
         config = loaded_presets[preset_name]
-        config[ConfigOptions.CLUSTER_FILTER.value] = self._normalize_cluster_filter(config[ConfigOptions.CLUSTER_FILTER.value])
         finalized_config = self._finalize_config(config)
         return Configuration(
             config=finalized_config,
@@ -292,25 +288,6 @@ class ConfigManager:
 
         return presets
 
-    @staticmethod
-    def _normalize_cluster_filter(cluster_filter: Optional[str]) -> str:
-        """
-        Normalize the cluster filter string by decoding unicode escapes.
-
-        Parameters
-        ----------
-        cluster_filter : Optional[str]
-            The raw cluster filter string.
-
-        Returns
-        -------
-        str
-            The normalized cluster filter string.
-        """
-        if cluster_filter is None:
-            return ''
-        return cluster_filter.encode('utf-8').decode('unicode_escape')
-
     def _set_simple_options(self, config: Initialized):
         """
         Set basic configuration options interactively via InputManager.
@@ -364,8 +341,6 @@ class ConfigManager:
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
             self._set_cluster_text_options(config)
 
-        config[ConfigOptions.CLUSTER_FILTER.value] = self._normalize_cluster_filter(config[ConfigOptions.CLUSTER_FILTER.value])
-
         self.configurations.append(Configuration(self._finalize_config(config), preset, target_file))
 
     def _finalize_config(self, config: Initialized) -> Finalized:
@@ -402,3 +377,44 @@ class ConfigManager:
             ref_start_cluster_text=config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value),
             ref_end_cluster_text=config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
         )
+
+    def should_store_configuration(self) -> bool:
+        """
+        Prompt the user to decide whether the current configuration should be saved.
+
+        Returns
+        -------
+        bool
+            True if the configuration should be saved, False otherwise.
+        """
+        return InputManager.ask_open_question('Would you like to save this extraction configuration [yes/y]: ') in YES_INPUT
+
+    def create_new_preset(self) -> None:
+        """Create a preset from the configuration to be written to a file."""
+        config = self.configurations[0].config
+        preset_name = ''
+        file_name = ''
+
+        while not preset_name:
+            preset_name = InputManager.ask_open_question('Please choose a preset name: ').strip()
+            if not preset_name:
+                print('Error: Preset name cannot be empty. Please try again.')
+                continue
+
+        file_name = InputManager.ask_open_question(
+            'Please choose a destination yaml file to store the preset (an existing file can be used).\n' +
+            f'By default the preset will be stored in {self.presets_directory}, but an absolute path can be specified instead: ')
+
+        file_path = Path(file_name + '.yaml')
+        if not file_path.is_absolute():
+            file_path = self.presets_directory / file_path
+
+        new_preset = {preset_name: config}
+
+        if file_path.exists():
+            print(f'File [{file_path}] found. The preset will be appended.')
+            yaml_data = utils.convert_to_yaml(new_preset)
+            utils.write_txt('\n' + yaml_data, file_path, mode='a')
+        else:
+            print(f'File [{file_path}] does not exist. A new file will be created.')
+            utils.write_yaml(new_preset, file_path)

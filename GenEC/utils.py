@@ -234,7 +234,7 @@ def get_writer(name: str) -> Callable[..., None]:
 
 
 @register_writer('json')
-def write_json(data: list['Entry'], file_path: Path) -> None:
+def write_json(data: Any, file_path: Path) -> None:
     """
     Write data to a JSON file.
 
@@ -247,15 +247,14 @@ def write_json(data: list['Entry'], file_path: Path) -> None:
     """
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        data_processed = [sort_entry_data_keys(e) for e in data]
         with file_path.open('w', encoding='utf-8') as file:
-            json.dump(data_processed, file, indent=4)
+            json.dump(data, file, indent=4)
     except OSError as err:  # pragma: no cover
         print(ERROR_WRITING_FILE.format(file_path, err))
 
 
 @register_writer('yaml')
-def write_yaml(data: list['Entry'], file_path: Path) -> None:
+def write_yaml(data: Any, file_path: Path) -> None:
     """
     Write data to a YAML file.
 
@@ -268,9 +267,8 @@ def write_yaml(data: list['Entry'], file_path: Path) -> None:
     """
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        data_processed = [sort_entry_data_keys(e) for e in data]
         with file_path.open('w', encoding='utf-8') as file:
-            yaml.dump(data_processed, file, default_flow_style=False, allow_unicode=True, sort_keys=False)
+            yaml.dump(data, file, default_flow_style=False, allow_unicode=True, sort_keys=False)
     except OSError as err:  # pragma: no cover
         print(ERROR_WRITING_FILE.format(file_path, err))
 
@@ -297,8 +295,6 @@ def write_csv(data: list['Entry'], file_path: Path) -> None:
                 rows.append(row)
                 all_columns.update(row.keys())
 
-        rows.sort(key=lambda r: r['data'])
-
         with file_path.open('w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=sorted(all_columns))
             writer.writeheader()
@@ -308,7 +304,7 @@ def write_csv(data: list['Entry'], file_path: Path) -> None:
 
 
 @register_writer('txt')
-def write_txt(data: str, file_path: Path) -> None:
+def write_txt(data: str, file_path: Path, mode: str = 'w') -> None:
     """
     Write string data to a text file.
 
@@ -321,7 +317,7 @@ def write_txt(data: str, file_path: Path) -> None:
     """
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        with file_path.open('w', encoding='utf-8') as file:
+        with file_path.open(mode, encoding='utf-8') as file:
             file.write(data)
     except OSError as err:
         print(ERROR_WRITING_FILE.format(file_path, err))
@@ -349,3 +345,37 @@ def write_output(data: list['Entry'], ascii_tables: str, file_path: Path, output
             writer(ascii_tables, file_path_with_extension)
         else:
             writer(data, file_path_with_extension)
+
+
+def convert_to_yaml(data: Any) -> str:
+    """
+    Convert an object to yaml.
+
+    Parameters
+    ----------
+    data : Any
+        Any data object
+
+    Returns
+    -------
+    str
+        yaml string
+    """
+    return yaml.dump(data, sort_keys=False, default_flow_style=False, allow_unicode=True)
+
+
+def normalize_cluster_filter(cluster_filter: str) -> str:
+    """
+    Normalize the cluster filter string by decoding unicode escapes.
+
+    Parameters
+    ----------
+    cluster_filter : Optional[str]
+        The raw cluster filter string.
+
+    Returns
+    -------
+    str
+        The normalized cluster filter string.
+    """
+    return cluster_filter.encode('utf-8').decode('unicode_escape')
