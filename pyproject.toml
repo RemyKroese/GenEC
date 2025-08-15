@@ -14,15 +14,17 @@ dependencies = [
 dev = [
     "autopep8>=2.3.2",
     "flake8>=7.3.0",
+    "flake8-pyproject>=1.2.3",
     "pycodestyle>=2.14.0",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
     "pytest-repeat>=0.9.4",
 ]
 dist = [
+    "autopep8>=2.3.2",
+    "flake8-docstrings>=1.7.0",
     "pyinstaller>=6.15.0",
 ]
-
 
 [tool.pytest.ini_options]
 markers = [
@@ -32,6 +34,20 @@ markers = [
 filterwarnings = [
     "ignore::UserWarning:prettytable"
 ]
+
+[tool.flake8]
+property-decorators="true"
+exclude = [
+  '.venv/*',
+  '*prettytable*',
+  '*__init__.py*',
+  'tests/*'
+]
+max-line-length = 150
+count = true
+statistic = true
+docstring-convention = "numpy"
+ignore-self-only-init = true
 
 [tool.coverage.run]
 omit = [

@@ -1,3 +1,5 @@
+"""Module for managing configurations in GenEC."""
+
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +16,24 @@ NO_INPUT = ['no', 'n']
 
 @dataclass
 class Configuration:
+    """
+    Finalized configuration tied to a preset and target file.
+
+    Each Configuration object stores the finalized settings
+    derived from a preset, along with the preset name, target file, and optional group.
+
+    Attributes
+    ----------
+    config : Finalized
+        The finalized configuration object.
+    preset : str
+        The name of the preset used to generate this configuration.
+    target_file : str
+        The target file associated with this configuration.
+    group : str, optional
+        The group name of the preset, by default ''.
+    """
+
     config: Finalized
     preset: str
     target_file: str
@@ -21,10 +41,35 @@ class Configuration:
 
 
 class ConfigManager:
+    """
+    Manages preset configuration loading, processing, and finalization.
+
+    This class supports loading single or multiple presets,
+    resolving placeholders in target files, and interactive configuration setup.
+    Configurations are finalized for downstream processing.
+    """
+
     def __init__(self,
                  preset_param: Optional[dict[str, str]] = None,
                  presets_directory: Optional[str] = None,
                  target_variables: Optional[dict[str, str]] = None) -> None:
+        """
+        Initialize the configuration manager and optionally load presets.
+
+        Parameters
+        ----------
+        preset_param : Optional[dict[str, str]], optional
+            Dictionary specifying a preset or preset list to load. Must include:
+            - 'type': either 'preset' or 'preset-list'
+            - 'value': the preset identifier or list name.
+            If None, configuration is set interactively.
+        presets_directory : Optional[str], optional
+            Path to the directory containing preset YAML files.
+            Defaults to the 'presets' directory in the package root.
+        target_variables : Optional[dict[str, str]], optional
+            Mapping of placeholder names to replacement values for target file paths.
+            Applied when loading presets from a list.
+        """
         if presets_directory:
             self.presets_directory = Path(presets_directory)
         else:
@@ -43,12 +88,40 @@ class ConfigManager:
 
     @staticmethod
     def parse_preset_param(preset_param: str) -> tuple[str, Optional[str]]:
+        """
+        Parse a preset string into file and preset components.
+
+        Parameters
+        ----------
+        preset_param : str
+            The preset string, optionally in the format 'file/preset'.
+
+        Returns
+        -------
+        tuple[str, Optional[str]]
+            Tuple containing file name and preset name (or None if not provided).
+        """
         if '/' not in preset_param:
             return preset_param, None
         else:
             return tuple(preset_param.split('/', 1))  # type: ignore[return-value]  # Always returns 2 items
 
     def load_presets(self, presets_list_target: str, target_variables: Optional[dict[str, str]] = None) -> list[Configuration]:  # pragma: no cover
+        """
+        Load multiple presets from a YAML file and process them into configurations.
+
+        Parameters
+        ----------
+        presets_list_target : str
+            The name of the presets list YAML file (without extension).
+        target_variables : Optional[dict[str, str]], optional
+            Variables used to replace placeholders in target file paths, by default None.
+
+        Returns
+        -------
+        list[Configuration]
+            A list of processed Configuration objects.
+        """
         presets_list_file_path = self.presets_directory / f'{presets_list_target}.yaml'
         presets_list = utils.read_yaml_file(presets_list_file_path)
         presets_per_file = self._group_presets_by_file(presets_list, target_variables)
@@ -58,6 +131,21 @@ class ConfigManager:
                                presets_list: dict[str, list[dict[str, str]]],
                                target_variables: Optional[dict[str, str]] = None
                                ) -> dict[str, list[dict[str, str]]]:
+        """
+        Group presets by target file and apply variable substitutions.
+
+        Parameters
+        ----------
+        presets_list : dict[str, list[dict[str, str]]]
+            Dictionary mapping preset groups to lists of preset entries.
+        target_variables : Optional[dict[str, str]], optional
+            Variables to replace placeholders in target file paths, by default None.
+
+        Returns
+        -------
+        dict[str, list[dict[str, str]]]
+            Dictionary mapping target files to their preset entries.
+        """
         presets_per_target: dict[str, list[dict[str, str]]] = defaultdict(list)
         for group, presets in presets_list.items():
             for entry in presets:
@@ -85,6 +173,24 @@ class ConfigManager:
         return presets_per_target
 
     def _collect_presets(self, presets_per_target: dict[str, list[dict[str, str]]]) -> list[Configuration]:
+        """
+        Process grouped presets into Configuration objects.
+
+        Parameters
+        ----------
+        presets_per_target : dict[str, list[dict[str, str]]]
+            Dictionary mapping target files to preset entries.
+
+        Returns
+        -------
+        list[Configuration]
+            List of Configuration objects.
+
+        Raises
+        ------
+        ValueError
+            If no valid configurations could be created.
+        """
         configurations: list[Configuration] = []
         for target_file, preset_entries in presets_per_target.items():
             for entry in preset_entries:
@@ -97,6 +203,21 @@ class ConfigManager:
         return configurations
 
     def _process_preset_entry(self, entry: dict[str, str], target_file: str) -> Optional[Configuration]:
+        """
+        Finalize a single preset entry into a Configuration.
+
+        Parameters
+        ----------
+        entry : dict[str, str]
+            Preset entry containing file, name, target file, and group.
+        target_file : str
+            The target file associated with this preset.
+
+        Returns
+        -------
+        Optional[Configuration]
+            Finalized Configuration, or None if the preset does not exist.
+        """
         file_name = entry['preset_file']
         preset_name = entry['preset_name']
         loaded_presets = self.load_preset_file(file_name)
@@ -113,6 +234,24 @@ class ConfigManager:
             group=entry.get('preset_group', ''))
 
     def load_preset(self, preset_target: str) -> Initialized:
+        """
+        Load a single preset, optionally prompting the user if multiple presets exist.
+
+        Parameters
+        ----------
+        preset_target : str
+            The preset string in the format 'file/preset' or just 'file'.
+
+        Returns
+        -------
+        Initialized
+            The loaded and initialized preset configuration.
+
+        Raises
+        ------
+        ValueError
+            If the specified preset does not exist in the file.
+        """
         preset_file, preset_name = self.parse_preset_param(preset_target)
         presets = self.load_preset_file(preset_file)
         if not preset_name:
@@ -127,6 +266,24 @@ class ConfigManager:
         return presets[preset_name]
 
     def load_preset_file(self, preset_file: str) -> dict[str, Initialized]:
+        """
+        Load all presets from a YAML file.
+
+        Parameters
+        ----------
+        preset_file : str
+            Name of the preset file (without .yaml extension).
+
+        Returns
+        -------
+        dict[str, Initialized]
+            A dictionary mapping preset names to their Initialized configurations.
+
+        Raises
+        ------
+        ValueError
+            If the file does not contain any presets.
+        """
         presets_file_path = self.presets_directory / f'{preset_file}.yaml'
         presets = utils.read_yaml_file(presets_file_path)
 
@@ -137,28 +294,67 @@ class ConfigManager:
 
     @staticmethod
     def _normalize_cluster_filter(cluster_filter: Optional[str]) -> str:
+        """
+        Normalize the cluster filter string by decoding unicode escapes.
+
+        Parameters
+        ----------
+        cluster_filter : Optional[str]
+            The raw cluster filter string.
+
+        Returns
+        -------
+        str
+            The normalized cluster filter string.
+        """
         if cluster_filter is None:
             return ''
         return cluster_filter.encode('utf-8').decode('unicode_escape')
 
     def _set_simple_options(self, config: Initialized):
+        """
+        Set basic configuration options interactively via InputManager.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object to modify.
+        """
         config[ConfigOptions.CLUSTER_FILTER.value] = InputManager.set_cluster_filter(config)
         config[ConfigOptions.TEXT_FILTER_TYPE.value] = InputManager.set_text_filter_type(config)
         config[ConfigOptions.TEXT_FILTER.value] = InputManager.set_text_filter(config)
         config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = InputManager.set_should_slice_clusters(config)
 
     def _set_cluster_text_options(self, config: Initialized):
+        """
+        Set cluster text options interactively if slicing clusters is enabled.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object to modify.
+        """
         cluster_text_options = [
-                (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
-                (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
-                (ConfigOptions.REF_START_CLUSTER_TEXT.value, 'start', 'REF'),
-                (ConfigOptions.REF_END_CLUSTER_TEXT.value, 'end', 'REF'),
-            ]
+            (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
+            (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
+            (ConfigOptions.REF_START_CLUSTER_TEXT.value, 'start', 'REF'),
+            (ConfigOptions.REF_END_CLUSTER_TEXT.value, 'end', 'REF'),
+        ]
         for option_key, position, src_or_ref in cluster_text_options:
             if not config.get(option_key):
                 config[option_key] = InputManager.set_cluster_text(config, option_key, position, src_or_ref)
 
     def set_config(self, preset: str = '', target_file: str = '') -> None:
+        """
+        Set a configuration using a preset or interactively.
+
+        Parameters
+        ----------
+        preset : str, optional
+            Preset string in 'file/preset' format. If empty, interactive setup is used.
+        target_file : str, optional
+            Associated target file name, by default ''.
+        """
         if preset:
             config: Initialized = self.load_preset(preset)
         else:
@@ -173,6 +369,19 @@ class ConfigManager:
         self.configurations.append(Configuration(self._finalize_config(config), preset, target_file))
 
     def _finalize_config(self, config: Initialized) -> Finalized:
+        """
+        Convert an Initialized configuration into a finalized configuration.
+
+        Parameters
+        ----------
+        config : Initialized
+            The initialized configuration object.
+
+        Returns
+        -------
+        Finalized
+            The finalized configuration ready for use.
+        """
         cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
         text_filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
         text_filter = config.get(ConfigOptions.TEXT_FILTER.value)

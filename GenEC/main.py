@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+"""Command-line interface for GenEC workflows."""
+
 import argparse
 from typing import cast, Optional, Sequence, Union
 from pathlib import Path
@@ -6,15 +7,33 @@ import sys
 
 # Pyinstaller workaround
 if getattr(sys, 'frozen', False):  # pragma: no cover
-    PROJECT_PATH = Path(sys.executable).parent
+    project_path = Path(sys.executable).parent
 else:
-    PROJECT_PATH = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_PATH))
+    project_path = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(project_path))
 
-from GenEC.core import workflows, Workflows  # noqa: E402
+from GenEC.core import workflows, Workflows  # noqa: E402  # pylint: disable=wrong-import-position
 
 
 def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:
+    """
+    Parse a sequence of 'key=value' strings into a dictionary.
+
+    Parameters
+    ----------
+    pairs : Sequence[str]
+        List of strings, each in the format 'key=value'.
+
+    Returns
+    -------
+    dict[str, str]
+        Dictionary mapping keys to values from the input sequence.
+
+    Raises
+    ------
+    argparse.ArgumentTypeError
+        If a string does not contain '=' or has an empty key.
+    """
     result: dict[str, str] = {}
     for pair in pairs:
         if '=' not in pair:
@@ -27,6 +46,22 @@ def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:
 
 
 class TargetVariablesAction(argparse.Action):
+    """
+    Parse key=value pairs from the command line into a dictionary.
+
+    This action updates the namespace attribute with a dictionary of
+    key-value pairs provided as command-line arguments.
+
+    Parameters
+    ----------
+    option_strings : list[str]
+        List of option strings, e.g., ['-v', '--target-variables'].
+    dest : str
+        The name of the attribute to hold the parsed dictionary.
+    nargs : int, optional
+        Number of arguments consumed. Default is None.
+    """
+
     def __call__(
         self,
         parser: argparse.ArgumentParser,
@@ -34,6 +69,20 @@ class TargetVariablesAction(argparse.Action):
         values: Optional[Union[str, Sequence[str]]],
         option_string: Optional[str] = None,
     ) -> None:
+        """
+        Parse values and update the namespace dictionary.
+
+        Parameters
+        ----------
+        parser : argparse.ArgumentParser
+            The argument parser invoking this action.
+        namespace : argparse.Namespace
+            The namespace object to update with parsed key-value pairs.
+        values : Optional[Union[str, Sequence[str]]]
+            A string or list of 'key=value' pairs to parse.
+        option_string : Optional[str], optional
+            The option string that triggered this action, by default None
+        """
         current_dict = getattr(namespace, self.dest, {}) or {}
         parsed = parse_target_variables(cast(Sequence[str], values))
         current_dict.update(parsed)
@@ -41,6 +90,15 @@ class TargetVariablesAction(argparse.Action):
 
 
 def parse_arguments() -> argparse.Namespace:
+    """
+    Parse command-line arguments for the GenEC workflows.
+
+    Returns
+    -------
+    argparse.Namespace
+        Namespace containing parsed arguments including workflow selection,
+        file paths, output options, and presets.
+    """
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument('-s', '--source', type=str, required=True,
                         help='Source file to extract data from.')
@@ -54,26 +112,25 @@ def parse_arguments() -> argparse.Namespace:
 
     common_preset = argparse.ArgumentParser(add_help=False)
     common_preset.add_argument('-x', '--presets-directory', type=str, required=False,
-                               default=PROJECT_PATH / 'GenEC' / 'presets',
+                               default=project_path / 'GenEC' / 'presets',
                                help='Directory where presets are stored. default: %(default)s')
 
     parser = argparse.ArgumentParser(
         prog='GenEC',
-        description='Extract specific data from files and ' +
-                    'compare the differences between these two files based on the data.')
+        description='Extract specific data from files and compare the differences between them.')
     subparsers = parser.add_subparsers(dest='workflow', required=True)
 
-    # basic workflow: analysis construction through CLI
+    # Basic workflow
     subparsers.add_parser(name=Workflows.BASIC.value, parents=[common],
                           help='Define extraction method at run-time.')
 
-    # preset workflow: analysis construction through a preset yaml file
+    # Preset workflow
     preset = subparsers.add_parser(name=Workflows.PRESET.value, parents=[common, common_preset],
                                    help='Define extraction method through a preset.')
     preset.add_argument('-p', '--preset', type=str, required=True,
                         help='Preset to use as analysis parameters.')
 
-    # preset-list workflow: Bulk analysis construction through a preset-list yaml file
+    # Preset-list workflow
     preset_list = subparsers.add_parser(name=Workflows.PRESET_LIST.value, parents=[common, common_preset],
                                         help='Define multiple extraction methods through a preset list.')
     preset_list.add_argument('-l', '--preset-list', type=str, required=True,
@@ -89,6 +146,11 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def main():
+    """
+    Execute the GenEC command-line interface.
+
+    Parses command-line arguments and runs the selected workflow.
+    """
     args = parse_arguments()
     workflows.get_workflow(args.workflow, args).run()
 

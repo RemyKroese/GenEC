@@ -1,3 +1,5 @@
+"""Module containing the various workflow paths for executing the program."""
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Callable, Dict, Optional, Type, TypeVar, TYPE_CHECKING
@@ -14,6 +16,16 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class Workflow(ABC):
+    """
+    Abstract base class for all workflow types.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed command-line arguments containing source, reference, output directory,
+        and output type information.
+    """
+
     def __init__(self, args: 'argparse.Namespace'):
         self.source = args.source
         self.reference = args.reference
@@ -21,10 +33,31 @@ class Workflow(ABC):
         self.output_types = args.output_types
 
     @abstractmethod
-    def _get_config_manager(self) -> ConfigManager:
-        pass  # pragma: no cover
+    def _get_config_manager(self) -> ConfigManager:  # pragma: no cover
+        """
+        Return the configuration manager for this workflow.
+
+        Returns
+        -------
+        ConfigManager
+            Configuration manager instance that provides workflow configurations.
+        """
 
     def _get_data(self, configurations: list[Configuration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
+        """
+        Read source and reference files based on the workflow configurations.
+
+        Parameters
+        ----------
+        configurations : list[Configuration]
+            List of Configuration objects specifying target files to read.
+
+        Returns
+        -------
+        tuple[dict[str, str], Optional[dict[str, str]]]
+            Dictionary mapping file names to contents for source files and
+            optionally for reference files if provided.
+        """
         source_data = utils.read_files(self.source, configurations)
         ref_data = utils.read_files(self.reference, configurations) if self.reference else None
         return source_data, ref_data
@@ -34,6 +67,24 @@ class Workflow(ABC):
                                 source_data: dict[str, str],
                                 ref_data: Optional[dict[str, str]]
                                 ) -> defaultdict[str, list[Entry]]:
+        """
+        Process all configurations by extracting and optionally comparing data.
+
+        Parameters
+        ----------
+        configurations : list[Configuration]
+            List of Configuration objects to process.
+        source_data : dict[str, str]
+            Dictionary mapping source file names to file contents.
+        ref_data : Optional[dict[str, str]]
+            Dictionary mapping reference file names to contents, or None if comparison is not required.
+
+        Returns
+        -------
+        defaultdict[str, list[Entry]]
+            Results organized by configuration group, where each entry contains
+            extracted or compared data.
+        """
         results: defaultdict[str, list[Entry]] = defaultdict(list)
         extractor = Extractor()
 
@@ -61,6 +112,7 @@ class Workflow(ABC):
         return results
 
     def run(self) -> None:
+        """Execute the workflow: read files, process configurations, and generate output."""
         config_manager = self._get_config_manager()
 
         source_data, ref_data = self._get_data(config_manager.configurations)
@@ -75,6 +127,19 @@ _workflow_registry: Dict[str, Type[Workflow]] = {}
 
 
 def register_workflow(name: str) -> Callable[[Type[E]], Type[E]]:
+    """
+     Register a workflow class under a given name decorator.
+
+    Parameters
+    ----------
+    name : str
+        Name used to register the workflow.
+
+    Returns
+    -------
+    Callable[[Type[E]], Type[E]]
+        Decorator that registers the class in the workflow registry.
+    """
     def decorator(cls: Type[E]) -> Type[E]:
         _workflow_registry[name] = cls
         return cls
@@ -82,32 +147,94 @@ def register_workflow(name: str) -> Callable[[Type[E]], Type[E]]:
 
 
 def get_workflow(name: str, args: 'argparse.Namespace') -> Workflow:
+    """
+    Retrieve a registered workflow instance by name.
+
+    Parameters
+    ----------
+    name : str
+        Name of the registered workflow.
+    args : argparse.Namespace
+        Parsed command-line arguments to pass to the workflow constructor.
+
+    Returns
+    -------
+    Workflow
+        An instance of the requested workflow.
+
+    Raises
+    ------
+    ValueError
+        If no workflow is registered under the given name.
+    """
     try:
         return _workflow_registry[name](args)
-    except KeyError:  # pragma: no cover
-        raise ValueError(f'Workflow [{name}] is not registered.')
+    except KeyError as exc:  # pragma: no cover
+        raise ValueError(f'Workflow [{name}] is not registered.') from exc
 
 
 @register_workflow(Workflows.BASIC.value)
 class Basic(Workflow):
+    """
+    Basic workflow that executes without preset configurations.
+
+    This workflow reads source and optional reference files and extracts or compares
+    data according to the default configuration setup.
+    """
+
     def _get_config_manager(self) -> ConfigManager:
+        """
+        Initialize a ConfigManager.
+
+        Returns
+        -------
+        ConfigManager
+            Configuration manager initialized.
+        """
         return ConfigManager()
 
 
 @register_workflow(Workflows.PRESET.value)
 class Preset(Workflow):
+    """
+    Workflow that executes using a single preset configuration.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed command-line arguments including 'preset' and 'presets_directory'.
+    """
+
     def __init__(self, args: 'argparse.Namespace') -> None:
         super().__init__(args)
         self.preset = args.preset
         self.presets_directory = args.presets_directory
 
     def _get_config_manager(self) -> ConfigManager:
+        """
+        Initialize a ConfigManager for the specified preset.
+
+        Returns
+        -------
+        ConfigManager
+            Configuration manager initialized with the preset.
+        """
         preset_param: dict[str, str] = {'type': Workflows.PRESET.value, 'value': self.preset}
         return ConfigManager(preset_param, self.presets_directory)
 
 
 @register_workflow(Workflows.PRESET_LIST.value)
 class PresetList(Workflow):
+    """
+    Workflow that executes using a list of preset configurations.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed command-line arguments including 'preset_list', 'presets_directory',
+        and 'target_variables'.
+    """
+
     def __init__(self, args: 'argparse.Namespace') -> None:
         super().__init__(args)
         self.preset_list = args.preset_list
@@ -115,5 +242,13 @@ class PresetList(Workflow):
         self.target_variables = args.target_variables
 
     def _get_config_manager(self) -> ConfigManager:
+        """
+        Initialize a ConfigManager for the specified list of presets.
+
+        Returns
+        -------
+        ConfigManager
+            Configuration manager initialized with the preset list.
+        """
         preset_param: dict[str, str] = {'type': Workflows.PRESET_LIST.value, 'value': self.preset_list}
         return ConfigManager(preset_param, self.presets_directory, self.target_variables)
