@@ -56,6 +56,9 @@ def test_basic_workflow_extract_only(mock_input: Mock, mock_stdout: StringIO, tm
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
+
+    input_side_effect.append('no')
+
     expected_table = (
         '+---------+--------------+\n'
         '| Data    | Source count |\n'
@@ -85,6 +88,9 @@ def test_basic_workflow_extract_and_compare(mock_input: Mock, mock_stdout: Strin
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
+
+    input_side_effect.append('no')
+
     expected_table = (
         '+---------+--------------+-----------------+------------+\n'
         '| Data    | Source count | Reference count | Difference |\n'

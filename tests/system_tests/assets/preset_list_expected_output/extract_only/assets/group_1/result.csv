@@ -1,7 +1,7 @@
 data,preset,source,target
 ERROR,preset_file1/preset_a,157,input/file1.txt
-ERROR,preset_file1/preset_a,157,input/file3.txt
 INFO,preset_file1/preset_a,1174,input/file1.txt
-INFO,preset_file1/preset_a,1174,input/file3.txt
 WARNING,preset_file1/preset_a,322,input/file1.txt
+ERROR,preset_file1/preset_a,157,input/file3.txt
+INFO,preset_file1/preset_a,1174,input/file3.txt
 WARNING,preset_file1/preset_a,322,input/file3.txt
