@@ -1,15 +1,15 @@
 normal_data:
   - preset: demo_preset_A/preset_numbers
-    target: 'data\file1.txt'
+    target: 'data/file1.txt'
   - preset: demo_preset_A/preset_letters
-    target: 'data\file2.txt'
+    target: 'data/file2.txt'
   - preset: demo_preset_B/preset_dates
-    target: 'data\file3.txt'
+    target: 'data/file3.txt'
 
 code_values:
   - preset: demo_preset_B/preset_code_value
-    target: 'data\{var1}.txt'
+    target: 'data/{var1}.txt'
   - preset: demo_preset_B/preset_code_value
-    target: 'data\{var2}.txt'
+    target: 'data/{var2}.txt'
   - preset: demo_preset_B/preset_code_value
-    target: 'data\{var3}.txt'
+    target: 'data/{var3}.txt'
