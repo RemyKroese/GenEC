@@ -31,6 +31,7 @@ class Workflow(ABC):
         self.reference = args.reference
         self.output_directory = args.output_directory
         self.output_types = args.output_types
+        self.config_manager: ConfigManager
 
     @abstractmethod
     def _get_config_manager(self) -> ConfigManager:  # pragma: no cover
@@ -100,23 +101,22 @@ class Workflow(ABC):
                 results[configuration.group].append(Entry(
                     preset=configuration.preset,
                     target=configuration.target_file,
-                    data=result))
+                    data=dict(sorted(result.items()))))
             else:  # extract only
                 result = utils.get_list_each_element_count(source_filtered)
                 output_result: dict[str, DataExtract] = {key: {'source': value} for key, value in result.items()}
                 results[configuration.group].append(Entry(
                     preset=configuration.preset,
                     target=configuration.target_file,
-                    data=output_result))
+                    data=dict(sorted(output_result.items()))))
 
         return results
 
     def run(self) -> None:
         """Execute the workflow: read files, process configurations, and generate output."""
-        config_manager = self._get_config_manager()
-
-        source_data, ref_data = self._get_data(config_manager.configurations)
-        results = self._process_configurations(config_manager.configurations, source_data, ref_data)
+        assert self.config_manager is not None, 'config_manager must be initialized before run()'
+        source_data, ref_data = self._get_data(self.config_manager.configurations)
+        results = self._process_configurations(self.config_manager.configurations, source_data, ref_data)
 
         output_manager = OutputManager(self.output_directory, self.output_types)
         output_manager.process(results, root=self.source, is_comparison=bool(ref_data))
@@ -182,6 +182,10 @@ class Basic(Workflow):
     data according to the default configuration setup.
     """
 
+    def __init__(self, args: 'argparse.Namespace'):
+        super().__init__(args)
+        self.config_manager = self._get_config_manager()
+
     def _get_config_manager(self) -> ConfigManager:
         """
         Initialize a ConfigManager.
@@ -192,6 +196,12 @@ class Basic(Workflow):
             Configuration manager initialized.
         """
         return ConfigManager()
+
+    def run(self) -> None:
+        """Execute the base workflow and request if a preset should be generated from the CLI input."""
+        super().run()
+        if self.config_manager.should_store_configuration():
+            self.config_manager.create_new_preset()
 
 
 @register_workflow(Workflows.PRESET.value)
@@ -209,6 +219,7 @@ class Preset(Workflow):
         super().__init__(args)
         self.preset = args.preset
         self.presets_directory = args.presets_directory
+        self.config_manager = self._get_config_manager()
 
     def _get_config_manager(self) -> ConfigManager:
         """
@@ -240,6 +251,7 @@ class PresetList(Workflow):
         self.preset_list = args.preset_list
         self.presets_directory = args.presets_directory
         self.target_variables = args.target_variables
+        self.config_manager = self._get_config_manager()
 
     def _get_config_manager(self) -> ConfigManager:
         """
