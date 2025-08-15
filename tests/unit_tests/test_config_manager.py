@@ -1,10 +1,11 @@
 from pathlib import Path
 import pytest
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 
 from GenEC.core.config_manager import ConfigManager, Configuration
 from GenEC.core.manage_io import InputManager
 from GenEC.core.types.preset_config import Initialized
+import GenEC.utils as utils
 
 
 EMPTY_CONFIG = Initialized(
@@ -363,3 +364,68 @@ def test_collect_presets_none_found(mock_process_entry, c_instance):
     }
     with pytest.raises(ValueError, match='None of the provided presets were found.'):
         c_instance._collect_presets(presets_per_target)
+
+
+@pytest.mark.unit
+@patch.object(InputManager, 'ask_open_question')
+@patch.object(Path, 'exists', return_value=False)
+@patch.object(utils, 'write_yaml')
+@patch.object(utils, 'write_txt')
+def test_create_new_preset_creates_new_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
+    mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
+
+    c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
+    c_instance.presets_directory = Path('/fake_dir')
+
+    c_instance.create_new_preset()
+
+    mock_write_yaml.assert_called_once()
+    mock_write_txt.assert_not_called()
+
+    written_data = mock_write_yaml.call_args[0][0]
+    assert 'my_preset' in written_data
+    assert written_data['my_preset'] == {'cluster_filter': '\n'}
+
+
+@pytest.mark.unit
+@patch.object(InputManager, 'ask_open_question')
+@patch.object(Path, 'exists', return_value=True)
+@patch.object(utils, 'write_yaml')
+@patch.object(utils, 'write_txt')
+def test_create_new_preset_appends_to_existing_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
+    mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
+
+    c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
+    c_instance.presets_directory = Path('/fake_dir')
+
+    c_instance.create_new_preset()
+
+    mock_write_txt.assert_called_once()
+    mock_write_yaml.assert_not_called()
+
+
+@pytest.mark.unit
+@patch.object(InputManager, 'ask_open_question')
+@patch.object(Path, 'exists', return_value=False)
+@patch.object(utils, 'write_yaml')
+@patch.object(utils, 'write_txt')
+def test_create_new_preset_retries_on_empty_name(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
+    # Simulate empty input first, then a valid preset name
+    mock_ask_open.side_effect = ['', '  ', 'final_preset', 'my_preset_file']
+
+    c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
+    c_instance.presets_directory = Path('/fake_dir')
+
+    c_instance.create_new_preset()
+
+    # Verify that write_yaml is eventually called once
+    mock_write_yaml.assert_called_once()
+    mock_write_txt.assert_not_called()
+
+    # Verify the preset data passed to write_yaml
+    written_data = mock_write_yaml.call_args[0][0]
+    assert 'final_preset' in written_data
+    assert written_data['final_preset'] == {'cluster_filter': '\n'}
+
+    # Verify ask_open_question was called multiple times due to retries
+    assert mock_ask_open.call_count >= 3
