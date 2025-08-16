@@ -5,12 +5,12 @@ from typing import cast, Optional, Union
 
 from GenEC import utils
 from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
+from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.types.preset_config import Initialized
 from GenEC.core.types.output import DataCompare, DataExtract, Entry
 
 
 YES_INPUT = ['yes', 'y']
-NO_INPUT = ['no', 'n']
 
 
 class InputManager:
@@ -42,8 +42,7 @@ class InputManager:
             The character(s) used to split text clusters.
         """
         if not config.get(ConfigOptions.CLUSTER_FILTER.value):
-            input_string: str = InputManager.ask_open_question(
-                'Please indicate the character(s) to split text clusters on (Default: Newline [\\n]): ')
+            input_string: str = InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER))
         else:
             input_string: str = cast(str, config[ConfigOptions.CLUSTER_FILTER.value])
         return input_string
@@ -64,7 +63,7 @@ class InputManager:
             The selected text filter type, e.g., 'regex', 'positional', or 'regex-list'.
         """
         if not config.get(ConfigOptions.TEXT_FILTER_TYPE.value):
-            return InputManager.ask_mpc_question('Please choose a filter type:\n', [t.value for t in TextFilterTypes])
+            return InputManager.ask_mpc_question(create_prompt(Section.SET_CONFIG, Key.TEXT_FILTER_TYPE), [t.value for t in TextFilterTypes])
         return cast(str, config[ConfigOptions.TEXT_FILTER_TYPE.value])
 
     @staticmethod
@@ -103,8 +102,7 @@ class InputManager:
             True if a subsection of clusters should be compared, False otherwise.
         """
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value) is None:  # False is a valid value
-            response = InputManager.ask_open_question(
-                'Do you want to compare only a subsection of the clusters (press enter to skip)? [yes/y]: ').lower()
+            response = InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.SHOULD_SLICE_CLUSTERS)).lower()
             return response in YES_INPUT
         return cast(bool, config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value])
 
@@ -130,8 +128,7 @@ class InputManager:
             The text input for the cluster subsection.
         """
         if not config.get(config_option):
-            return InputManager.ask_open_question(
-                f'Text in the {src_or_ref.lower()} cluster where the subsection should {position} (press enter to skip): ')
+            return InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_TEXT, cluster=src_or_ref.lower(), position=position))
         return cast(str, config[config_option])
 
     @staticmethod
@@ -151,21 +148,21 @@ class InputManager:
             If the selected text filter type is not supported.
         """
         if config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
-            return InputManager.ask_open_question('Please provide a regex filter: ')
+            return InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.REGEX_FILTER))
         elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
-            separator_input = InputManager.ask_open_question('Please provide the separator for counting (default: 1 space character): ')
+            separator_input = InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_SEPARATOR))
             positional_text_filter = PositionalFilterType(
                 separator=separator_input if separator_input else ' ',
-                line=int(InputManager.ask_open_question('Please provide the line number in the cluster: ')),
-                occurrence=int(InputManager.ask_open_question('Please provide the occurrence number: ')))
+                line=int(InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_LINE))),
+                occurrence=int(InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_OCCURRENCE))))
             return positional_text_filter
         elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX_LIST.value:
             regex_list_filters: list[str] = []
             index = 1
             while True:
-                regex_list_filters.append(InputManager.ask_open_question(f'Please provide a regex filter for search {index}: '))
+                regex_list_filters.append(InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_FILTER, search=index)))
                 index += 1
-                if InputManager.ask_open_question('Do you wish to provide a next search parameter [yes/y]: ').lower() not in YES_INPUT:
+                if InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_CONTINUE)).lower() not in YES_INPUT:
                     break
             return regex_list_filters
         else:
@@ -206,7 +203,7 @@ class InputManager:
             The selected option from the list.
         """
         print(prompt)
-        print('0. Exit')
+        print(create_prompt(Section.USER_CHOICE, Key.EXIT_OPTION))
         for i, option in enumerate(options, 1):
             print(f'{i}. {option}')
 
@@ -234,13 +231,12 @@ class InputManager:
         """
         while True:
             try:
-                choice = int(input(f'Choose a number [0-{max_choice}]: '))
-                if 0 <= choice <= max_choice:
-                    return choice
-                else:
-                    print('Please enter a valid number.')
+                choice = int(input(create_prompt(Section.USER_CHOICE, Key.CHOICE, max_index=max_choice)))
+                if not 0 <= choice <= max_choice:
+                    raise ValueError
+                return choice
             except ValueError:
-                print('Please enter a valid number.')
+                print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
 
 
 class OutputManager:

@@ -8,6 +8,7 @@ from typing import Optional
 from GenEC import utils
 from GenEC.core import ConfigOptions, PositionalFilterType
 from GenEC.core.manage_io import InputManager, YES_INPUT
+from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.types.preset_config import Finalized, Initialized
 
 
@@ -387,7 +388,7 @@ class ConfigManager:
         bool
             True if the configuration should be saved, False otherwise.
         """
-        return InputManager.ask_open_question('Would you like to save this extraction configuration [yes/y]: ') in YES_INPUT
+        return InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.REQUEST_SAVE)) in YES_INPUT
 
     def create_new_preset(self) -> None:
         """Create a preset from the configuration to be written to a file."""
@@ -396,25 +397,23 @@ class ConfigManager:
         file_name = ''
 
         while not preset_name:
-            preset_name = InputManager.ask_open_question('Please choose a preset name: ').strip()
+            preset_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.NEW_PRESET_NAME)).strip()
             if not preset_name:
-                print('Error: Preset name cannot be empty. Please try again.')
+                print(create_prompt(Section.WRITE_CONFIG, Key.INVALID_PRESET_NAME))
                 continue
 
-        file_name = InputManager.ask_open_question(
-            'Please choose a destination yaml file to store the preset (an existing file can be used).\n' +
-            f'By default the preset will be stored in {self.presets_directory}, but an absolute path can be specified instead: ')
+        file_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME, presets_directory=self.presets_directory))
 
-        file_path = Path(file_name + '.yaml')
+        file_path = Path(file_name).with_suffix('.yaml')
         if not file_path.is_absolute():
             file_path = self.presets_directory / file_path
 
         new_preset = {preset_name: config}
 
         if file_path.exists():
-            print(f'File [{file_path}] found. The preset will be appended.')
+            print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND, file_path=file_path))
             yaml_data = utils.convert_to_yaml(new_preset)
             utils.write_txt('\n' + yaml_data, file_path, mode='a')
         else:
-            print(f'File [{file_path}] does not exist. A new file will be created.')
+            print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NOT_FOUND, file_path=file_path))
             utils.write_yaml(new_preset, file_path)
