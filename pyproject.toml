@@ -3,10 +3,16 @@ name = "GenEC"
 version = "0.1.0"
 description = "Generic Extraction & Comparison Tool"
 readme = "README.md"
+readme-content-type = "text/markdown"
 requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Remy Kroese", email = "remykroese@hotmail.com" }
+]
+keywords = ["data", "data-analysis", "data-processing", "extraction", "comparison", "automation", "cli"]
 
 dependencies = [
-    "ptable>=0.9.2",
+    "prettytable>=3.16.0",
     "pyyaml>=6.0.2",
 ]
 
@@ -14,6 +20,7 @@ dependencies = [
 dev = [
     "autopep8>=2.3.2",
     "flake8>=7.3.0",
+    "flake8-docstrings>=1.7.0",
     "flake8-pyproject>=1.2.3",
     "pycodestyle>=2.14.0",
     "pytest>=8.4.1",
@@ -21,18 +28,22 @@ dev = [
     "pytest-repeat>=0.9.4",
 ]
 dist = [
-    "autopep8>=2.3.2",
-    "flake8-docstrings>=1.7.0",
-    "pyinstaller>=6.15.0",
+    "pyinstaller>=6.15.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/remykroese/GenEC"
+Docs = "https://github.com/RemyKroese/GenEC/tree/main/docs/"
+Issue_tracker = "https://github.com/remykroese/GenEC/issues"
+
 [tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
 markers = [
     "unit",
     "system"
 ]
 filterwarnings = [
-    "ignore::UserWarning:prettytable"
+    "ignore::SyntaxWarning:prettytable"
 ]
 
 [tool.flake8]
@@ -50,12 +61,15 @@ docstring-convention = "numpy"
 ignore-self-only-init = true
 
 [tool.coverage.run]
+branch = true
 omit = [
     "*/tests/*",
     "*/__init__.py"
 ]
 
 [tool.coverage.report]
+show_missing = true
+skip_covered = true
 exclude_lines = [
     "pragma: no cover",
     "if __name__ == .__main__.:"
