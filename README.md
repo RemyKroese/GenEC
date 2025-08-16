@@ -1,9 +1,9 @@
 # [GenEC: Generic Extraction & Comparison Tool](https://github.com/RemyKroese/GenEC)
 
-[![Latest](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
-![Next](https://img.shields.io/badge/1.0.0-94%25-brightgreen)
-[![Build](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg)](https://github.com/RemyKroese/GenEC/actions)
-[![codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg)](https://codecov.io/gh/RemyKroese/GenEC)
+[![Build Status](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg?branch=main)](https://github.com/RemyKroese/GenEC/actions)
+[![Codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg?branch=main)](https://codecov.io/gh/RemyKroese/GenEC)
+[![Latest Release](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
+[![Next Version](https://img.shields.io/badge/1.0.0-94%25-brightgreen)]()
 [![Last Commit](https://img.shields.io/github/last-commit/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC/commits)
 [![License: Apache 2.0](https://img.shields.io/github/license/RemyKroese/GenEC)](./LICENSE)
 [![Top Language](https://img.shields.io/github/languages/top/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC)
@@ -14,8 +14,6 @@
 
 `██████████████████████████████████████████████████████████████████████████████████████████████      `
 
-
-&#x20;
 
 ## Overview
 
@@ -136,7 +134,7 @@ files is still in progress.
 ### Preset-list demo
 Comparison of multiple files using the `preset-list` workflow with regex configurations:
 
-![preset-list demo](docs/demos/preset-list_demo_1/output.png)
+[<img src="docs/demos/preset-list_demo_1/output.png" alt="preset-list demo" width="600">](docs/demos/preset-list_demo_1/output.png)
 
 ---
 
@@ -170,14 +168,4 @@ uv run pytest --count 10
 ## License
 Copyright [2025] [Remy Kroese]
 
-Licensed under the Apache License, Version 2.0 See the [LICENSE file](LICENSE) for details.
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
