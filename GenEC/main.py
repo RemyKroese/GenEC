@@ -114,7 +114,7 @@ def parse_arguments() -> argparse.Namespace:
 
     common_preset = argparse.ArgumentParser(add_help=False)
     common_preset.add_argument('-d', '--presets-directory', type=str, required=False,
-                               default=project_path / 'GenEC' / 'presets',
+                               default=project_path / 'presets',
                                help='Directory where presets are stored. default: %(default)s')
 
     parser = argparse.ArgumentParser(
