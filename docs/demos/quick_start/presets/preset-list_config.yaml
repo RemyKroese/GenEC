@@ -1,0 +1,15 @@
+normal_data:
+  - preset: preset_config_A/preset_numbers
+    target: 'data/file1.txt'
+  - preset: preset_config_A/preset_letters
+    target: 'data/file2.txt'
+  - preset: preset_config_B/preset_dates
+    target: 'data/file3.txt'
+
+code_values:
+  - preset: preset_config_B/preset_code_value
+    target: 'data/{var1}.txt'
+  - preset: preset_config_B/preset_code_value
+    target: 'data/{var2}.txt'
+  - preset: preset_config_B/preset_code_value
+    target: 'data/{var3}.txt'

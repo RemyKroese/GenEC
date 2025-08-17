@@ -47,7 +47,6 @@ uv sync --group dist  # include distribution packages
 
 ---
 
-
 ## Usage
 
 GenEC supports three workflow commands, which utilize different CLI arguments:
@@ -60,12 +59,13 @@ GenEC supports three workflow commands, which utilize different CLI arguments:
 
 | Argument             | Short | Required | Description                                                        |
 |----------------------|-------|----------|--------------------------------------------------------------------|
-| `--source`*           | `-s`  | Yes      | Path to the source for data extraction.                      |
+| `--source`           | `-s`  | Yes      | Path to the source for data extraction.                      |
 | `--reference`        | `-r`  | No       | Path to the reference for comparison. |
-| `--output-directory`* | `-o`  | No       | Directory to save output files. |
-| `--output-types`*     | `-t`  | No       | List of output file types to generate. Choices: `csv`, `json`, `txt`, `yaml`. Note that multiple can be selected. |
+| `--output-directory` | `-o`  | No       | Directory to save output files. |
+| `--output-types`     | `-t`  | No       | List of output file types to generate. Choices: `csv`, `json`, `txt`, `yaml`. Note that multiple can be selected. |
 
 *`--source` and `--reference` arguments accept **file paths** for the basic and preset workflows, and **directory paths** when using `preset-list` workflow.
+
 **`--output-directory` and `--output-types` must be used together.
 
 ### Workflow-Specific Arguments
@@ -74,9 +74,9 @@ GenEC supports three workflow commands, which utilize different CLI arguments:
 |----------------|-----------------------|-------|----------|-----------------------------------------------------------|
 | **basic**      | (none additional)     |       |          | Extraction strategy defined at runtime.     |
 | **preset**     | `--preset`            | `-p`  | Yes      | Extraction strategy determined through a preset.     |
-|                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
+|                | `--presets-directory` | `-d`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
 | **preset-list**| `--preset-list`       | `-l`  | Yes      | YAML file listing multiple presets for batch processing.  |
-|                | `--presets-directory` | `-x`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
+|                | `--presets-directory` | `-d`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
 |                | `--target-variables`  |       | No       | Key-value pairs (`key=value`) to dynamically substitute variables in preset target paths. Can be specified multiple times.|
 
 ### Example Commands
@@ -105,6 +105,39 @@ python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> 
 
 ---
 
+## Quick-start
+
+### Basic workflow
+```bash
+uv run python GenEC/main.py basic -s docs/demos/quick_start/source/data/file1.txt -r docs/demos/quick_start/source/data/file2.txt
+```
+[Output files (`-o docs/demos/quick_start/basic_output -t txt csv json yaml`)](docs/demos/quick_start/basic_output//file1/)
+
+[<img src="docs/demos/quick_start/basic_result.png" alt="basic quick-start" width="600">](docs/demos/quick_start/basic_result.png)
+
+
+### Preset workflow
+```bash
+uv run python GenEC/main.py preset -s docs/demos/quick_start/source/data/file1.txt -r docs/demos/quick_start/source/data/file2.txt -p preset_config_B/preset_code_value -d docs/demos/quick_start/presets/
+```
+[Output files (`-o docs/demos/quick_start/preset_output -t txt csv json yaml`)](docs/demos/quick_start/preset_output/file1/)
+
+[<img src="docs/demos/quick_start/preset_result.png" alt="basic quick-start" width="600">](docs/demos/quick_start/preset_result.png)
+
+
+### Preset-list workflow
+```bash
+uv run python GenEC/main.py preset-list -s docs/demos/quick_start/source -r docs/demos/quick_start/reference/ -l preset-list_config -d docs/demos/quick_start/presets/ -v var1=file1 var2=file2 var3=file3
+```
+[Output files (`-o docs/demos/quick_start/preset-list_output -t txt csv json yaml`)](docs/demos/quick_start/preset-list_output/source/)
+
+[<img src="docs/demos/quick_start/preset-list_normal_values_result.png" alt="basic quick-start" width="600">](docs/demos/quick_start/preset-list_normal_values_result.png)
+
+[<img src="docs/demos/quick_start/preset-list_code_values_result.png" alt="basic quick-start" width="600">](docs/demos/quick_start/preset-list_code_values_result.png)
+
+
+---
+
 ## Configuration
 
 GenEC allows customization through YAML configuration files. A sample preset  may look like:
@@ -126,15 +159,6 @@ Note that GenEC can use grouping within the Regex filter type `()` to construct 
 Modify these parameters according to your extraction and comparison needs. Please see the [Sample preset
 YAML](GenEC/presets/sample_preset.yaml) for more information. Creation of more in-depth documentation on these yaml configurations
 files is still in progress.
-
----
-
-## Demos
-
-### Preset-list demo
-Comparison of multiple files using the `preset-list` workflow with regex configurations:
-
-[<img src="docs/demos/preset-list_demo_1/output.png" alt="preset-list demo" width="600">](docs/demos/preset-list_demo_1/output.png)
 
 ---
 
