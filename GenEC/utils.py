@@ -6,8 +6,10 @@ import csv
 import json
 from pathlib import Path
 
-from rich.table import Table
+from rich.box import MINIMAL_HEAVY_HEAD
 from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 import yaml
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -129,9 +131,28 @@ def append_to_file(data: str, file_path: Path) -> None:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
 
-def create_extraction_ascii_table(data: dict[str, 'DataExtract'], title: str = 'GenEC results') -> Table:
+def _stylized_difference(difference: int) -> Text:
     """
-    Create an ASCII table from extracted data.
+    Stylize the color for the "difference" value of a result.
+
+    Parameters
+    ----------
+    value : int
+        Difference value
+
+    Returns
+    -------
+    Text
+        Rich text object with the stylized difference value
+    """
+    colors = {0: 'green'}
+    color = colors.get(difference, 'bright_blue' if difference > 0 else 'orange1')
+    return Text(str(difference), style=color)
+
+
+def create_extraction_table(data: dict[str, 'DataExtract'], preset: str, target_file: str) -> Table:
+    """
+    Create a table from extracted data.
 
     Parameters
     ----------
@@ -142,23 +163,43 @@ def create_extraction_ascii_table(data: dict[str, 'DataExtract'], title: str = '
 
     Returns
     -------
-    str
-        ASCII table as a string.
+    Table
+        rich table
     """
-    rich_table = Table(title=title, title_justify='full')
-    rich_table.add_column('Data', justify='center')
-    rich_table.add_column('Source count', justify='center')
+    if preset or target_file:
+        title = Text(justify='left')
+        if preset and target_file:
+            title.append(f'Preset:      {preset}\n', style="bold yellow")
+            title.append(f'Target file: {target_file}', style="italic cyan")
+        elif preset:
+            title.append(f'Preset:      {preset}', style="bold yellow")
+        elif target_file:
+            title.append(f'Target file: {target_file}', style="italic cyan")
+    else:
+        title = None
 
+    table = Table(title=title, header_style='Bold Magenta')
+    table.box = MINIMAL_HEAVY_HEAD
+    table.row_styles = ['white', 'grey50']
+
+    # Columns (matching style)
+    table.add_column('Data', justify='left', style='italic bold cyan',
+                     min_width=30, max_width=80, overflow='ellipsis')
+    table.add_column('(count)\nSource', justify='right',
+                     min_width=8, max_width=20, overflow='ellipsis')
+
+    # Sort by source count
     sorted_items = sorted(data.items(), key=lambda x: x[1]['source'], reverse=True)
 
     for key, value in sorted_items:
-        rich_table.add_row(str(key), str(value['source']))
-    return rich_table
+        table.add_row(str(key), str(value['source']))
+
+    return table
 
 
-def create_comparison_ascii_table(data: dict[str, 'DataCompare'], title: str = 'GenEC results') -> Table:
+def create_comparison_table(data: dict[str, 'DataCompare'], preset: str, target_file: str) -> Table:
     """
-    Create an ASCII table comparing source and reference data.
+    Create a table comparing source and reference data.
 
     Parameters
     ----------
@@ -169,27 +210,40 @@ def create_comparison_ascii_table(data: dict[str, 'DataCompare'], title: str = '
 
     Returns
     -------
-    str
-        ASCII comparison table as a string.
+    Table
+        rich table
     """
-    rich_table = Table(title=title, title_justify='full')
+    if preset or target_file:
+        title = Text(justify='left')
+        if preset and target_file:
+            title.append(f'Preset:      {preset}\n', style="bold yellow")
+            title.append(f'Target file: {target_file}', style="italic cyan")
+        elif preset:
+            title.append(f'Preset:      {preset}', style="bold yellow")
+        elif target_file:
+            title.append(f'Target file: {target_file}', style="italic cyan")
+    else:
+        title = None
 
-    rich_table.add_column('Data', justify='center')
-    rich_table.add_column('Source count', justify='center')
-    rich_table.add_column('Reference count', justify='center')
-    rich_table.add_column('Difference', justify='center')
+    table = Table(title=title, header_style='Bold Magenta')
+    table.box = MINIMAL_HEAVY_HEAD
+    table.row_styles = ["white", "grey50"]
+    table.add_column('Data', justify='left', style='italic bold cyan', min_width=30, max_width=80, overflow='ellipsis')
+    table.add_column('(count)\nSource', justify='right', min_width=8, max_width=20, overflow='ellipsis')
+    table.add_column('(count)\nReference', justify='right', min_width=8, max_width=20, overflow='ellipsis')
+    table.add_column('Difference', justify='right', min_width=8, max_width=20, overflow='ellipsis')
 
     sorted_items = sorted(data.items(), key=lambda x: x[1]['difference'], reverse=True)
 
     for key, value in sorted_items:
-        rich_table.add_row(
+        table.add_row(
             str(key),
             str(value['source']),
             str(value['reference']),
-            str(value['difference'])
+            _stylized_difference(value['difference'])
         )
 
-    return rich_table
+    return table
 
 
 F = TypeVar('F', bound=Callable[..., None])

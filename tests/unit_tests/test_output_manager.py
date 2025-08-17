@@ -49,8 +49,8 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
     om_instance.output_types = output_types
     om_instance.should_print_results = True
 
-    patch_target = ('GenEC.utils.create_comparison_ascii_table'
-                    if is_comparison else 'GenEC.utils.create_extraction_ascii_table')
+    patch_target = ('GenEC.utils.create_comparison_table'
+                    if is_comparison else 'GenEC.utils.create_extraction_table')
 
     with patch(patch_target, return_value=MOCK_ASCII_TABLE) as mock_create_table:
         om_instance.process(mock_results, root='', is_comparison=is_comparison)
@@ -58,10 +58,8 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
         expected_create_calls = []
         expected_txt_output = []
         for entry in mock_results['group1']:
-            title = entry['preset']
-            if entry['target']:
-                title += f" - {entry['target']}"
-            expected_create_calls.append(call(entry['data'], title))
+            expected_create_calls.append(call(entry['data'], entry['preset'], entry['target']))
+
             expected_txt_output.append(MOCK_ASCII_TABLE)
 
         mock_create_table.assert_has_calls(expected_create_calls, any_order=False)
@@ -88,7 +86,7 @@ def test_process_no_output_directory_no_write(mock_write_output, mock_print, sho
     om_instance.output_types = ['txt', 'json']
     om_instance.should_print_results = should_print
 
-    with patch('GenEC.utils.create_extraction_ascii_table', return_value=MOCK_ASCII_TABLE) as mock_create_table:
+    with patch('GenEC.utils.create_extraction_table', return_value=MOCK_ASCII_TABLE) as mock_create_table:
         om_instance.process(MOCK_RESULTS_GROUPED_EXTRACTION, root='')
         assert mock_create_table.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'])
         if should_print:

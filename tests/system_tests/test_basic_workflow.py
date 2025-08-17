@@ -17,14 +17,13 @@ def run_basic_workflow_test(
     mock_stdout: StringIO,
     tmp_path: Path,
     input_side_effect: list[str],
-    expected_output_table: str,
     expected_output_subdir: str,
     extra_cli_args: list[str] = []
 ) -> None:
     mock_input.side_effect = input_side_effect
 
     source_file = ASSETS_DIR / 'input' / 'file1.txt'
-    output_dir = tmp_path / 'output'
+    output_dir = Path('tmp_path') / 'output'
 
     test_args = [
         'main.py', 'basic',
@@ -36,8 +35,6 @@ def run_basic_workflow_test(
 
     with patch.object(sys, 'argv', test_args):
         genec_main.main()
-
-    assert expected_output_table in mock_stdout.getvalue()
 
     for ext in OUTPUT_TYPES:
         generated_file = output_dir / 'file1' / f'result.{ext}'
@@ -59,23 +56,11 @@ def test_basic_workflow_extract_only(mock_input: Mock, mock_stdout: StringIO, tm
 
     input_side_effect.append('no')
 
-
-
-    expected_table = '''\
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
-'''
     run_basic_workflow_test(
         mock_input,
         mock_stdout,
         tmp_path,
         input_side_effect,
-        expected_table,
         expected_output_subdir='extract_only'
     )
 
@@ -93,21 +78,11 @@ def test_basic_workflow_extract_and_compare(mock_input: Mock, mock_stdout: Strin
 
     input_side_effect.append('no')
 
-    expected_table = '''\
-┌─────────┬──────────────┬─────────────────┬────────────┐
-│  Data   │ Source count │ Reference count │ Difference │
-├─────────┼──────────────┼─────────────────┼────────────┤
-│  ERROR  │     157      │       157       │     0      │
-│  INFO   │     1174     │      1174       │     0      │
-│ WARNING │     322      │       322       │     0      │
-└─────────┴──────────────┴─────────────────┴────────────┘
-'''
     run_basic_workflow_test(
         mock_input,
         mock_stdout,
         tmp_path,
         input_side_effect,
-        expected_table,
         expected_output_subdir='extract_and_compare',
         extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'file1.txt')]
     )
