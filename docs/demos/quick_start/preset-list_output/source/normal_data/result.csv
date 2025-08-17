@@ -1,0 +1,6 @@
+data,difference,preset,reference,source,target
+2025,-2,preset_config_A/preset_numbers,14,12,data/file1.txt
+CODE,-3,preset_config_A/preset_letters,7,4,data/file2.txt
+NOTE,3,preset_config_A/preset_letters,7,10,data/file2.txt
+01/01/2025,-1,preset_config_B/preset_dates,1,0,data/file3.txt
+10/07/2025,-1,preset_config_B/preset_dates,1,0,data/file3.txt

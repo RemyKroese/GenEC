@@ -1,0 +1,18 @@
+[
+    {
+        "preset": "",
+        "target": "",
+        "data": {
+            "CODE": {
+                "source": 9,
+                "reference": 4,
+                "difference": 5
+            },
+            "NOTE": {
+                "source": 3,
+                "reference": 10,
+                "difference": -7
+            }
+        }
+    }
+]

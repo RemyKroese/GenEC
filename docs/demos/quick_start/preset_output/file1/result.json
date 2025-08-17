@@ -1,0 +1,53 @@
+[
+    {
+        "preset": "preset_config_B/preset_code_value",
+        "target": "",
+        "data": {
+            "Code | 1234": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | 2345": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | 3456": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | 5678": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | 6789": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | 7890": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | 9012": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Code | date": {
+                "source": 3,
+                "reference": 0,
+                "difference": 3
+            },
+            "Code | word": {
+                "source": 3,
+                "reference": 0,
+                "difference": 3
+            }
+        }
+    }
+]

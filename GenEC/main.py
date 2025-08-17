@@ -113,7 +113,7 @@ def parse_arguments() -> argparse.Namespace:
                         help='Output file types to generate. Provide at least one if --output-directory is set.')
 
     common_preset = argparse.ArgumentParser(add_help=False)
-    common_preset.add_argument('-x', '--presets-directory', type=str, required=False,
+    common_preset.add_argument('-d', '--presets-directory', type=str, required=False,
                                default=project_path / 'GenEC' / 'presets',
                                help='Directory where presets are stored. default: %(default)s')
 
@@ -154,6 +154,9 @@ def main():
     Parses command-line arguments and runs the selected workflow.
     """
     args = parse_arguments()
+
+    print('\n')  # Create some space between command argument and the output sequence
+
     workflows.get_workflow(args.workflow, args).run()
 
     print_footer()

@@ -1,0 +1,29 @@
+- preset: preset_config_A/preset_numbers
+  target: data/file1.txt
+  data:
+    '2025':
+      source: 12
+      reference: 14
+      difference: -2
+- preset: preset_config_A/preset_letters
+  target: data/file2.txt
+  data:
+    CODE:
+      source: 4
+      reference: 7
+      difference: -3
+    NOTE:
+      source: 10
+      reference: 7
+      difference: 3
+- preset: preset_config_B/preset_dates
+  target: data/file3.txt
+  data:
+    01/01/2025:
+      source: 0
+      reference: 1
+      difference: -1
+    10/07/2025:
+      source: 0
+      reference: 1
+      difference: -1
