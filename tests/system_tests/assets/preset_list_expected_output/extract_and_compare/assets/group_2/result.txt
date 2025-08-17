@@ -1,26 +1,30 @@
-Preset:      preset_file1/preset_b                                    
-Target file: input/file2.txt                                          
-                                 ╷          ╷           ╷             
-                                 │  (count) │   (count) │             
-  Data                           │   Source │ Reference │ Difference  
-╶────────────────────────────────┼──────────┼───────────┼────────────╴
-  BOOT                           │       69 │        69 │          0  
-  CALIBRATION                    │       69 │        69 │          0  
-  RESTART                        │       73 │        73 │          0  
-  SHUTDOWN                       │       77 │        77 │          0  
-  SYNC                           │       80 │        80 │          0  
-                                 ╵          ╵           ╵             
+┌────────────────────────────────────────────────────────────────────────┐
+│ Preset:      preset_file1/preset_b                                     │
+│ Target file: input/file2.txt                                           │
+│                                  ╷          ╷           ╷              │
+│                                  │  (count) │   (count) │              │
+│   Data                           │   Source │ Reference │ Difference   │
+│ ╶────────────────────────────────┼──────────┼───────────┼────────────╴ │
+│   BOOT                           │       69 │        69 │          0   │
+│   CALIBRATION                    │       69 │        69 │          0   │
+│   RESTART                        │       73 │        73 │          0   │
+│   SHUTDOWN                       │       77 │        77 │          0   │
+│   SYNC                           │       80 │        80 │          0   │
+│                                  ╵          ╵           ╵              │
+└────────────────────────────────────────────────────────────────────────┘
 
-Preset:      preset_file1/preset_b                                    
-Target file: input/file4.txt                                          
-                                 ╷          ╷           ╷             
-                                 │  (count) │   (count) │             
-  Data                           │   Source │ Reference │ Difference  
-╶────────────────────────────────┼──────────┼───────────┼────────────╴
-  BOOT                           │       69 │        69 │          0  
-  CALIBRATION                    │       69 │        69 │          0  
-  RESTART                        │       73 │        73 │          0  
-  SHUTDOWN                       │       77 │        77 │          0  
-  SYNC                           │       80 │        80 │          0  
-                                 ╵          ╵           ╵             
+┌────────────────────────────────────────────────────────────────────────┐
+│ Preset:      preset_file1/preset_b                                     │
+│ Target file: input/file4.txt                                           │
+│                                  ╷          ╷           ╷              │
+│                                  │  (count) │   (count) │              │
+│   Data                           │   Source │ Reference │ Difference   │
+│ ╶────────────────────────────────┼──────────┼───────────┼────────────╴ │
+│   BOOT                           │       69 │        69 │          0   │
+│   CALIBRATION                    │       69 │        69 │          0   │
+│   RESTART                        │       73 │        73 │          0   │
+│   SHUTDOWN                       │       77 │        77 │          0   │
+│   SYNC                           │       80 │        80 │          0   │
+│                                  ╵          ╵           ╵              │
+└────────────────────────────────────────────────────────────────────────┘
 
