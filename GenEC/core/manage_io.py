@@ -239,7 +239,6 @@ class InputManager:
         """
         while True:
             try:
-
                 console.print(create_prompt(Section.USER_CHOICE, Key.CHOICE, max_index=max_choice), end='')
                 choice = int(input())
                 if not 0 <= choice <= max_choice:
