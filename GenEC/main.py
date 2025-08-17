@@ -14,7 +14,7 @@ else:
 sys.path.insert(0, str(project_path))
 
 from GenEC.core import workflows, Workflows  # noqa: E402  # pylint: disable=wrong-import-position
-from GenEC.utils import print_footer
+from GenEC.utils import print_footer         # noqa: E402  # pylint: disable=wrong-import-position
 
 
 def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:

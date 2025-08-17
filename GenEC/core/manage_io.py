@@ -12,7 +12,7 @@ from GenEC.core.types.preset_config import Initialized
 from GenEC.core.types.output import DataCompare, DataExtract, Entry
 
 if TYPE_CHECKING:  # pragma: no cover
-    from rich.table import Table
+    from rich.panel import Panel
 
 console = Console()
 
@@ -285,15 +285,17 @@ class OutputManager:
             Whether the results are comparison results, by default False.
         """
         for group, entries in results.items():
-            ascii_tables: list['Table'] = []
+            ascii_tables: list['Panel'] = []
             for entry in entries:
                 if is_comparison:
-                    ascii_tables.append(utils.create_comparison_table(cast(dict[str, DataCompare], entry['data']), entry.get('preset'), entry.get('target')))
+                    ascii_tables.append(utils.create_comparison_table(cast(dict[str, DataCompare],
+                                                                           entry['data']), entry.get('preset'), entry.get('target')))
                 else:
-                    ascii_tables.append(utils.create_extraction_table(cast(dict[str, DataExtract], entry['data']), entry.get('preset'), entry.get('target')))
+                    ascii_tables.append(utils.create_extraction_table(cast(dict[str, DataExtract],
+                                                                           entry['data']), entry.get('preset'), entry.get('target')))
             if self.should_print_results:
-                print('\n')
                 for table in ascii_tables:
+                    console.print('\n')
                     console.print(table)
             if self.output_directory and self.output_types:
                 output_path = self._create_output_path(group, root, file_name=file_name)

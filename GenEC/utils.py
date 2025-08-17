@@ -2,13 +2,14 @@
 
 from collections import Counter
 from datetime import datetime
-from typing import Any, Callable, Dict, Set, TypeVar, TYPE_CHECKING
+from typing import Any, Callable, Dict, Optional, Set, TypeVar, TYPE_CHECKING
 import csv
 import json
 from pathlib import Path
 
 from rich.box import MINIMAL_HEAVY_HEAD
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 import yaml
@@ -166,7 +167,7 @@ def _stylized_difference(difference: int) -> Text:
     return Text(str(difference), style=color)
 
 
-def _build_table_title(preset: str, target_file: str) -> Text | None:
+def _build_table_title(preset: str, target_file: str) -> Optional[Text]:
     """
     Construct a rich Text object for the table title.
 
@@ -179,7 +180,7 @@ def _build_table_title(preset: str, target_file: str) -> Text | None:
 
     Returns
     -------
-    Text | None
+    Optional[Text]
         Rich Text object for table title, or None if both preset and target_file are empty.
     """
     lines: list[tuple[str, str]] = []
@@ -198,7 +199,7 @@ def _build_table_title(preset: str, target_file: str) -> Text | None:
     return title
 
 
-def create_extraction_table(data: dict[str, 'DataExtract'], preset: str, target_file: str) -> Table:
+def create_extraction_table(data: dict[str, 'DataExtract'], preset: str, target_file: str) -> Panel:
     """
     Create a Rich table from extracted data.
 
@@ -230,10 +231,10 @@ def create_extraction_table(data: dict[str, 'DataExtract'], preset: str, target_
     for key, value in sorted_items:
         table.add_row(str(key), str(value['source']))
 
-    return table
+    return Panel(table, expand=False)
 
 
-def create_comparison_table(data: dict[str, 'DataCompare'], preset: str, target_file: str) -> Table:
+def create_comparison_table(data: dict[str, 'DataCompare'], preset: str, target_file: str) -> Panel:
     """
     Create a Rich table comparing source and reference data.
 
@@ -271,7 +272,7 @@ def create_comparison_table(data: dict[str, 'DataCompare'], preset: str, target_
             _stylized_difference(value['difference'])
         )
 
-    return table
+    return Panel(table, expand=False)
 
 
 F = TypeVar('F', bound=Callable[..., None])
@@ -415,7 +416,7 @@ def write_csv(data: list['Entry'], file_path: Path) -> None:
 
 
 @register_writer('txt')
-def write_txt(tables: list[Table], file_path: Path) -> None:
+def write_txt(tables: list[Panel], file_path: Path) -> None:
     """
     Write string data to a text file.
 
@@ -437,7 +438,7 @@ def write_txt(tables: list[Table], file_path: Path) -> None:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
 
-def write_output(data: list['Entry'], ascii_tables: list[Table], file_path: Path, output_types: list[str]) -> None:
+def write_output(data: list['Entry'], ascii_tables: list[Panel], file_path: Path, output_types: list[str]) -> None:
     """
     Write output data in multiple formats.
 

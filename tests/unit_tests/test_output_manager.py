@@ -90,7 +90,7 @@ def test_process_no_output_directory_no_write(mock_write_output, mock_print, sho
         om_instance.process(MOCK_RESULTS_GROUPED_EXTRACTION, root='')
         assert mock_create_table.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'])
         if should_print:
-             assert mock_print.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'])
+             assert mock_print.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'] * 2)  # newline prints double the calls
         else:
             mock_print.assert_not_called()
         mock_write_output.assert_not_called()
