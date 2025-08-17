@@ -43,6 +43,7 @@ class Key(Enum):
 
 
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
+ENTER_IS_WHITESPACE = '[gold]Enter[/gold]=[purple]whitespace ( )[/purple]'
 ENTER_IS_NEW_LINE = '[gold]Enter[/gold]=[purple]newline (\\n)[/purple]'
 
 prompts: dict[str, dict[Section, dict[Key, str]]] = {
@@ -54,7 +55,7 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
                                f'\\[{ENTER_IS_SKIP}]: '),
             Key.TEXT_FILTER_TYPE: '[bold cyan]Choose filter type:[/bold cyan]\n',
             Key.UNSUPPORTED_FILTER_TYPE: '[bold red]ERROR:[/bold red] Unsupported filter type: [yellow]{filter_type}[/yellow]',
-            Key.POSITIONAL_SEPARATOR: f'[bold cyan]Separator for counting[/bold cyan] \\[{ENTER_IS_SKIP}]: ',
+            Key.POSITIONAL_SEPARATOR: f'[bold cyan]Separator for counting[/bold cyan] \\[{ENTER_IS_WHITESPACE}]: ',
             Key.POSITIONAL_LINE: '[bold cyan]Line number in cluster:[/bold cyan] ',
             Key.POSITIONAL_OCCURRENCE: '[bold cyan]Occurrence number:[/bold cyan] ',
             Key.REGEX_FILTER: '[bold cyan]Regex filter:[/bold cyan] ',
