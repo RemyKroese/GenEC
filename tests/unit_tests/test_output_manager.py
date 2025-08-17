@@ -1,6 +1,7 @@
 from pathlib import Path
 import pytest
 from unittest.mock import patch, call
+from rich.console import Console
 
 from GenEC.core.manage_io import OutputManager
 
@@ -41,7 +42,7 @@ def om_instance():
     ['yaml', 'csv'],
     ['txt', 'json', 'yaml', 'csv']
 ])
-@patch('builtins.print')
+@patch.object(Console, 'print')
 @patch('GenEC.utils.write_output')
 def test_process_various_output_types(mock_write_output, mock_print, mock_results, is_comparison, output_types, om_instance):
     om_instance.output_directory = MOCK_OUTPUT_DIRECTORY
@@ -55,18 +56,18 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
         om_instance.process(mock_results, root='', is_comparison=is_comparison)
 
         expected_create_calls = []
-        expected_print_str = ''
+        expected_txt_output = []
         for entry in mock_results['group1']:
             title = entry['preset']
             if entry['target']:
                 title += f" - {entry['target']}"
             expected_create_calls.append(call(entry['data'], title))
-            expected_print_str += MOCK_ASCII_TABLE + '\n\n'
+            expected_txt_output.append(MOCK_ASCII_TABLE)
 
         mock_create_table.assert_has_calls(expected_create_calls, any_order=False)
         assert mock_create_table.call_count == len(expected_create_calls)
 
-        mock_print.assert_called_once_with(expected_print_str)
+        mock_print.call_count == len(expected_create_calls)
 
         # Build expected_output_path using pathlib to mirror your code logic
         root_path = Path('').name  # empty string here
@@ -74,13 +75,13 @@ def test_process_various_output_types(mock_write_output, mock_print, mock_result
         expected_output_path = MOCK_OUTPUT_DIRECTORY / root_path_without_extension / 'group1' / 'result'
 
         mock_write_output.assert_called_once_with(
-            mock_results['group1'], expected_print_str, expected_output_path, output_types
+            mock_results['group1'], expected_txt_output, expected_output_path, output_types
         )
 
 
 @pytest.mark.unit
 @pytest.mark.parametrize('should_print', [True, False])
-@patch('builtins.print')
+@patch.object(Console, 'print')
 @patch('GenEC.utils.write_output')
 def test_process_no_output_directory_no_write(mock_write_output, mock_print, should_print, om_instance):
     om_instance.output_directory = None
@@ -91,7 +92,7 @@ def test_process_no_output_directory_no_write(mock_write_output, mock_print, sho
         om_instance.process(MOCK_RESULTS_GROUPED_EXTRACTION, root='')
         assert mock_create_table.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'])
         if should_print:
-            mock_print.assert_called_once()
+             assert mock_print.call_count == len(MOCK_RESULTS_GROUPED_EXTRACTION['group1'])
         else:
             mock_print.assert_not_called()
         mock_write_output.assert_not_called()

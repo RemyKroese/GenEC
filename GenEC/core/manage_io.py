@@ -1,13 +1,20 @@
 """Module for managing the input, and output of the program."""
 
 from pathlib import Path
-from typing import cast, Optional, Union
+from typing import cast, Optional, Union, TYPE_CHECKING
+
+from rich.console import Console
 
 from GenEC import utils
 from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
 from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.types.preset_config import Initialized
 from GenEC.core.types.output import DataCompare, DataExtract, Entry
+
+if TYPE_CHECKING:  # pragma: no cover
+    from rich.table import Table
+
+console = Console()
 
 
 YES_INPUT = ['yes', 'y']
@@ -183,7 +190,8 @@ class InputManager:
         str
             The user's input.
         """
-        return input(prompt)
+        console.print(prompt, end='')
+        return input()
 
     @staticmethod
     def ask_mpc_question(prompt: str, options: list[str]) -> str:
@@ -202,10 +210,10 @@ class InputManager:
         str
             The selected option from the list.
         """
-        print(prompt)
-        print(create_prompt(Section.USER_CHOICE, Key.EXIT_OPTION))
+        console.print(prompt)
+        console.print(create_prompt(Section.USER_CHOICE, Key.EXIT_OPTION))
         for i, option in enumerate(options, 1):
-            print(f'{i}. {option}')
+            console.print(f'{i}. {option}')
 
         choice = InputManager.get_user_choice(len(options))
 
@@ -231,12 +239,14 @@ class InputManager:
         """
         while True:
             try:
-                choice = int(input(create_prompt(Section.USER_CHOICE, Key.CHOICE, max_index=max_choice)))
+
+                console.print(create_prompt(Section.USER_CHOICE, Key.CHOICE, max_index=max_choice), end='')
+                choice = int(input())
                 if not 0 <= choice <= max_choice:
                     raise ValueError
                 return choice
             except ValueError:
-                print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
+                console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
 
 
 class OutputManager:
@@ -276,18 +286,18 @@ class OutputManager:
             Whether the results are comparison results, by default False.
         """
         for group, entries in results.items():
-            ascii_tables = ''
+            ascii_tables: list['Table'] = []
             for entry in entries:
                 title = f"{entry['preset']}"
                 if entry['target']:
                     title += f" - {entry['target']}"
                 if is_comparison:
-                    ascii_tables += utils.create_comparison_ascii_table(cast(dict[str, DataCompare], entry['data']), title)
+                    ascii_tables.append(utils.create_comparison_ascii_table(cast(dict[str, DataCompare], entry['data']), title))
                 else:
-                    ascii_tables += utils.create_extraction_ascii_table(cast(dict[str, DataExtract], entry['data']), title)
-                ascii_tables += '\n\n'
+                    ascii_tables.append(utils.create_extraction_ascii_table(cast(dict[str, DataExtract], entry['data']), title))
             if self.should_print_results:
-                print(ascii_tables)
+                for table in ascii_tables:
+                    console.print(table)
             if self.output_directory and self.output_types:
                 output_path = self._create_output_path(group, root, file_name=file_name)
                 utils.write_output(entries, ascii_tables, output_path, self.output_types)

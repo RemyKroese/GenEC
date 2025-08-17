@@ -391,7 +391,7 @@ def test_create_new_preset_creates_new_file(mock_write_txt, mock_write_yaml, moc
 @patch.object(InputManager, 'ask_open_question')
 @patch.object(Path, 'exists', return_value=True)
 @patch.object(utils, 'write_yaml')
-@patch.object(utils, 'write_txt')
+@patch.object(utils, 'append_to_file')
 def test_create_new_preset_appends_to_existing_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
     mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
 

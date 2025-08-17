@@ -5,11 +5,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from rich.console import Console
+
 from GenEC import utils
 from GenEC.core import ConfigOptions, PositionalFilterType
 from GenEC.core.manage_io import InputManager, YES_INPUT
 from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.types.preset_config import Finalized, Initialized
+
+
+console = Console()
 
 
 @dataclass
@@ -152,15 +157,15 @@ class ConfigManager:
                     try:
                         target_file = target_file.format(**target_variables)
                     except KeyError as e:
-                        print(f'Missing target variable for placeholder {e} in target [{target_file}]')
+                        console.print(f'Missing target variable for placeholder {e} in target [{target_file}]')
                         continue
                 preset = entry.get('preset', '')
                 if not preset:
-                    print(f'Preset missing in entry: {entry}')
+                    console.print(f'Preset missing in entry: {entry}')
                     continue
                 file_name, preset_name = self.parse_preset_param(preset)
                 if not preset_name:
-                    print(f'Preset name missing in entry: {entry}')
+                    console.print(f'Preset name missing in entry: {entry}')
                     continue
                 presets_per_target[target_file].append({
                     'preset_file': file_name,
@@ -220,7 +225,7 @@ class ConfigManager:
         preset_name = entry['preset_name']
         loaded_presets = self.load_preset_file(file_name)
         if preset_name not in loaded_presets:
-            print(f'preset {preset_name} not found in {file_name}. Skipping...')
+            console.print(f'preset {preset_name} not found in {file_name}. Skipping...')
             return None
         config = loaded_presets[preset_name]
         finalized_config = self._finalize_config(config)
@@ -399,10 +404,11 @@ class ConfigManager:
         while not preset_name:
             preset_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.NEW_PRESET_NAME)).strip()
             if not preset_name:
-                print(create_prompt(Section.WRITE_CONFIG, Key.INVALID_PRESET_NAME))
+                console.print(create_prompt(Section.WRITE_CONFIG, Key.INVALID_PRESET_NAME))
                 continue
 
-        file_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME, presets_directory=self.presets_directory))
+        file_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME,
+                                                                 presets_directory=self.presets_directory))
 
         file_path = Path(file_name).with_suffix('.yaml')
         if not file_path.is_absolute():
@@ -411,9 +417,9 @@ class ConfigManager:
         new_preset = {preset_name: config}
 
         if file_path.exists():
-            print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND, file_path=file_path))
+            console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND, file_path=file_path))
             yaml_data = utils.convert_to_yaml(new_preset)
-            utils.write_txt('\n' + yaml_data, file_path, mode='a')
+            utils.append_to_file('\n' + yaml_data, file_path)
         else:
-            print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NOT_FOUND, file_path=file_path))
+            console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NOT_FOUND, file_path=file_path))
             utils.write_yaml(new_preset, file_path)

@@ -40,7 +40,7 @@ def run_preset_list_test(
 
     with patch.object(sys, 'argv', test_args):
         genec_main.main()
-
+    text = mock_stdout.getvalue()
     assert expected_output_table in mock_stdout.getvalue()
 
     for group in ['group_1', 'group_2']:
@@ -61,51 +61,49 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
-    expected_table = (
-        '+-----------------------------------------+\n'
-        '| preset_file1/preset_a - input/file1.txt |\n'
-        '+---------------+-------------------------+\n'
-        '| Data          | Source count            |\n'
-        '+---------------+-------------------------+\n'
-        '| INFO          | 1174                    |\n'
-        '| WARNING       | 322                     |\n'
-        '| ERROR         | 157                     |\n'
-        '+---------------+-------------------------+\n'
-        '\n'
-        '+-----------------------------------------+\n'
-        '| preset_file1/preset_a - input/file3.txt |\n'
-        '+---------------+-------------------------+\n'
-        '| Data          | Source count            |\n'
-        '+---------------+-------------------------+\n'
-        '| INFO          | 1174                    |\n'
-        '| WARNING       | 322                     |\n'
-        '| ERROR         | 157                     |\n'
-        '+---------------+-------------------------+\n'
-        '\n\n'
-        '+-----------------------------------------+\n'
-        '| preset_file1/preset_b - input/file2.txt |\n'
-        '+-------------------+---------------------+\n'
-        '| Data              | Source count        |\n'
-        '+-------------------+---------------------+\n'
-        '| SYNC              | 80                  |\n'
-        '| SHUTDOWN          | 77                  |\n'
-        '| RESTART           | 73                  |\n'
-        '| CALIBRATION       | 69                  |\n'
-        '| BOOT              | 69                  |\n'
-        '+-------------------+---------------------+\n'
-        '\n'
-        '+-----------------------------------------+\n'
-        '| preset_file1/preset_b - input/file4.txt |\n'
-        '+-------------------+---------------------+\n'
-        '| Data              | Source count        |\n'
-        '+-------------------+---------------------+\n'
-        '| SYNC              | 80                  |\n'
-        '| SHUTDOWN          | 77                  |\n'
-        '| RESTART           | 73                  |\n'
-        '| CALIBRATION       | 69                  |\n'
-        '| BOOT              | 69                  |\n'
-        '+-------------------+---------------------+\n'
-    )
+    expected_table = '''\
+preset_file1/preset_a    -
+input/file1.txt
+┌─────────┬──────────────┐
+│  Data   │ Source count │
+├─────────┼──────────────┤
+│  INFO   │     1174     │
+│ WARNING │     322      │
+│  ERROR  │     157      │
+└─────────┴──────────────┘
+preset_file1/preset_a    -
+input/file3.txt
+┌─────────┬──────────────┐
+│  Data   │ Source count │
+├─────────┼──────────────┤
+│  INFO   │     1174     │
+│ WARNING │     322      │
+│  ERROR  │     157      │
+└─────────┴──────────────┘
+preset_file1/preset_b        -
+input/file2.txt
+┌─────────────┬──────────────┐
+│    Data     │ Source count │
+├─────────────┼──────────────┤
+│    SYNC     │      80      │
+│  SHUTDOWN   │      77      │
+│   RESTART   │      73      │
+│    BOOT     │      69      │
+│ CALIBRATION │      69      │
+└─────────────┴──────────────┘
+preset_file1/preset_b        -
+input/file4.txt
+┌─────────────┬──────────────┐
+│    Data     │ Source count │
+├─────────────┼──────────────┤
+│    SYNC     │      80      │
+│  SHUTDOWN   │      77      │
+│   RESTART   │      73      │
+│    BOOT     │      69      │
+│ CALIBRATION │      69      │
+└─────────────┴──────────────┘
+'''
+
     run_preset_list_test(
         mock_input,
         mock_stdout,
@@ -127,51 +125,44 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
-    expected_table = (
-        '+-------------------------------------------------------+\n'
-        '|        preset_file1/preset_a - input/file1.txt        |\n'
-        '+---------+--------------+-----------------+------------+\n'
-        '| Data    | Source count | Reference count | Difference |\n'
-        '+---------+--------------+-----------------+------------+\n'
-        '| WARNING | 322          | 322             | 0          |\n'
-        '| INFO    | 1174         | 1174            | 0          |\n'
-        '| ERROR   | 157          | 157             | 0          |\n'
-        '+---------+--------------+-----------------+------------+\n'
-        '\n'
-        '+-------------------------------------------------------+\n'
-        '|        preset_file1/preset_a - input/file3.txt        |\n'
-        '+---------+--------------+-----------------+------------+\n'
-        '| Data    | Source count | Reference count | Difference |\n'
-        '+---------+--------------+-----------------+------------+\n'
-        '| WARNING | 322          | 322             | 0          |\n'
-        '| INFO    | 1174         | 1174            | 0          |\n'
-        '| ERROR   | 157          | 157             | 0          |\n'
-        '+---------+--------------+-----------------+------------+\n'
-        '\n\n'
-        '+-----------------------------------------------------------+\n'
-        '|          preset_file1/preset_b - input/file2.txt          |\n'
-        '+-------------+--------------+-----------------+------------+\n'
-        '| Data        | Source count | Reference count | Difference |\n'
-        '+-------------+--------------+-----------------+------------+\n'
-        '| SYNC        | 80           | 80              | 0          |\n'
-        '| SHUTDOWN    | 77           | 77              | 0          |\n'
-        '| RESTART     | 73           | 73              | 0          |\n'
-        '| CALIBRATION | 69           | 69              | 0          |\n'
-        '| BOOT        | 69           | 69              | 0          |\n'
-        '+-------------+--------------+-----------------+------------+\n'
-        '\n'
-        '+-----------------------------------------------------------+\n'
-        '|          preset_file1/preset_b - input/file4.txt          |\n'
-        '+-------------+--------------+-----------------+------------+\n'
-        '| Data        | Source count | Reference count | Difference |\n'
-        '+-------------+--------------+-----------------+------------+\n'
-        '| SYNC        | 80           | 80              | 0          |\n'
-        '| SHUTDOWN    | 77           | 77              | 0          |\n'
-        '| RESTART     | 73           | 73              | 0          |\n'
-        '| CALIBRATION | 69           | 69              | 0          |\n'
-        '| BOOT        | 69           | 69              | 0          |\n'
-        '+-------------+--------------+-----------------+------------+\n'
-    )
+    expected_table = '''\
+preset_file1/preset_a - input/file1.txt
+┌─────────┬──────────────┬─────────────────┬────────────┐
+│  Data   │ Source count │ Reference count │ Difference │
+├─────────┼──────────────┼─────────────────┼────────────┤
+│  ERROR  │     157      │       157       │     0      │
+│  INFO   │     1174     │      1174       │     0      │
+│ WARNING │     322      │       322       │     0      │
+└─────────┴──────────────┴─────────────────┴────────────┘
+preset_file1/preset_a - input/file3.txt
+┌─────────┬──────────────┬─────────────────┬────────────┐
+│  Data   │ Source count │ Reference count │ Difference │
+├─────────┼──────────────┼─────────────────┼────────────┤
+│  ERROR  │     157      │       157       │     0      │
+│  INFO   │     1174     │      1174       │     0      │
+│ WARNING │     322      │       322       │     0      │
+└─────────┴──────────────┴─────────────────┴────────────┘
+preset_file1/preset_b - input/file2.txt
+┌─────────────┬──────────────┬─────────────────┬────────────┐
+│    Data     │ Source count │ Reference count │ Difference │
+├─────────────┼──────────────┼─────────────────┼────────────┤
+│    BOOT     │      69      │       69        │     0      │
+│ CALIBRATION │      69      │       69        │     0      │
+│   RESTART   │      73      │       73        │     0      │
+│  SHUTDOWN   │      77      │       77        │     0      │
+│    SYNC     │      80      │       80        │     0      │
+└─────────────┴──────────────┴─────────────────┴────────────┘
+preset_file1/preset_b - input/file4.txt
+┌─────────────┬──────────────┬─────────────────┬────────────┐
+│    Data     │ Source count │ Reference count │ Difference │
+├─────────────┼──────────────┼─────────────────┼────────────┤
+│    BOOT     │      69      │       69        │     0      │
+│ CALIBRATION │      69      │       69        │     0      │
+│   RESTART   │      73      │       73        │     0      │
+│  SHUTDOWN   │      77      │       77        │     0      │
+│    SYNC     │      80      │       80        │     0      │
+└─────────────┴──────────────┴─────────────────┴────────────┘
+'''
     run_preset_list_test(
         mock_input,
         mock_stdout,
