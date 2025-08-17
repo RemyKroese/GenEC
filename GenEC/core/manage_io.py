@@ -288,14 +288,12 @@ class OutputManager:
         for group, entries in results.items():
             ascii_tables: list['Table'] = []
             for entry in entries:
-                title = f"{entry['preset']}"
-                if entry['target']:
-                    title += f" - {entry['target']}"
                 if is_comparison:
-                    ascii_tables.append(utils.create_comparison_ascii_table(cast(dict[str, DataCompare], entry['data']), title))
+                    ascii_tables.append(utils.create_comparison_table(cast(dict[str, DataCompare], entry['data']), entry.get('preset'), entry.get('target')))
                 else:
-                    ascii_tables.append(utils.create_extraction_ascii_table(cast(dict[str, DataExtract], entry['data']), title))
+                    ascii_tables.append(utils.create_extraction_table(cast(dict[str, DataExtract], entry['data']), entry.get('preset'), entry.get('target')))
             if self.should_print_results:
+                print('\n')
                 for table in ascii_tables:
                     console.print(table)
             if self.output_directory and self.output_types:

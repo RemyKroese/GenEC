@@ -1,9 +1,10 @@
-preset_file1/preset_a
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
+Preset:      preset_file1/preset_a           
+                                 ╷           
+                                 │  (count)  
+  Data                           │   Source  
+╶────────────────────────────────┼──────────╴
+  INFO                           │     1174  
+  WARNING                        │      322  
+  ERROR                          │      157  
+                                 ╵           
 

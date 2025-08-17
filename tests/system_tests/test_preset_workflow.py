@@ -17,7 +17,6 @@ def run_preset_workflow_test(
     mock_stdout: StringIO,
     tmp_path: Path,
     input_side_effect: list[str],
-    expected_output_table: str,
     expected_output_subdir: str,
     extra_cli_args: list[str] = []
 ) -> None:
@@ -41,8 +40,6 @@ def run_preset_workflow_test(
     with patch.object(sys, 'argv', test_args):
         genec_main.main()
 
-    # assert expected_output_table in mock_stdout.getvalue()
-
     for ext in OUTPUT_TYPES:
         generated_file = output_dir / 'file1' / f'result.{ext}'
         expected_file = EXPECTED_OUTPUT_DIR / expected_output_subdir / f'result.{ext}'
@@ -60,22 +57,12 @@ def test_preset_workflow_extract_only(mock_input: Mock, mock_stdout: StringIO, t
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
-    expected_table = '''\
-preset_file1/preset_a
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
-'''
+
     run_preset_workflow_test(
         mock_input,
         mock_stdout,
         tmp_path,
         input_side_effect,
-        expected_table,
         expected_output_subdir='extract_only'
     )
 
@@ -90,22 +77,12 @@ def test_preset_workflow_extract_and_compare(mock_input: Mock, mock_stdout: Stri
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
-    expected_table = '''\
-preset_file1/preset_a
-┌─────────┬──────────────┬─────────────────┬────────────┐
-│  Data   │ Source count │ Reference count │ Difference │
-├─────────┼──────────────┼─────────────────┼────────────┤
-│  ERROR  │     157      │       157       │     0      │
-│  INFO   │     1174     │      1174       │     0      │
-│ WARNING │     322      │       322       │     0      │
-└─────────┴──────────────┴─────────────────┴────────────┘
-'''
+
     run_preset_workflow_test(
         mock_input,
         mock_stdout,
         tmp_path,
         input_side_effect,
-        expected_table,
         expected_output_subdir='extract_and_compare',
         extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'file1.txt')]
     )

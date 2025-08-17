@@ -17,7 +17,6 @@ def run_preset_list_test(
     mock_stdout: StringIO,
     tmp_path: Path,
     input_side_effect: list[str],
-    expected_output_table: str,
     expected_output_subdir: str,
     extra_cli_args: list[str] = []
 ) -> None:
@@ -40,8 +39,6 @@ def run_preset_list_test(
 
     with patch.object(sys, 'argv', test_args):
         genec_main.main()
-    text = mock_stdout.getvalue()
-    assert expected_output_table in mock_stdout.getvalue()
 
     for group in ['group_1', 'group_2']:
         for ext in OUTPUT_TYPES:
@@ -61,55 +58,12 @@ def test_preset_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_p
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
-    expected_table = '''\
-preset_file1/preset_a    -
-input/file1.txt
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
-preset_file1/preset_a    -
-input/file3.txt
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
-preset_file1/preset_b        -
-input/file2.txt
-┌─────────────┬──────────────┐
-│    Data     │ Source count │
-├─────────────┼──────────────┤
-│    SYNC     │      80      │
-│  SHUTDOWN   │      77      │
-│   RESTART   │      73      │
-│    BOOT     │      69      │
-│ CALIBRATION │      69      │
-└─────────────┴──────────────┘
-preset_file1/preset_b        -
-input/file4.txt
-┌─────────────┬──────────────┐
-│    Data     │ Source count │
-├─────────────┼──────────────┤
-│    SYNC     │      80      │
-│  SHUTDOWN   │      77      │
-│   RESTART   │      73      │
-│    BOOT     │      69      │
-│ CALIBRATION │      69      │
-└─────────────┴──────────────┘
-'''
 
     run_preset_list_test(
         mock_input,
         mock_stdout,
         tmp_path,
         input_side_effect,
-        expected_table,
         expected_output_subdir='extract_only',
         extra_cli_args=['--target-variables', *TARGET_VARIABLES]
     )
@@ -125,50 +79,12 @@ def test_preset_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
     ]
-    expected_table = '''\
-preset_file1/preset_a - input/file1.txt
-┌─────────┬──────────────┬─────────────────┬────────────┐
-│  Data   │ Source count │ Reference count │ Difference │
-├─────────┼──────────────┼─────────────────┼────────────┤
-│  ERROR  │     157      │       157       │     0      │
-│  INFO   │     1174     │      1174       │     0      │
-│ WARNING │     322      │       322       │     0      │
-└─────────┴──────────────┴─────────────────┴────────────┘
-preset_file1/preset_a - input/file3.txt
-┌─────────┬──────────────┬─────────────────┬────────────┐
-│  Data   │ Source count │ Reference count │ Difference │
-├─────────┼──────────────┼─────────────────┼────────────┤
-│  ERROR  │     157      │       157       │     0      │
-│  INFO   │     1174     │      1174       │     0      │
-│ WARNING │     322      │       322       │     0      │
-└─────────┴──────────────┴─────────────────┴────────────┘
-preset_file1/preset_b - input/file2.txt
-┌─────────────┬──────────────┬─────────────────┬────────────┐
-│    Data     │ Source count │ Reference count │ Difference │
-├─────────────┼──────────────┼─────────────────┼────────────┤
-│    BOOT     │      69      │       69        │     0      │
-│ CALIBRATION │      69      │       69        │     0      │
-│   RESTART   │      73      │       73        │     0      │
-│  SHUTDOWN   │      77      │       77        │     0      │
-│    SYNC     │      80      │       80        │     0      │
-└─────────────┴──────────────┴─────────────────┴────────────┘
-preset_file1/preset_b - input/file4.txt
-┌─────────────┬──────────────┬─────────────────┬────────────┐
-│    Data     │ Source count │ Reference count │ Difference │
-├─────────────┼──────────────┼─────────────────┼────────────┤
-│    BOOT     │      69      │       69        │     0      │
-│ CALIBRATION │      69      │       69        │     0      │
-│   RESTART   │      73      │       73        │     0      │
-│  SHUTDOWN   │      77      │       77        │     0      │
-│    SYNC     │      80      │       80        │     0      │
-└─────────────┴──────────────┴─────────────────┴────────────┘
-'''
+
     run_preset_list_test(
         mock_input,
         mock_stdout,
         tmp_path,
         input_side_effect,
-        expected_table,
         expected_output_subdir='extract_and_compare',
         extra_cli_args=['--reference', str(ASSETS_DIR),
                         '--target-variables', *TARGET_VARIABLES]

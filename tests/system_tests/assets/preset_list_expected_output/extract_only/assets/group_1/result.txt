@@ -1,20 +1,22 @@
-preset_file1/preset_a    -
-input/file1.txt
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
+Preset:      preset_file1/preset_a           
+Target file: input/file1.txt                 
+                                 ╷           
+                                 │  (count)  
+  Data                           │   Source  
+╶────────────────────────────────┼──────────╴
+  INFO                           │     1174  
+  WARNING                        │      322  
+  ERROR                          │      157  
+                                 ╵           
 
-preset_file1/preset_a    -
-input/file3.txt
-┌─────────┬──────────────┐
-│  Data   │ Source count │
-├─────────┼──────────────┤
-│  INFO   │     1174     │
-│ WARNING │     322      │
-│  ERROR  │     157      │
-└─────────┴──────────────┘
+Preset:      preset_file1/preset_a           
+Target file: input/file3.txt                 
+                                 ╷           
+                                 │  (count)  
+  Data                           │   Source  
+╶────────────────────────────────┼──────────╴
+  INFO                           │     1174  
+  WARNING                        │      322  
+  ERROR                          │      157  
+                                 ╵           
 
