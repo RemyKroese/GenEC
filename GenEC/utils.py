@@ -1,6 +1,7 @@
 """Utilities for file reading, data extraction, comparison, and writing outputs in multiple formats."""
 
 from collections import Counter
+from datetime import datetime
 from typing import Any, Callable, Dict, Set, TypeVar, TYPE_CHECKING
 import csv
 import json
@@ -12,12 +13,27 @@ from rich.table import Table
 from rich.text import Text
 import yaml
 
+from GenEC.core import MetaData
+
 if TYPE_CHECKING:  # pragma: no cover
     from GenEC.core.config_manager import Configuration
     from GenEC.core.types.output import DataCompare, DataExtract, Entry
 
 
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
+
+
+def print_footer():
+    """Print footer with project metadata."""
+    console = Console()
+
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    footer = Text()
+    footer.append(f'{MetaData.TOOL.value} v{MetaData.VERSION.value}    |  {now}\n', style="bold green")
+    footer.append(f'Author: {MetaData.AUTHOR.value}  |  GitHub: {MetaData.REPOSITORY.value} ', style="dim cyan")
+
+    print('\n\n')
+    console.print(footer)
 
 
 def get_list_each_element_count(elements: list[str]) -> dict[str, int]:
@@ -150,47 +166,67 @@ def _stylized_difference(difference: int) -> Text:
     return Text(str(difference), style=color)
 
 
+def _build_table_title(preset: str, target_file: str) -> Text | None:
+    """
+    Construct a rich Text object for the table title.
+
+    Parameters
+    ----------
+    preset : str
+        Preset name, can be empty.
+    target_file : str
+        Target file path, can be empty.
+
+    Returns
+    -------
+    Text | None
+        Rich Text object for table title, or None if both preset and target_file are empty.
+    """
+    lines: list[tuple[str, str]] = []
+    if preset:
+        lines.append((f'Preset:      {preset}', 'bold yellow'))
+    if target_file:
+        lines.append((f'Target file: {target_file}', 'italic cyan'))
+
+    if not lines:
+        return None
+
+    title = Text(justify='left')
+    for content, style in lines:
+        newline = "\n" if content != lines[-1][0] else ''
+        title.append(content + newline, style=style)
+    return title
+
+
 def create_extraction_table(data: dict[str, 'DataExtract'], preset: str, target_file: str) -> Table:
     """
-    Create a table from extracted data.
+    Create a Rich table from extracted data.
 
     Parameters
     ----------
     data : dict[str, DataExtract]
         Dictionary of extracted data with source counts.
-    title : str, optional
-        Title for the table, by default 'GenEC results'.
+    preset : str
+        Preset name, can be empty.
+    target_file : str
+        Target file path, can be empty.
 
     Returns
     -------
     Table
-        rich table
+        Rich table displaying the extracted data with optional title showing preset and target file.
     """
-    if preset or target_file:
-        title = Text(justify='left')
-        if preset and target_file:
-            title.append(f'Preset:      {preset}\n', style="bold yellow")
-            title.append(f'Target file: {target_file}', style="italic cyan")
-        elif preset:
-            title.append(f'Preset:      {preset}', style="bold yellow")
-        elif target_file:
-            title.append(f'Target file: {target_file}', style="italic cyan")
-    else:
-        title = None
+    title = _build_table_title(preset, target_file)
 
     table = Table(title=title, header_style='Bold Magenta')
     table.box = MINIMAL_HEAVY_HEAD
     table.row_styles = ['white', 'grey50']
 
-    # Columns (matching style)
-    table.add_column('Data', justify='left', style='italic bold cyan',
-                     min_width=30, max_width=80, overflow='ellipsis')
-    table.add_column('(count)\nSource', justify='right',
-                     min_width=8, max_width=20, overflow='ellipsis')
+    # Columns
+    table.add_column('Data', justify='left', style='italic bold cyan', min_width=30, max_width=80, overflow='ellipsis')
+    table.add_column('(count)\nSource', justify='right', min_width=8, max_width=20, overflow='ellipsis')
 
-    # Sort by source count
     sorted_items = sorted(data.items(), key=lambda x: x[1]['source'], reverse=True)
-
     for key, value in sorted_items:
         table.add_row(str(key), str(value['source']))
 
@@ -199,42 +235,34 @@ def create_extraction_table(data: dict[str, 'DataExtract'], preset: str, target_
 
 def create_comparison_table(data: dict[str, 'DataCompare'], preset: str, target_file: str) -> Table:
     """
-    Create a table comparing source and reference data.
+    Create a Rich table comparing source and reference data.
 
     Parameters
     ----------
     data : dict[str, DataCompare]
         Dictionary of comparison data including source, reference, and difference counts.
-    title : str, optional
-        Title for the table, by default 'GenEC results'.
+    preset : str
+        Preset name, can be empty.
+    target_file : str
+        Target file path, can be empty.
 
     Returns
     -------
     Table
-        rich table
+        Rich table displaying comparison data with optional title showing preset and target file.
     """
-    if preset or target_file:
-        title = Text(justify='left')
-        if preset and target_file:
-            title.append(f'Preset:      {preset}\n', style="bold yellow")
-            title.append(f'Target file: {target_file}', style="italic cyan")
-        elif preset:
-            title.append(f'Preset:      {preset}', style="bold yellow")
-        elif target_file:
-            title.append(f'Target file: {target_file}', style="italic cyan")
-    else:
-        title = None
+    title = _build_table_title(preset, target_file)
 
     table = Table(title=title, header_style='Bold Magenta')
     table.box = MINIMAL_HEAVY_HEAD
-    table.row_styles = ["white", "grey50"]
+    table.row_styles = ['white', 'grey50']
+
     table.add_column('Data', justify='left', style='italic bold cyan', min_width=30, max_width=80, overflow='ellipsis')
     table.add_column('(count)\nSource', justify='right', min_width=8, max_width=20, overflow='ellipsis')
     table.add_column('(count)\nReference', justify='right', min_width=8, max_width=20, overflow='ellipsis')
     table.add_column('Difference', justify='right', min_width=8, max_width=20, overflow='ellipsis')
 
     sorted_items = sorted(data.items(), key=lambda x: x[1]['difference'], reverse=True)
-
     for key, value in sorted_items:
         table.add_row(
             str(key),

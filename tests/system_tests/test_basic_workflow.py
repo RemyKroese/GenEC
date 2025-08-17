@@ -23,7 +23,7 @@ def run_basic_workflow_test(
     mock_input.side_effect = input_side_effect
 
     source_file = ASSETS_DIR / 'input' / 'file1.txt'
-    output_dir = Path('tmp_path') / 'output'
+    output_dir = tmp_path / 'output'
 
     test_args = [
         'main.py', 'basic',

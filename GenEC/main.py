@@ -5,6 +5,7 @@ from typing import cast, Optional, Sequence, Union
 from pathlib import Path
 import sys
 
+
 # Pyinstaller workaround
 if getattr(sys, 'frozen', False):  # pragma: no cover
     project_path = Path(sys.executable).parent
@@ -13,6 +14,7 @@ else:
 sys.path.insert(0, str(project_path))
 
 from GenEC.core import workflows, Workflows  # noqa: E402  # pylint: disable=wrong-import-position
+from GenEC.utils import print_footer
 
 
 def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:
@@ -153,6 +155,8 @@ def main():
     """
     args = parse_arguments()
     workflows.get_workflow(args.workflow, args).run()
+
+    print_footer()
 
 
 if __name__ == '__main__':

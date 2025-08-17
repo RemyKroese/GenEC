@@ -42,28 +42,32 @@ class Key(Enum):
     DESTINATION_FILE_NOT_FOUND = 'destination_file_not_found'
 
 
+ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
+ENTER_IS_NEW_LINE = '[gold]Enter[/gold]=[purple]newline (\\n)[/purple]'
+
 prompts: dict[str, dict[Section, dict[Key, str]]] = {
     'common': {
         Section.SET_CONFIG: {
-            Key.CLUSTER_FILTER: '[bold cyan]Enter character(s) to split clusters[/bold cyan] (default: newline [\\n]): ',
-            Key.SHOULD_SLICE_CLUSTERS: '[bold cyan]Compare only a subsection of clusters?[/bold cyan] \\[yes/y, Enter=skip]: ',
-            Key.CLUSTER_TEXT: '[bold cyan]Text in {cluster} cluster where subsection should {position}[/bold cyan] (Enter=skip): ',
+            Key.CLUSTER_FILTER: f'[bold cyan]Enter character(s) to split clusters[/bold cyan] \\[{ENTER_IS_NEW_LINE}]: ',
+            Key.SHOULD_SLICE_CLUSTERS: f'[bold cyan]Compare only a subsection of clusters?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: ',
+            Key.CLUSTER_TEXT: ('[bold cyan]Text in {cluster} cluster where subsection should {position}[/bold cyan]'
+                               f'\\[{ENTER_IS_SKIP}]: '),
             Key.TEXT_FILTER_TYPE: '[bold cyan]Choose filter type:[/bold cyan]\n',
             Key.UNSUPPORTED_FILTER_TYPE: '[bold red]ERROR:[/bold red] Unsupported filter type: [yellow]{filter_type}[/yellow]',
-            Key.POSITIONAL_SEPARATOR: '[bold cyan]Separator for counting[/bold cyan] (default: 1 space character): ',
+            Key.POSITIONAL_SEPARATOR: f'[bold cyan]Separator for counting[/bold cyan] \\[{ENTER_IS_SKIP}]: ',
             Key.POSITIONAL_LINE: '[bold cyan]Line number in cluster:[/bold cyan] ',
             Key.POSITIONAL_OCCURRENCE: '[bold cyan]Occurrence number:[/bold cyan] ',
             Key.REGEX_FILTER: '[bold cyan]Regex filter:[/bold cyan] ',
             Key.REGEX_LIST_FILTER: '[bold cyan]Regex filter for search {search}:[/bold cyan] ',
-            Key.REGEX_LIST_CONTINUE: '[bold cyan]Add another search parameter?[/bold cyan] \\[yes/y, Enter=skip]: '
+            Key.REGEX_LIST_CONTINUE: f'[bold cyan]Add another search parameter?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: '
         },
         Section.USER_CHOICE: {
             Key.CHOICE: '[bold cyan]Select option[/bold cyan] [0-{max_index}]: ',
             Key.INVALID_CHOICE: '[bold red]ERROR:[/bold red] Invalid choice.',
-            Key.EXIT_OPTION: '[bold]0.[/bold] Exit'
+            Key.EXIT_OPTION: '[bold]0.[/bold] [purple]Exit[/purple]'
         },
         Section.WRITE_CONFIG: {
-            Key.REQUEST_SAVE: '[bold cyan]Save this configuration?[/bold cyan] \\[yes/y, Enter=skip]: ',
+            Key.REQUEST_SAVE: f'[bold cyan]Save this configuration?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: ',
             Key.NEW_PRESET_NAME: '[bold cyan]Preset name:[/bold cyan] ',
             Key.INVALID_PRESET_NAME: '[bold red]ERROR:[/bold red] Preset name cannot be empty.',
             Key.DESTINATION_FILE_NAME: ('[bold cyan]Destination YAML file[/bold cyan] (existing file will be appended).\n'

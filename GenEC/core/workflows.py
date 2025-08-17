@@ -200,6 +200,7 @@ class Basic(Workflow):
     def run(self) -> None:
         """Execute the base workflow and request if a preset should be generated from the CLI input."""
         super().run()
+        print('\n')
         if self.config_manager.should_store_configuration():
             self.config_manager.create_new_preset()
 
