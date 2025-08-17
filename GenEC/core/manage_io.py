@@ -49,7 +49,7 @@ class InputManager:
             The character(s) used to split text clusters.
         """
         if not config.get(ConfigOptions.CLUSTER_FILTER.value):
-            input_string: str = InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER))
+            input_string: str = InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER)) or '\\n'
         else:
             input_string: str = cast(str, config[ConfigOptions.CLUSTER_FILTER.value])
         return input_string
