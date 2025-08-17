@@ -12,8 +12,8 @@ authors = [
 keywords = ["data", "data-analysis", "data-processing", "extraction", "comparison", "automation", "cli"]
 
 dependencies = [
-    "prettytable>=3.16.0",
     "pyyaml>=6.0.2",
+    "rich>=14.1.0",
 ]
 
 [dependency-groups]

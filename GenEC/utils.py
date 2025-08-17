@@ -5,9 +5,10 @@ from typing import Any, Callable, Dict, Set, TypeVar, TYPE_CHECKING
 import csv
 import json
 from pathlib import Path
-import yaml
 
-from prettytable import PrettyTable  # type: ignore
+from rich.table import Table
+from rich.console import Console
+import yaml
 
 if TYPE_CHECKING:  # pragma: no cover
     from GenEC.core.config_manager import Configuration
@@ -109,7 +110,26 @@ def read_yaml_file(file_path: Path) -> Any:
         return yaml.safe_load(file)
 
 
-def create_extraction_ascii_table(data: dict[str, 'DataExtract'], title: str = 'GenEC results') -> str:
+def append_to_file(data: str, file_path: Path) -> None:
+    """
+    Write string data to a text file.
+
+    Parameters
+    ----------
+    data : str
+        String content to write.
+    file_path : Path
+        Path to the output text file.
+    """
+    try:
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        with file_path.open('a', encoding='utf-8') as file:
+            file.write(data)
+    except OSError as err:
+        print(ERROR_WRITING_FILE.format(file_path, err))
+
+
+def create_extraction_ascii_table(data: dict[str, 'DataExtract'], title: str = 'GenEC results') -> Table:
     """
     Create an ASCII table from extracted data.
 
@@ -125,18 +145,18 @@ def create_extraction_ascii_table(data: dict[str, 'DataExtract'], title: str = '
     str
         ASCII table as a string.
     """
-    table: Any = PrettyTable()
-    table.title = title
-    table.field_names = ['Data', 'Source count']
-    table.align = 'l'
+    rich_table = Table(title=title, title_justify='full')
+    rich_table.add_column('Data', justify='center')
+    rich_table.add_column('Source count', justify='center')
 
-    for key in data:
-        table.add_row([key, data[key]['source']])
+    sorted_items = sorted(data.items(), key=lambda x: x[1]['source'], reverse=True)
 
-    return table.get_string(sortby='Source count', reversesort=True)
+    for key, value in sorted_items:
+        rich_table.add_row(str(key), str(value['source']))
+    return rich_table
 
 
-def create_comparison_ascii_table(data: dict[str, 'DataCompare'], title: str = 'GenEC results') -> str:
+def create_comparison_ascii_table(data: dict[str, 'DataCompare'], title: str = 'GenEC results') -> Table:
     """
     Create an ASCII table comparing source and reference data.
 
@@ -152,15 +172,24 @@ def create_comparison_ascii_table(data: dict[str, 'DataCompare'], title: str = '
     str
         ASCII comparison table as a string.
     """
-    table: Any = PrettyTable()
-    table.title = title
-    table.field_names = ['Data', 'Source count', 'Reference count', 'Difference']
-    table.align = 'l'
+    rich_table = Table(title=title, title_justify='full')
 
-    for key in data:
-        table.add_row([key, data[key]['source'], data[key]['reference'], data[key]['difference']])
+    rich_table.add_column('Data', justify='center')
+    rich_table.add_column('Source count', justify='center')
+    rich_table.add_column('Reference count', justify='center')
+    rich_table.add_column('Difference', justify='center')
 
-    return table.get_string(sortby='Difference', reversesort=True)
+    sorted_items = sorted(data.items(), key=lambda x: x[1]['difference'], reverse=True)
+
+    for key, value in sorted_items:
+        rich_table.add_row(
+            str(key),
+            str(value['source']),
+            str(value['reference']),
+            str(value['difference'])
+        )
+
+    return rich_table
 
 
 F = TypeVar('F', bound=Callable[..., None])
@@ -304,26 +333,29 @@ def write_csv(data: list['Entry'], file_path: Path) -> None:
 
 
 @register_writer('txt')
-def write_txt(data: str, file_path: Path, mode: str = 'w') -> None:
+def write_txt(tables: list[Table], file_path: Path) -> None:
     """
     Write string data to a text file.
 
     Parameters
     ----------
-    data : str
-        String content to write.
+    data : list[Table]
+        List of tables to write.
     file_path : Path
         Path to the output text file.
     """
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        with file_path.open(mode, encoding='utf-8') as file:
-            file.write(data)
+        with file_path.open('w', encoding='utf-8') as file:
+            console = Console(file=file, width=120)
+            for table in tables:
+                console.print(table)
+                console.print()
     except OSError as err:
         print(ERROR_WRITING_FILE.format(file_path, err))
 
 
-def write_output(data: list['Entry'], ascii_tables: str, file_path: Path, output_types: list[str]) -> None:
+def write_output(data: list['Entry'], ascii_tables: list[Table], file_path: Path, output_types: list[str]) -> None:
     """
     Write output data in multiple formats.
 
@@ -331,7 +363,7 @@ def write_output(data: list['Entry'], ascii_tables: str, file_path: Path, output
     ----------
     data : list[Entry]
         List of entries to write.
-    ascii_tables : str
+    ascii_tables : list[Table]
         ASCII table representation of the data.
     file_path : Path
         Base path for output files.

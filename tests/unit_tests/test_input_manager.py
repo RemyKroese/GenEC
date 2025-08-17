@@ -75,7 +75,7 @@ def test_ask_open_question(mock_input):
 def test_ask_mpc_question_valid_choice(mock_input, mock_stdout):
     mock_input.return_value = '2\n'
     assert InputManager.ask_mpc_question('Choose a number:', ['Option 1', 'Option 2', 'Option 3']) == 'Option 2'
-    assert mock_stdout.getvalue().strip() == 'Choose a number:\n0. Exit\n1. Option 1\n2. Option 2\n3. Option 3'
+    assert mock_stdout.getvalue().strip() == 'Choose a number:\n0. Exit\n1. Option 1\n2. Option 2\n3. Option 3\nSelect option [0-3]:'
 
 
 @pytest.mark.unit
@@ -84,7 +84,7 @@ def test_ask_mpc_question_valid_choice(mock_input, mock_stdout):
 def test_ask_mpc_question_invalid_choice(mock_input, mock_stdout):
     mock_input.side_effect = ['5\n', 'invalid input\n', '1\n']
     assert InputManager.ask_mpc_question('Choose a number:', ['Option 1', 'Option 2']) == 'Option 1'
-    assert 'Please enter a valid number.' in mock_stdout.getvalue().strip()
+    assert 'Invalid choice.' in mock_stdout.getvalue().strip()
 
 
 @pytest.mark.unit
@@ -94,7 +94,7 @@ def test_ask_mpc_question_exit(mock_input, mock_stdout):
     mock_input.return_value = '0\n'
     with pytest.raises(SystemExit):
         InputManager.ask_mpc_question('Choose a number:', ['Option 1', 'Option 2'])
-    assert mock_stdout.getvalue().strip() == 'Choose a number:\n0. Exit\n1. Option 1\n2. Option 2'
+    assert mock_stdout.getvalue().strip() == 'Choose a number:\n0. Exit\n1. Option 1\n2. Option 2\nSelect option [0-2]:'
 
 
 @pytest.mark.unit

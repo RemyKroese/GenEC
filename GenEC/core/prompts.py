@@ -45,32 +45,31 @@ class Key(Enum):
 prompts: dict[str, dict[Section, dict[Key, str]]] = {
     'common': {
         Section.SET_CONFIG: {
-            Key.CLUSTER_FILTER: 'Please indicate the character(s) to split text clusters on (Default: Newline [\\n]): ',
-            Key.SHOULD_SLICE_CLUSTERS: 'Do you want to compare only a subsection of the clusters (press enter to skip)? [yes/y]: ',
-            Key.CLUSTER_TEXT: 'Text in the {cluster} cluster where the subsection should {position} (press enter to skip): ',
-            Key.TEXT_FILTER_TYPE: 'Please choose a filter type:\n',
-            Key.UNSUPPORTED_FILTER_TYPE: 'Unsupported filter type: {filter_type}',
-            Key.POSITIONAL_SEPARATOR: 'Please provide the separator for counting (default: 1 space character): ',
-            Key.POSITIONAL_LINE: 'Please provide the line number in the cluster: ',
-            Key.POSITIONAL_OCCURRENCE: 'Please provide the occurrence number: ',
-            Key.REGEX_FILTER: 'Please provide a regex filter: ',
-            Key.REGEX_LIST_FILTER: 'Please provide a regex filter for search {search}: ',
-            Key.REGEX_LIST_CONTINUE: 'Do you wish to provide a next search parameter [yes/y]: '
+            Key.CLUSTER_FILTER: '[bold cyan]Enter character(s) to split clusters[/bold cyan] (default: newline [\\n]): ',
+            Key.SHOULD_SLICE_CLUSTERS: '[bold cyan]Compare only a subsection of clusters?[/bold cyan] \\[yes/y, Enter=skip]: ',
+            Key.CLUSTER_TEXT: '[bold cyan]Text in {cluster} cluster where subsection should {position}[/bold cyan] (Enter=skip): ',
+            Key.TEXT_FILTER_TYPE: '[bold cyan]Choose filter type:[/bold cyan]\n',
+            Key.UNSUPPORTED_FILTER_TYPE: '[bold red]ERROR:[/bold red] Unsupported filter type: [yellow]{filter_type}[/yellow]',
+            Key.POSITIONAL_SEPARATOR: '[bold cyan]Separator for counting[/bold cyan] (default: 1 space character): ',
+            Key.POSITIONAL_LINE: '[bold cyan]Line number in cluster:[/bold cyan] ',
+            Key.POSITIONAL_OCCURRENCE: '[bold cyan]Occurrence number:[/bold cyan] ',
+            Key.REGEX_FILTER: '[bold cyan]Regex filter:[/bold cyan] ',
+            Key.REGEX_LIST_FILTER: '[bold cyan]Regex filter for search {search}:[/bold cyan] ',
+            Key.REGEX_LIST_CONTINUE: '[bold cyan]Add another search parameter?[/bold cyan] \\[yes/y, Enter=skip]: '
         },
         Section.USER_CHOICE: {
-            Key.CHOICE: 'Choose a number [0-{max_index}]: ',
-            Key.INVALID_CHOICE: 'Please enter a valid number.',
-            Key.EXIT_OPTION: '0. Exit'
+            Key.CHOICE: '[bold cyan]Select option[/bold cyan] [0-{max_index}]: ',
+            Key.INVALID_CHOICE: '[bold red]ERROR:[/bold red] Invalid choice.',
+            Key.EXIT_OPTION: '[bold]0.[/bold] Exit'
         },
         Section.WRITE_CONFIG: {
-            Key.REQUEST_SAVE: 'Would you like to save this extraction configuration [yes/y]: ',
-            Key.NEW_PRESET_NAME: 'Please choose a preset name: ',
-            Key.INVALID_PRESET_NAME: 'Error: Preset name cannot be empty. Please try again.',
-            Key.DESTINATION_FILE_NAME: ('Please choose a destination yaml file to store the preset (an existing file can be used).\n'
-                                        'By default the preset will be stored in {presets_directory}, '
-                                        'but an absolute path can be specified instead: '),
-            Key.DESTINATION_FILE_FOUND: 'File [{file_path}] found. The preset will be appended.',
-            Key.DESTINATION_FILE_NOT_FOUND: 'File [{file_path}] does not exist. A new file will be created.'
+            Key.REQUEST_SAVE: '[bold cyan]Save this configuration?[/bold cyan] \\[yes/y, Enter=skip]: ',
+            Key.NEW_PRESET_NAME: '[bold cyan]Preset name:[/bold cyan] ',
+            Key.INVALID_PRESET_NAME: '[bold red]ERROR:[/bold red] Preset name cannot be empty.',
+            Key.DESTINATION_FILE_NAME: ('[bold cyan]Destination YAML file[/bold cyan] (existing file will be appended).\n'
+                                        'Default: [magenta]{presets_directory}[/magenta], or specify absolute path: '),
+            Key.DESTINATION_FILE_FOUND: 'File [yellow]{file_path}[/yellow] exists → [green]appending preset[/green].',
+            Key.DESTINATION_FILE_NOT_FOUND: 'File [yellow]{file_path}[/yellow] not found → [green]creating new file[/green].'
         }
     }
 }
