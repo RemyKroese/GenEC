@@ -53,12 +53,14 @@ class OutputManager:
         for group, entries in results.items():
             ascii_tables: list['Panel'] = []
             for entry in entries:
+                preset = entry.get('preset', 'Unknown')
+                target = entry.get('target', 'Unknown')
                 if is_comparison:
                     ascii_tables.append(utils.create_comparison_table(cast(dict[str, DataCompare],
-                                                                           entry['data']), entry.get('preset'), entry.get('target')))
+                                                                           entry['data']), preset, target))
                 else:
                     ascii_tables.append(utils.create_extraction_table(cast(dict[str, DataExtract],
-                                                                           entry['data']), entry.get('preset'), entry.get('target')))
+                                                                           entry['data']), preset, target))
             if self.should_print_results:
                 for table in ascii_tables:
                     console.print('\n')

@@ -9,7 +9,7 @@ from GenEC.core import FileID, Workflows
 from GenEC.core.analyze import Extractor, Comparer
 from GenEC.core.config_manager import ConfigManager, Configuration
 from GenEC.core.output_manager import OutputManager
-from GenEC.core.types.output import DataExtract, Entry
+from GenEC.core.types.output import DataExtract, DataCompare, Entry
 
 if TYPE_CHECKING:  # pragma: no cover
     import argparse
@@ -97,18 +97,18 @@ class Workflow(ABC):
                 ref_text = ref_data.get(configuration.target_file, '')
                 ref_filtered = extractor.extract_from_data(configuration.config, ref_text, FileID.REFERENCE)
                 comparer = Comparer(source_filtered, ref_filtered)
-                result = comparer.compare()
+                comparison_result: dict[str, DataCompare] = comparer.compare()
                 results[configuration.group].append(Entry(
                     preset=configuration.preset,
                     target=configuration.target_file,
-                    data=dict(sorted(result.items()))))
+                    data=dict(sorted(comparison_result.items()))))
             else:  # extract only
-                result = utils.get_list_each_element_count(source_filtered)
-                output_result: dict[str, DataExtract] = {key: {'source': value} for key, value in result.items()}
+                count_result = utils.get_list_each_element_count(source_filtered)
+                extraction_result: dict[str, DataExtract] = {key: {'source': value} for key, value in count_result.items()}
                 results[configuration.group].append(Entry(
                     preset=configuration.preset,
                     target=configuration.target_file,
-                    data=dict(sorted(output_result.items()))))
+                    data=dict(sorted(extraction_result.items()))))
 
         return results
 

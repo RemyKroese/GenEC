@@ -146,7 +146,7 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 
-def main():
+def main() -> None:
     """
     Execute the GenEC command-line interface.
 

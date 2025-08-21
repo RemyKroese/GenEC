@@ -153,7 +153,7 @@ class RegexListInputStrategy(TextFilterInputStrategy):
 _input_strategy_registry: dict[str, type[TextFilterInputStrategy]] = {}
 
 
-def register_input_strategy(filter_type: str):
+def register_input_strategy(filter_type: str) -> Callable[[type[TextFilterInputStrategy]], type[TextFilterInputStrategy]]:
     """
     Register text filter input strategies.
 

@@ -19,6 +19,9 @@ jobs:
       - name: Lint with flake8
         run: |
           uv run flake8 --count --show-source --statistics
+      - name: Type check with mypy
+        run: |
+          uv run mypy GenEC
 
   unit_tests:
     runs-on: ${{ matrix.os }}
