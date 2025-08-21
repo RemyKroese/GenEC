@@ -121,6 +121,8 @@ class Workflow(ABC):
         output_manager = OutputManager(self.output_directory, self.output_types)
         output_manager.process(results, root=self.source, is_comparison=bool(ref_data))
 
+        utils.print_footer()
+
 
 E = TypeVar('E', bound=Workflow)
 _workflow_registry: Dict[str, Type[Workflow]] = {}

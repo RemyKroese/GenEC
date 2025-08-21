@@ -2,7 +2,7 @@
 
 from collections import Counter
 from datetime import datetime
-from typing import Any, Callable, Dict, Optional, Set, TypeVar, TYPE_CHECKING
+from typing import Any, Callable, Optional, Set, TypeVar, TYPE_CHECKING
 import csv
 import json
 from pathlib import Path
@@ -276,7 +276,7 @@ def create_comparison_table(data: dict[str, 'DataCompare'], preset: str, target_
 
 
 F = TypeVar('F', bound=Callable[..., None])
-_writer_registry: Dict[str, Callable[..., None]] = {}
+_writer_registry: dict[str, Callable[..., None]] = {}
 
 
 def sort_entry_data_keys(entry: 'Entry') -> 'Entry':
