@@ -3,18 +3,21 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union, TypeVar, Callable, cast
 
 from rich.console import Console
 
 from GenEC import utils
-from GenEC.core import ConfigOptions, PositionalFilterType
-from GenEC.core.manage_io import InputManager, YES_INPUT
+from GenEC.core import ConfigOptions, PositionalFilterType, TextFilterTypes
 from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.types.preset_config import Finalized, Initialized
+from GenEC.core.input_strategies import get_input_strategy
 
 
 console = Console()
+YES_INPUT = ['yes', 'y']
+
+T = TypeVar('T')
 
 
 @dataclass
@@ -55,7 +58,8 @@ class ConfigManager:
     def __init__(self,
                  preset_param: Optional[dict[str, str]] = None,
                  presets_directory: Optional[str] = None,
-                 target_variables: Optional[dict[str, str]] = None) -> None:
+                 target_variables: Optional[dict[str, str]] = None,
+                 auto_configure: bool = True) -> None:
         """
         Initialize the configuration manager and optionally load presets.
 
@@ -72,6 +76,9 @@ class ConfigManager:
         target_variables : Optional[dict[str, str]], optional
             Mapping of placeholder names to replacement values for target file paths.
             Applied when loading presets from a list.
+        auto_configure : bool, optional
+            Whether to automatically configure on initialization. Default True.
+            Set to False for testing scenarios.
         """
         if presets_directory:
             self.presets_directory = Path(presets_directory)
@@ -79,15 +86,237 @@ class ConfigManager:
             self.presets_directory = Path(__file__).parent.parent / 'presets'
         self.configurations: list[Configuration] = []
 
-        if preset_param:
-            if preset_param['type'] == 'preset':
-                self.set_config(preset_param['value'])
-            elif preset_param['type'] == 'preset-list':
-                self.configurations.extend(self.load_presets(preset_param['value'], target_variables))
+        if auto_configure:
+            if preset_param:
+                if preset_param['type'] == 'preset':
+                    self.set_config(preset_param['value'])
+                elif preset_param['type'] == 'preset-list':
+                    self.configurations.extend(self.load_presets(preset_param['value'], target_variables))
+                else:
+                    raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
             else:
-                raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
+                self.set_config()
+
+    # User Interaction Methods
+    def _resolve_config_value(self, config: Initialized, key: ConfigOptions, prompt_func: Callable[[], T]) -> T:
+        """
+        Resolve configuration value with fallback to user prompt.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing preset values.
+        key : ConfigOptions
+            The configuration key to check.
+        prompt_func : Callable[[], T]
+            Function to prompt user for value if not in config.
+
+        Returns
+        -------
+        T
+            The resolved configuration value.
+        """
+        if value := config.get(key.value):
+            return cast(T, value)
+        return prompt_func()
+
+    def _ask_open_question(self, prompt: str) -> str:
+        """
+        Prompt the user with an open-ended question.
+
+        Parameters
+        ----------
+        prompt : str
+            The message to display to the user.
+
+        Returns
+        -------
+        str
+            The user's input.
+        """
+        console.print(prompt, end='')
+        return input()
+
+    def _ask_mpc_question(self, prompt: str, options: list[str]) -> str:
+        """
+        Prompt the user with a multiple-choice question.
+
+        Parameters
+        ----------
+        prompt : str
+            The message to display to the user.
+        options : list[str]
+            The list of selectable options.
+
+        Returns
+        -------
+        str
+            The selected option from the list.
+        """
+        console.print(prompt)
+        console.print(create_prompt(Section.USER_CHOICE, Key.EXIT_OPTION))
+        for i, option in enumerate(options, 1):
+            console.print(f'{i}. {option}')
+
+        choice = self._get_user_choice(len(options))
+
+        if choice == 0:
+            exit()  # Exit the script
         else:
-            self.set_config()
+            return options[choice - 1]
+
+    def _get_user_choice(self, max_choice: int) -> int:
+        """
+        Get a numeric choice from the user within a specified range.
+
+        Parameters
+        ----------
+        max_choice : int
+            The maximum valid choice value.
+
+        Returns
+        -------
+        int
+            The user's chosen number within the range [0, max_choice].
+        """
+        while True:
+            try:
+                console.print(create_prompt(Section.USER_CHOICE, Key.CHOICE, max_index=max_choice), end='')
+                choice = int(input())
+                if not 0 <= choice <= max_choice:
+                    raise ValueError
+                return choice
+            except ValueError:
+                console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
+
+    # Configuration Collection Methods
+    def _collect_cluster_filter(self, config: Initialized) -> str:
+        """
+        Get or request the cluster splitting character(s) from the user.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing preset values.
+
+        Returns
+        -------
+        str
+            The character(s) used to split text clusters.
+        """
+        return self._resolve_config_value(
+            config, ConfigOptions.CLUSTER_FILTER,
+            lambda: self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER)) or '\\n')
+
+    def _collect_text_filter_type(self, config: Initialized) -> str:
+        """
+        Get or request the text filter type from the user.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing preset values.
+
+        Returns
+        -------
+        str
+            The selected text filter type, e.g., 'regex', 'positional', or 'regex-list'.
+        """
+        return self._resolve_config_value(
+            config, ConfigOptions.TEXT_FILTER_TYPE,
+            lambda: self._ask_mpc_question(
+                create_prompt(Section.SET_CONFIG, Key.TEXT_FILTER_TYPE),
+                [t.value for t in TextFilterTypes]))
+
+    def _collect_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str]]:
+        """
+        Get or request the actual text filter based on the selected filter type.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing preset values.
+
+        Returns
+        -------
+        Union[str, PositionalFilterType, list[str]]
+            The configured text filter, which can be a regex string, a positional filter object,
+            or a list of regex strings.
+        """
+        return self._resolve_config_value(
+            config, ConfigOptions.TEXT_FILTER, lambda: self._request_text_filter(config))
+
+    def _collect_should_slice_clusters(self, config: Initialized) -> bool:
+        """
+        Determine if only a subsection of clusters should be compared.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing preset values.
+
+        Returns
+        -------
+        bool
+            True if a subsection of clusters should be compared, False otherwise.
+        """
+        # Special handling for boolean since False is a valid value
+        if (value := config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value)) is not None:
+            return value
+
+        response = self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.SHOULD_SLICE_CLUSTERS)).lower()
+        return response in YES_INPUT
+
+    def _collect_cluster_text(self, config: Initialized, config_option: str, position: str, src_or_ref: str) -> str:
+        """
+        Get or request the text within a cluster for a specific subsection.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing preset values.
+        config_option : str
+            The configuration key to check for existing value.
+        position : str
+            Indicates where the subsection should be within the cluster (e.g., 'start' or 'end').
+        src_or_ref : str
+            Indicates whether this is source or reference cluster.
+
+        Returns
+        -------
+        str
+            The text input for the cluster subsection.
+        """
+        if value := config.get(config_option):
+            return cast(str, value)
+        return self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_TEXT, cluster=src_or_ref.lower(), position=position))
+
+    def _request_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str]]:
+        """
+        Request a text filter from the user according to the selected filter type.
+
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing the filter type.
+
+        Returns
+        -------
+        Union[str, PositionalFilterType, list[str]]
+            The configured text filter, which can be a regex string, a positional filter object,
+            or a list of regex strings.
+
+        Raises
+        ------
+        ValueError
+            If the selected text filter type is not supported.
+        """
+        filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+        if not filter_type:
+            raise ValueError("Text filter type must be set before requesting text filter")
+
+        strategy = get_input_strategy(filter_type, self._ask_open_question)
+        return strategy.collect_input(config)
 
     @staticmethod
     def parse_preset_param(preset_param: str) -> tuple[str, Optional[str]]:
@@ -107,7 +336,8 @@ class ConfigManager:
         if '/' not in preset_param:
             return preset_param, None
         else:
-            return tuple(preset_param.split('/', 1))  # type: ignore[return-value]  # Always returns 2 items
+            file_name, preset_name = preset_param.split('/', 1)
+            return file_name, preset_name
 
     def load_presets(self, presets_list_target: str, target_variables: Optional[dict[str, str]] = None) -> list[Configuration]:  # pragma: no cover
         """
@@ -125,9 +355,11 @@ class ConfigManager:
         list[Configuration]
             A list of processed Configuration objects.
         """
-        presets_list_file_path = self.presets_directory / f'{presets_list_target}.yaml'
+        presets_list_file_path = self.presets_directory / \
+            f'{presets_list_target}.yaml'
         presets_list = utils.read_yaml_file(presets_list_file_path)
-        presets_per_file = self._group_presets_by_file(presets_list, target_variables)
+        presets_per_file = self._group_presets_by_file(
+            presets_list, target_variables)
         return self._collect_presets(presets_per_file)
 
     def _group_presets_by_file(self,
@@ -225,7 +457,8 @@ class ConfigManager:
         preset_name = entry['preset_name']
         loaded_presets = self.load_preset_file(file_name)
         if preset_name not in loaded_presets:
-            console.print(f'preset {preset_name} not found in {file_name}. Skipping...')
+            console.print(
+                f'preset {preset_name} not found in {file_name}. Skipping...')
             return None
         config = loaded_presets[preset_name]
         finalized_config = self._finalize_config(config)
@@ -260,10 +493,12 @@ class ConfigManager:
             if len(presets) == 1:
                 preset_name = next(iter(presets))
             else:
-                preset_name = InputManager.ask_mpc_question('Please choose a preset:\n', list(presets.keys()))
+                preset_name = self._ask_mpc_question(
+                    'Please choose a preset:\n', list(presets.keys()))
 
         if preset_name not in presets:
-            raise ValueError(f'preset {preset_name} not found in {preset_file}')
+            raise ValueError(
+                f'preset {preset_name} not found in {preset_file}')
 
         return presets[preset_name]
 
@@ -290,23 +525,28 @@ class ConfigManager:
         presets = utils.read_yaml_file(presets_file_path)
 
         if not presets or len(presets) == 0:
-            raise ValueError(f'presets file {presets_file_path} does not contain any presets')
+            raise ValueError(
+                f'presets file {presets_file_path} does not contain any presets')
 
         return presets
 
     def _set_simple_options(self, config: Initialized):
         """
-        Set basic configuration options interactively via InputManager.
+        Set basic configuration options interactively.
 
         Parameters
         ----------
         config : Initialized
             The configuration object to modify.
         """
-        config[ConfigOptions.CLUSTER_FILTER.value] = InputManager.set_cluster_filter(config)
-        config[ConfigOptions.TEXT_FILTER_TYPE.value] = InputManager.set_text_filter_type(config)
-        config[ConfigOptions.TEXT_FILTER.value] = InputManager.set_text_filter(config)
-        config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = InputManager.set_should_slice_clusters(config)
+        config[ConfigOptions.CLUSTER_FILTER.value] = self._collect_cluster_filter(
+            config)
+        config[ConfigOptions.TEXT_FILTER_TYPE.value] = self._collect_text_filter_type(
+            config)
+        config[ConfigOptions.TEXT_FILTER.value] = self._collect_text_filter(
+            config)
+        config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = self._collect_should_slice_clusters(
+            config)
 
     def _set_cluster_text_options(self, config: Initialized):
         """
@@ -325,7 +565,8 @@ class ConfigManager:
         ]
         for option_key, position, src_or_ref in cluster_text_options:
             if not config.get(option_key):
-                config[option_key] = InputManager.set_cluster_text(config, option_key, position, src_or_ref)
+                config[option_key] = self._collect_cluster_text(
+                    config, option_key, position, src_or_ref)
 
     def set_config(self, preset: str = '', target_file: str = '') -> None:
         """
@@ -341,7 +582,8 @@ class ConfigManager:
         if preset:
             config: Initialized = self.load_preset(preset)
         else:
-            config: Initialized = Initialized(**{option.value: None for option in ConfigOptions})
+            config: Initialized = Initialized(
+                **{option.value: None for option in ConfigOptions})
             self._set_simple_options(config)
 
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
@@ -366,7 +608,8 @@ class ConfigManager:
         cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
         text_filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
         text_filter = config.get(ConfigOptions.TEXT_FILTER.value)
-        should_slice_clusters = config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value)
+        should_slice_clusters = config.get(
+            ConfigOptions.SHOULD_SLICE_CLUSTERS.value)
 
         assert isinstance(cluster_filter, str)
         assert isinstance(text_filter_type, str)
@@ -378,11 +621,14 @@ class ConfigManager:
             text_filter_type=text_filter_type,
             text_filter=text_filter,
             should_slice_clusters=should_slice_clusters,
-            src_start_cluster_text=config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value),
-            src_end_cluster_text=config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value),
-            ref_start_cluster_text=config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value),
-            ref_end_cluster_text=config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
-        )
+            src_start_cluster_text=config.get(
+                ConfigOptions.SRC_START_CLUSTER_TEXT.value),
+            src_end_cluster_text=config.get(
+                ConfigOptions.SRC_END_CLUSTER_TEXT.value),
+            ref_start_cluster_text=config.get(
+                ConfigOptions.REF_START_CLUSTER_TEXT.value),
+            ref_end_cluster_text=config.get(
+                ConfigOptions.REF_END_CLUSTER_TEXT.value))
 
     def should_store_configuration(self) -> bool:
         """
@@ -393,7 +639,7 @@ class ConfigManager:
         bool
             True if the configuration should be saved, False otherwise.
         """
-        return InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.REQUEST_SAVE)) in YES_INPUT
+        return self._ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.REQUEST_SAVE)) in YES_INPUT
 
     def create_new_preset(self) -> None:
         """Create a preset from the configuration to be written to a file."""
@@ -402,13 +648,16 @@ class ConfigManager:
         file_name = ''
 
         while not preset_name:
-            preset_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.NEW_PRESET_NAME)).strip()
+            preset_name = self._ask_open_question(create_prompt(
+                Section.WRITE_CONFIG, Key.NEW_PRESET_NAME)).strip()
             if not preset_name:
-                console.print(create_prompt(Section.WRITE_CONFIG, Key.INVALID_PRESET_NAME))
+                console.print(
+                    create_prompt(
+                        Section.WRITE_CONFIG,
+                        Key.INVALID_PRESET_NAME))
                 continue
 
-        file_name = InputManager.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME,
-                                                                 presets_directory=self.presets_directory))
+        file_name = self._ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME, presets_directory=self.presets_directory))
 
         file_path = Path(file_name).with_suffix('.yaml')
         if not file_path.is_absolute():

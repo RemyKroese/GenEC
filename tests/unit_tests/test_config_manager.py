@@ -3,7 +3,6 @@ import pytest
 from unittest.mock import patch, mock_open, MagicMock
 
 from GenEC.core.config_manager import ConfigManager, Configuration
-from GenEC.core.manage_io import InputManager
 from GenEC.core.types.preset_config import Initialized
 import GenEC.utils as utils
 
@@ -123,7 +122,7 @@ def test_parse_preset_param(preset_param, expected_result):
 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset_file')
-@patch.object(InputManager, 'ask_mpc_question')
+@patch.object(ConfigManager, '_ask_mpc_question')
 def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_preset_file, c_instance):
     mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     mock_ask_mpc_question.return_value = preset_name = 'main_preset'
@@ -226,10 +225,10 @@ def test_set_config(mock__set_cluster_text_options, mock_read_yaml_file, c_insta
 
 
 @pytest.mark.unit
-@patch.object(InputManager, 'set_cluster_filter', return_value=SINGLE_PRESET_DATA['main_preset']['cluster_filter'])
-@patch.object(InputManager, 'set_text_filter_type', return_value=SINGLE_PRESET_DATA['main_preset']['text_filter_type'])
-@patch.object(InputManager, 'set_text_filter', return_value=SINGLE_PRESET_DATA['main_preset']['text_filter'])
-@patch.object(InputManager, 'set_should_slice_clusters', return_value=True)
+@patch.object(ConfigManager, '_collect_cluster_filter', return_value=SINGLE_PRESET_DATA['main_preset']['cluster_filter'])
+@patch.object(ConfigManager, '_collect_text_filter_type', return_value=SINGLE_PRESET_DATA['main_preset']['text_filter_type'])
+@patch.object(ConfigManager, '_collect_text_filter', return_value=SINGLE_PRESET_DATA['main_preset']['text_filter'])
+@patch.object(ConfigManager, '_collect_should_slice_clusters', return_value=True)
 @patch.object(ConfigManager, '_set_cluster_text_options')
 @patch.object(ConfigManager, '_finalize_config', return_value=SINGLE_PRESET_DATA['main_preset'])
 def test_set_config_no_preset(mock_set_cluster_filter, mock_set_text_filter_type, mock_set_text_filter,
@@ -242,7 +241,7 @@ def test_set_config_no_preset(mock_set_cluster_filter, mock_set_text_filter_type
 
 
 @pytest.mark.unit
-@patch.object(InputManager, 'set_cluster_text', side_effect=['startA', 'endA', 'startB', 'endB'])
+@patch.object(ConfigManager, '_collect_cluster_text', side_effect=['startA', 'endA', 'startB', 'endB'])
 def test_set_cluster_text_options(mock_cluster_text, c_instance):
     config = Initialized(
         cluster_filter='\n',
@@ -261,10 +260,10 @@ def test_set_cluster_text_options(mock_cluster_text, c_instance):
 
 
 @pytest.mark.unit
-@patch.object(InputManager, 'set_cluster_filter', return_value='\n')
-@patch.object(InputManager, 'set_text_filter_type', return_value='regex')
-@patch.object(InputManager, 'set_text_filter', return_value='[a-z]+')
-@patch.object(InputManager, 'set_should_slice_clusters', return_value=True)
+@patch.object(ConfigManager, '_collect_cluster_filter', return_value='\n')
+@patch.object(ConfigManager, '_collect_text_filter_type', return_value='regex')
+@patch.object(ConfigManager, '_collect_text_filter', return_value='[a-z]+')
+@patch.object(ConfigManager, '_collect_should_slice_clusters', return_value=True)
 def test_set_simple_options(mock_should_slice, mock_text_filter, mock_text_type, mock_cluster_filter, c_instance):
     # All config options missing
     config = Initialized(
@@ -367,7 +366,7 @@ def test_collect_presets_none_found(mock_process_entry, c_instance):
 
 
 @pytest.mark.unit
-@patch.object(InputManager, 'ask_open_question')
+@patch.object(ConfigManager, '_ask_open_question')
 @patch.object(Path, 'exists', return_value=False)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'write_txt')
@@ -388,7 +387,7 @@ def test_create_new_preset_creates_new_file(mock_write_txt, mock_write_yaml, moc
 
 
 @pytest.mark.unit
-@patch.object(InputManager, 'ask_open_question')
+@patch.object(ConfigManager, '_ask_open_question')
 @patch.object(Path, 'exists', return_value=True)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'append_to_file')
@@ -405,7 +404,7 @@ def test_create_new_preset_appends_to_existing_file(mock_write_txt, mock_write_y
 
 
 @pytest.mark.unit
-@patch.object(InputManager, 'ask_open_question')
+@patch.object(ConfigManager, '_ask_open_question')
 @patch.object(Path, 'exists', return_value=False)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'write_txt')
