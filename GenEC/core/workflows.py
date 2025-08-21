@@ -8,7 +8,7 @@ from GenEC import utils
 from GenEC.core import FileID, Workflows
 from GenEC.core.analyze import Extractor, Comparer
 from GenEC.core.config_manager import ConfigManager, Configuration
-from GenEC.core.manage_io import OutputManager
+from GenEC.core.output_manager import OutputManager
 from GenEC.core.types.output import DataExtract, Entry
 
 if TYPE_CHECKING:  # pragma: no cover

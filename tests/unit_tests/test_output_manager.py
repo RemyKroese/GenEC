@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import patch, call
 from rich.console import Console
 
-from GenEC.core.manage_io import OutputManager
+from GenEC.core.output_manager import OutputManager
 
 MOCK_RESULTS_COMPARISON = [
     {'preset': 'preset1', 'target': 'file1.txt', 'data': {'1': {'source': 1, 'reference': 1, 'difference': 0}}},
