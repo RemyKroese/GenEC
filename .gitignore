@@ -130,3 +130,6 @@ dmypy.json
 
 # VS code
 .vscode
+
+# Copilot instructions (local configuration)
+.github/copilot-instructions.md
