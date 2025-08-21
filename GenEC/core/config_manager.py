@@ -522,7 +522,8 @@ class ConfigManager:
             If the file does not contain any presets.
         """
         presets_file_path = self.presets_directory / f'{preset_file}.yaml'
-        presets = utils.read_yaml_file(presets_file_path)
+        presets_data = utils.read_yaml_file(presets_file_path)
+        presets: dict[str, Initialized] = cast(dict[str, Initialized], presets_data)
 
         if not presets or len(presets) == 0:
             raise ValueError(
@@ -530,7 +531,7 @@ class ConfigManager:
 
         return presets
 
-    def _set_simple_options(self, config: Initialized):
+    def _set_simple_options(self, config: Initialized) -> None:
         """
         Set basic configuration options interactively.
 
@@ -548,7 +549,7 @@ class ConfigManager:
         config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = self._collect_should_slice_clusters(
             config)
 
-    def _set_cluster_text_options(self, config: Initialized):
+    def _set_cluster_text_options(self, config: Initialized) -> None:
         """
         Set cluster text options interactively if slicing clusters is enabled.
 
@@ -565,7 +566,9 @@ class ConfigManager:
         ]
         for option_key, position, src_or_ref in cluster_text_options:
             if not config.get(option_key):
-                config[option_key] = self._collect_cluster_text(
+                # Cast to dict to bypass TypedDict literal key requirement
+                config_dict = cast(dict[str, Union[str, None]], config)
+                config_dict[option_key] = self._collect_cluster_text(
                     config, option_key, position, src_or_ref)
 
     def set_config(self, preset: str = '', target_file: str = '') -> None:
@@ -582,8 +585,16 @@ class ConfigManager:
         if preset:
             config: Initialized = self.load_preset(preset)
         else:
-            config: Initialized = Initialized(
-                **{option.value: None for option in ConfigOptions})
+            config = Initialized(
+                cluster_filter=None,
+                text_filter_type=None,
+                text_filter=None,
+                should_slice_clusters=None,
+                src_start_cluster_text=None,
+                src_end_cluster_text=None,
+                ref_start_cluster_text=None,
+                ref_end_cluster_text=None
+            )
             self._set_simple_options(config)
 
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):

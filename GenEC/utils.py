@@ -24,7 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
 ERROR_WRITING_FILE = 'Error writing file {}: {}'
 
 
-def print_footer():
+def print_footer() -> None:
     """Print footer with project metadata."""
     console = Console()
 
