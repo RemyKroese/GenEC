@@ -10,6 +10,7 @@ from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
 from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.types.preset_config import Initialized
 from GenEC.core.types.output import DataCompare, DataExtract, Entry
+from GenEC.core.input_strategies import get_input_strategy
 
 if TYPE_CHECKING:  # pragma: no cover
     from rich.panel import Panel
@@ -143,6 +144,11 @@ class InputManager:
         """
         Request a text filter from the user according to the selected filter type.
 
+        Parameters
+        ----------
+        config : Initialized
+            The configuration object containing the filter type.
+
         Returns
         -------
         Union[str, PositionalFilterType, list[str]]
@@ -154,26 +160,12 @@ class InputManager:
         ValueError
             If the selected text filter type is not supported.
         """
-        if config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX.value:
-            return InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.REGEX_FILTER))
-        elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.POSITIONAL.value:
-            separator_input = InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_SEPARATOR))
-            positional_text_filter = PositionalFilterType(
-                separator=separator_input if separator_input else ' ',
-                line=int(InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_LINE))),
-                occurrence=int(InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_OCCURRENCE))))
-            return positional_text_filter
-        elif config.get(ConfigOptions.TEXT_FILTER_TYPE.value) == TextFilterTypes.REGEX_LIST.value:
-            regex_list_filters: list[str] = []
-            index = 1
-            while True:
-                regex_list_filters.append(InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_FILTER, search=index)))
-                index += 1
-                if InputManager.ask_open_question(create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_CONTINUE)).lower() not in YES_INPUT:
-                    break
-            return regex_list_filters
-        else:
-            raise ValueError(f'Unsupported filter type: {config.get(ConfigOptions.TEXT_FILTER_TYPE.value)}')
+        filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+        if not filter_type:
+            raise ValueError("Text filter type must be set before requesting text filter")
+
+        strategy = get_input_strategy(filter_type, InputManager.ask_open_question)
+        return strategy.collect_input(config)
 
     @staticmethod
     def ask_open_question(prompt: str) -> str:
