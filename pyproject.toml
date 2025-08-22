@@ -44,6 +44,7 @@ Issue_tracker = "https://github.com/remykroese/GenEC/issues"
 addopts = "-ra --strict-markers"
 markers = [
     "unit",
+    "integration",
     "system"
 ]
 filterwarnings = [
