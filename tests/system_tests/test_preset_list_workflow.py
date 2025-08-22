@@ -11,19 +11,24 @@ from GenEC import main as genec_main
 ASSETS_DIR: Path = Path('tests/system_tests/assets').resolve()
 OUTPUT_TYPES = ['txt', 'csv', 'json', 'yaml']
 
+# Constants for test parameters that are exactly the same across all tests
+PRESETS_DIR: Path = ASSETS_DIR / 'input' / 'presets'
+DEFAULT_SOURCE_DIR: Path = ASSETS_DIR
+DEFAULT_INPUT_FOLDER_NAME: str = 'assets'
+REGEX_LIST_SOURCE_DIR: Path = ASSETS_DIR / 'input' / 'source'
+REGEX_LIST_INPUT_FOLDER_NAME: str = 'source'
+
 def run_preset_list_test(
     tmp_path: Path,
     preset_list_name: str,
     expected_output_subdir: str,
     expected_output_base: Path,
     extra_cli_args: list[str],
-    source_dir: Path = ASSETS_DIR,
-    input_folder_name: str = 'assets'
+    source_dir: Path,
+    input_folder_name: str
 ) -> None:
     """Run preset list workflow test with optimized parameters."""
     output_dir = tmp_path / 'output'
-    presets_dir = ASSETS_DIR / 'input' / 'presets'
-
     expected_output_directory = expected_output_base / expected_output_subdir / input_folder_name
 
     # Build CLI arguments
@@ -31,7 +36,7 @@ def run_preset_list_test(
         'main.py', 'preset-list',
         '--source', str(source_dir),
         '--preset-list', preset_list_name,
-        '--presets-directory', str(presets_dir),
+        '--presets-directory', str(PRESETS_DIR),
         '--output-directory', str(output_dir),
         '--output-types', *OUTPUT_TYPES,
         *extra_cli_args
@@ -57,7 +62,9 @@ def test_preset_list_regex_extract_only(tmp_path: Path) -> None:
         preset_list_name='preset_list1',
         expected_output_subdir='extract_only',
         expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex',
-        extra_cli_args=['--target-variables', 'loc=input', 'prefix=regex_input']
+        extra_cli_args=['--target-variables', 'loc=input/source', 'prefix=regex_input'],
+        source_dir=DEFAULT_SOURCE_DIR,
+        input_folder_name=DEFAULT_INPUT_FOLDER_NAME
     )
 
 
@@ -69,7 +76,9 @@ def test_preset_list_regex_extract_and_compare(tmp_path: Path) -> None:
         preset_list_name='preset_list1',
         expected_output_subdir='extract_and_compare',
         expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex',
-        extra_cli_args=['--reference', str(ASSETS_DIR), '--target-variables', 'loc=input', 'prefix=regex_input']
+        extra_cli_args=['--reference', str(ASSETS_DIR), '--target-variables', 'loc=input/source', 'prefix=regex_input'],
+        source_dir=DEFAULT_SOURCE_DIR,
+        input_folder_name=DEFAULT_INPUT_FOLDER_NAME
     )
 
 
@@ -82,8 +91,8 @@ def test_preset_list_regex_list_extract_only(tmp_path: Path) -> None:
         expected_output_subdir='extract_only',
         expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex_list',
         extra_cli_args=['--target-variables', 'prefix=regex_list_input'],
-        source_dir=ASSETS_DIR / 'input' / 'source',
-        input_folder_name='source'
+        source_dir=REGEX_LIST_SOURCE_DIR,
+        input_folder_name=REGEX_LIST_INPUT_FOLDER_NAME
     )
 
 
@@ -96,6 +105,6 @@ def test_preset_list_regex_list_extract_and_compare(tmp_path: Path) -> None:
         expected_output_subdir='extract_and_compare',
         expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex_list',
         extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference'), '--target-variables', 'prefix=regex_list_input'],
-        source_dir=ASSETS_DIR / 'input' / 'source',
-        input_folder_name='source'
+        source_dir=REGEX_LIST_SOURCE_DIR,
+        input_folder_name=REGEX_LIST_INPUT_FOLDER_NAME
     )

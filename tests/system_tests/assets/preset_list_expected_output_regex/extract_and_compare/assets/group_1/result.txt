@@ -1,6 +1,6 @@
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Preset:      preset_file1/preset_a                                     │
-│ Target file: input/regex_input_1.txt                                   │
+│ Target file: input/source/regex_input_1.txt                            │
 │                                  ╷          ╷           ╷              │
 │                                  │  (count) │   (count) │              │
 │   Data                           │   Source │ Reference │ Difference   │
@@ -13,7 +13,7 @@
 
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Preset:      preset_file1/preset_a                                     │
-│ Target file: input/regex_input_3.txt                                   │
+│ Target file: input/source/regex_input_3.txt                            │
 │                                  ╷          ╷           ╷              │
 │                                  │  (count) │   (count) │              │
 │   Data                           │   Source │ Reference │ Difference   │
