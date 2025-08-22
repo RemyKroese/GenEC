@@ -106,7 +106,7 @@ def read_file(file_path: Path) -> str:
 
 def read_yaml_file(file_path: Path) -> Any:
     """
-    Read the content of a YAML file.
+    Read the content of a YAML file with comprehensive error handling.
 
     Parameters
     ----------
@@ -122,11 +122,24 @@ def read_yaml_file(file_path: Path) -> Any:
     ------
     FileNotFoundError
         If the specified file does not exist.
+    UnicodeDecodeError
+        If the file cannot be decoded as UTF-8.
+    yaml.YAMLError
+        If the YAML content is malformed.
     """
     if not file_path.exists():
         raise FileNotFoundError(f'File {file_path} not found.')
-    with file_path.open('r') as file:
-        return yaml.safe_load(file)
+
+    try:
+        with file_path.open('r', encoding='utf-8') as file:
+            return yaml.safe_load(file)
+    except UnicodeDecodeError as e:
+        raise UnicodeDecodeError(
+            e.encoding, e.object, e.start, e.end,
+            f'File {file_path} is not valid UTF-8. Please ensure the file is saved with UTF-8 encoding.'
+        ) from e
+    except yaml.YAMLError as e:
+        raise yaml.YAMLError(f'Invalid YAML format in {file_path}: {e}') from e
 
 
 def append_to_file(data: str, file_path: Path) -> None:

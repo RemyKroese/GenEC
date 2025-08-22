@@ -24,6 +24,7 @@ dev = [
     "flake8-pyproject>=1.2.3",
     "mypy>=1.17.1",
     "pycodestyle>=2.14.0",
+    "pylint>=3.3.8",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
     "pytest-repeat>=0.9.4",
@@ -46,6 +47,17 @@ markers = [
 ]
 filterwarnings = [
     "ignore::SyntaxWarning:prettytable"
+]
+
+[tool.pylint.FORMAT]
+max-line-length = 150
+
+[tool.pylint.MASTER]
+ignore-patterns = ["__init__.py", "tests/*", "build/*"]
+
+disable = [
+    "R0903",  # too few public methods
+    "C0103",  # invalid-name
 ]
 
 [tool.flake8]

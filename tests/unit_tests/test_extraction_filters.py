@@ -85,3 +85,29 @@ def test_extract_text_from_clusters_by_regex_list(mock_regex_extractor, tst_conf
     called_config = mock_regex_extractor.call_args[0][0]
     assert called_config[ConfigOptions.TEXT_FILTER.value] == regex_filters[-1]
     mock_regex_instance.extract.assert_called_once_with(expected_filtered_clusters)
+
+
+@pytest.mark.unit
+def test_regex_extractor_invalid_pattern(tst_config):
+    """Test that RegexExtractor handles invalid regex patterns correctly."""
+    tst_config[ConfigOptions.TEXT_FILTER.value] = '[unclosed'  # Invalid regex
+    extractor = extraction_filters.RegexExtractor(tst_config)
+    
+    with pytest.raises(ValueError, match="Invalid regex pattern: \\[unclosed"):
+        extractor.extract(['test cluster'])
+
+
+@pytest.mark.unit  
+def test_regex_extractor_invalid_pattern_console_output(tst_config):
+    """Test that RegexExtractor prints error message for invalid regex patterns."""
+    tst_config[ConfigOptions.TEXT_FILTER.value] = '[unclosed'  # Invalid regex
+    extractor = extraction_filters.RegexExtractor(tst_config)
+    
+    with patch('GenEC.core.extraction_filters.console') as mock_console:
+        with pytest.raises(ValueError):
+            extractor.extract(['test cluster'])
+        
+        mock_console.print.assert_called_once()
+        call_args = mock_console.print.call_args[0][0]
+        assert 'Invalid regex pattern' in call_args
+        assert 'unterminated character set' in call_args

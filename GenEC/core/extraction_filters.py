@@ -4,8 +4,13 @@ from abc import ABC, abstractmethod
 import re
 from typing import Callable, Dict, Type, TypeVar
 
+from rich.console import Console
+
 from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
 from GenEC.core.types.preset_config import Finalized
+from GenEC.core.prompts import create_prompt, Section, Key
+
+console = Console()
 
 
 class BaseExtractor(ABC):
@@ -138,7 +143,12 @@ class RegexExtractor(BaseExtractor):
         regex_pattern = self.config.get(ConfigOptions.TEXT_FILTER.value)
         if not isinstance(regex_pattern, str):  # pragma: no cover
             raise TypeError('Incorrect text filter type for regex, expected a regex pattern.')
-        pattern = re.compile(regex_pattern)
+
+        try:
+            pattern = re.compile(regex_pattern)
+        except re.error as e:
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.REGEX_COMPILATION_ERROR, error=str(e)))
+            raise ValueError(f"Invalid regex pattern: {regex_pattern}") from e
 
         filtered_text: list[str] = []
         for cluster in clusters:
