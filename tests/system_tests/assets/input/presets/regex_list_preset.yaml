@@ -1,0 +1,36 @@
+regex_list_extract_only:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex-list'
+  text_filter:
+    - '\| [A-Za-z]+ \|'     # Filter to lines with log levels (matching existing tests)
+    - '([A-Za-z]+)'         # Extract the actual log level
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+regex_list_with_modules:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex-list'
+  text_filter:
+    - 'SensorA|SensorB'     # Filter to sensor lines only
+    - '\| ([A-Za-z]+) \|'   # Extract log levels from sensor lines
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+regex_list_complex:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex-list'
+  text_filter:
+    - 'ERROR|WARNING'       # Filter to error/warning lines only
+    - '\| ([A-Za-z]+) \|'   # Extract log levels
+    - '([A-Za-z]+)'         # Final extraction of log level
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''

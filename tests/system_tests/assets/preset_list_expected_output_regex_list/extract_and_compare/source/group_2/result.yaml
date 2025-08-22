@@ -1,0 +1,11 @@
+- preset: preset_system_actions/preset_b
+  target: input_2.txt
+  data:
+    High:
+      source: 61
+      reference: 82
+      difference: -21
+    Medium:
+      source: 81
+      reference: 0
+      difference: 81

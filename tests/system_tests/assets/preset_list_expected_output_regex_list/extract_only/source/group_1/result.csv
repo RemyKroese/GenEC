@@ -1,0 +1,9 @@
+data,preset,source,target
+ERROR,preset_system_actions/preset_a,48,input_1.txt
+INFO,preset_system_actions/preset_a,376,input_1.txt
+WARNING,preset_system_actions/preset_a,101,input_1.txt
+BOOT,preset_system_actions/preset_a,24,input_2.txt
+CALIBRATION,preset_system_actions/preset_a,23,input_2.txt
+RESTART,preset_system_actions/preset_a,23,input_2.txt
+SHUTDOWN,preset_system_actions/preset_a,29,input_2.txt
+SYNC,preset_system_actions/preset_a,29,input_2.txt

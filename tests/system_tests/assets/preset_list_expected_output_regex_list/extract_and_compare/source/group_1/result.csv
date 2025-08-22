@@ -1,0 +1,14 @@
+data,difference,preset,reference,source,target
+ERROR,-61,preset_system_actions/preset_a,109,48,input_1.txt
+INFO,0,preset_system_actions/preset_a,376,376,input_1.txt
+WARNING,61,preset_system_actions/preset_a,40,101,input_1.txt
+BOOT,24,preset_system_actions/preset_a,0,24,input_2.txt
+CALIBRATION,23,preset_system_actions/preset_a,0,23,input_2.txt
+MAINTENANCE,-23,preset_system_actions/preset_a,23,0,input_2.txt
+POWEROFF,-29,preset_system_actions/preset_a,29,0,input_2.txt
+REBOOT,-23,preset_system_actions/preset_a,23,0,input_2.txt
+RESTART,23,preset_system_actions/preset_a,0,23,input_2.txt
+SHUTDOWN,29,preset_system_actions/preset_a,0,29,input_2.txt
+STARTUP,-24,preset_system_actions/preset_a,24,0,input_2.txt
+SYNC,29,preset_system_actions/preset_a,0,29,input_2.txt
+SYNCHRONIZE,-29,preset_system_actions/preset_a,29,0,input_2.txt

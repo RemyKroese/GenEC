@@ -1,0 +1,79 @@
+[
+    {
+        "preset": "preset_system_actions/preset_a",
+        "target": "input_1.txt",
+        "data": {
+            "ERROR": {
+                "source": 48,
+                "reference": 109,
+                "difference": -61
+            },
+            "INFO": {
+                "source": 376,
+                "reference": 376,
+                "difference": 0
+            },
+            "WARNING": {
+                "source": 101,
+                "reference": 40,
+                "difference": 61
+            }
+        }
+    },
+    {
+        "preset": "preset_system_actions/preset_a",
+        "target": "input_2.txt",
+        "data": {
+            "BOOT": {
+                "source": 24,
+                "reference": 0,
+                "difference": 24
+            },
+            "CALIBRATION": {
+                "source": 23,
+                "reference": 0,
+                "difference": 23
+            },
+            "MAINTENANCE": {
+                "source": 0,
+                "reference": 23,
+                "difference": -23
+            },
+            "POWEROFF": {
+                "source": 0,
+                "reference": 29,
+                "difference": -29
+            },
+            "REBOOT": {
+                "source": 0,
+                "reference": 23,
+                "difference": -23
+            },
+            "RESTART": {
+                "source": 23,
+                "reference": 0,
+                "difference": 23
+            },
+            "SHUTDOWN": {
+                "source": 29,
+                "reference": 0,
+                "difference": 29
+            },
+            "STARTUP": {
+                "source": 0,
+                "reference": 24,
+                "difference": -24
+            },
+            "SYNC": {
+                "source": 29,
+                "reference": 0,
+                "difference": 29
+            },
+            "SYNCHRONIZE": {
+                "source": 0,
+                "reference": 29,
+                "difference": -29
+            }
+        }
+    }
+]

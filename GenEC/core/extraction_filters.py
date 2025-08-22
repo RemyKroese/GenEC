@@ -155,7 +155,12 @@ class RegexExtractor(BaseExtractor):
             search_result = pattern.search(cluster)
             if search_result:
                 groups = search_result.groups()
-                text_output = ' | '.join(groups) if groups else search_result.group(0)
+                if groups:
+                    # Filter out None values from groups and join
+                    valid_groups = [group for group in groups if group is not None]
+                    text_output = ' | '.join(valid_groups) if valid_groups else search_result.group(0)
+                else:
+                    text_output = search_result.group(0)
                 filtered_text.append(text_output)
         return filtered_text
 
