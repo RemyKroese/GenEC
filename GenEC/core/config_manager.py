@@ -159,6 +159,7 @@ class ConfigManager:
         console.print(create_prompt(Section.USER_CHOICE, Key.EXIT_OPTION))
         for i, option in enumerate(options, 1):
             console.print(f'{i}. {option}')
+        console.print('\n')
 
         choice = self._get_user_choice(len(options))
 
@@ -576,9 +577,9 @@ class ConfigManager:
         config : Initialized
             The configuration object to modify.
         """
-        config[ConfigOptions.CLUSTER_FILTER.value] = self._collect_cluster_filter(
-            config)
         config[ConfigOptions.TEXT_FILTER_TYPE.value] = self._collect_text_filter_type(
+            config)
+        config[ConfigOptions.CLUSTER_FILTER.value] = self._collect_cluster_filter(
             config)
         config[ConfigOptions.TEXT_FILTER.value] = self._collect_text_filter(
             config)
