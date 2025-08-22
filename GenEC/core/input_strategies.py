@@ -1,7 +1,7 @@
 """Strategy pattern implementation for text filter input handling."""
 
 from abc import ABC, abstractmethod
-from typing import Union, TYPE_CHECKING, Callable
+from typing import Union, TYPE_CHECKING, Callable, Any
 
 from rich.console import Console
 
@@ -35,7 +35,7 @@ class TextFilterInputStrategy(ABC):
         self.ask_question = ask_question_func
 
     @abstractmethod
-    def collect_input(self, config: Initialized) -> Union[str, PositionalFilterType, list[str]]:
+    def collect_input(self, config: Initialized) -> Union[str, PositionalFilterType, list[str], dict[str, Any]]:
         """
         Collect text filter input from the user.
 
@@ -93,7 +93,7 @@ class RegexInputStrategy(TextFilterInputStrategy):
 class PositionalInputStrategy(TextFilterInputStrategy):
     """Strategy for collecting positional filter input."""
 
-    def collect_input(self, config: Initialized) -> PositionalFilterType:
+    def collect_input(self, config: Initialized) -> dict[str, Any]:
         """
         Collect positional filter parameters from user input.
 
@@ -104,8 +104,8 @@ class PositionalInputStrategy(TextFilterInputStrategy):
 
         Returns
         -------
-        PositionalFilterType
-            The configured positional filter object.
+        dict[str, Any]
+            The configured positional filter as a dict (for clean YAML serialization).
         """
         separator_input = self.ask_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_SEPARATOR))
 
@@ -125,11 +125,11 @@ class PositionalInputStrategy(TextFilterInputStrategy):
                 break
             console.print(create_prompt(Section.ERROR_HANDLING, Key.INVALID_OCCURRENCE_NUMBER))
 
-        return PositionalFilterType(
-            separator=separator_input if separator_input else ' ',
-            line=line,
-            occurrence=occurrence
-        )
+        return {
+            'separator': separator_input if separator_input else ' ',
+            'line': line,
+            'occurrence': occurrence
+        }
 
     def get_filter_type(self) -> TextFilterTypes:
         """Get the positional filter type."""

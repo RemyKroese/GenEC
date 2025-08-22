@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 import sys
-from typing import Optional, Union, TypeVar, Callable, cast
+from typing import Optional, Union, TypeVar, Callable, cast, Any
 
 from rich.console import Console
 
@@ -86,6 +86,7 @@ class ConfigManager:
         else:
             self.presets_directory = Path(__file__).parent.parent / 'presets'
         self.configurations: list[Configuration] = []
+        self.initialized_config: Optional[Initialized] = None
 
         if auto_configure:
             if preset_param:
@@ -205,9 +206,12 @@ class ConfigManager:
         str
             The character(s) used to split text clusters.
         """
-        return self._resolve_config_value(
-            config, ConfigOptions.CLUSTER_FILTER,
-            lambda: self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER)) or '\\n')
+        def get_cluster_filter() -> str:
+            user_input = self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER))
+            return user_input or '\\n'  # Store escaped string for display/presets
+
+        result = self._resolve_config_value(config, ConfigOptions.CLUSTER_FILTER, get_cluster_filter)
+        return result
 
     def _collect_text_filter_type(self, config: Initialized) -> str:
         """
@@ -229,7 +233,7 @@ class ConfigManager:
                 create_prompt(Section.SET_CONFIG, Key.TEXT_FILTER_TYPE),
                 [t.value for t in TextFilterTypes]))
 
-    def _collect_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str]]:
+    def _collect_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str], dict[str, Any]]:
         """
         Get or request the actual text filter based on the selected filter type.
 
@@ -240,9 +244,9 @@ class ConfigManager:
 
         Returns
         -------
-        Union[str, PositionalFilterType, list[str]]
+        Union[str, PositionalFilterType, list[str], dict[str, Any]]
             The configured text filter, which can be a regex string, a positional filter object,
-            or a list of regex strings.
+            a dict (for positional filters in initialized config), or a list of regex strings.
         """
         return self._resolve_config_value(
             config, ConfigOptions.TEXT_FILTER, lambda: self._request_text_filter(config))
@@ -292,7 +296,7 @@ class ConfigManager:
             return cast(str, value)
         return self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_TEXT, cluster=src_or_ref.lower(), position=position))
 
-    def _request_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str]]:
+    def _request_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str], dict[str, Any]]:
         """
         Request a text filter from the user according to the selected filter type.
 
@@ -303,9 +307,9 @@ class ConfigManager:
 
         Returns
         -------
-        Union[str, PositionalFilterType, list[str]]
+        Union[str, PositionalFilterType, list[str], dict[str, Any]]
             The configured text filter, which can be a regex string, a positional filter object,
-            or a list of regex strings.
+            a dict (for positional filters in initialized config), or a list of regex strings.
 
         Raises
         ------
@@ -632,6 +636,9 @@ class ConfigManager:
         if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
             self._set_cluster_text_options(config)
 
+        # Store the initialized config before finalization for preset generation
+        self.initialized_config = config.copy()
+
         self.configurations.append(Configuration(self._finalize_config(config), preset, target_file))
 
     def _finalize_config(self, config: Initialized) -> Finalized:
@@ -656,13 +663,21 @@ class ConfigManager:
 
         assert isinstance(cluster_filter, str)
         assert isinstance(text_filter_type, str)
-        assert isinstance(text_filter, (str, list, PositionalFilterType))
+        assert isinstance(text_filter, (str, list, PositionalFilterType, dict))
         assert isinstance(should_slice_clusters, bool)
+
+        # Convert dict positional filter to PositionalFilterType for processing
+        final_text_filter: Union[str, list[str], PositionalFilterType]
+        if isinstance(text_filter, dict) and text_filter_type == TextFilterTypes.POSITIONAL.value:
+            final_text_filter = PositionalFilterType(**text_filter)
+        else:
+            # text_filter must be str, list, or PositionalFilterType at this point
+            final_text_filter = cast(Union[str, list[str], PositionalFilterType], text_filter)
 
         return Finalized(
             cluster_filter=cluster_filter,
             text_filter_type=text_filter_type,
-            text_filter=text_filter,
+            text_filter=final_text_filter,
             should_slice_clusters=should_slice_clusters,
             src_start_cluster_text=config.get(
                 ConfigOptions.SRC_START_CLUSTER_TEXT.value),
@@ -684,9 +699,29 @@ class ConfigManager:
         """
         return self._ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.REQUEST_SAVE)) in YES_INPUT
 
+    def _get_preset_data(self) -> dict[str, Any]:
+        """
+        Extract clean preset data from initialized config.
+
+        Returns only non-None values in a format suitable for YAML serialization.
+        Positional filters are kept as dicts (no conversion needed).
+
+        Returns
+        -------
+        dict[str, Any]
+            Clean configuration data for preset generation.
+        """
+        if not self.initialized_config:
+            return {}
+
+        # Filter out None values for clean preset output
+        return {k: v for k, v in self.initialized_config.items() if v is not None}
+
     def create_new_preset(self) -> None:
         """Create a preset from the configuration to be written to a file."""
-        config = self.configurations[0].config
+        if not self.initialized_config:
+            raise ValueError("No initialized config available for preset creation")
+
         preset_name = ''
         file_name = ''
 
@@ -706,25 +741,9 @@ class ConfigManager:
         if not file_path.is_absolute():
             file_path = self.presets_directory / file_path
 
-        # Convert PositionalFilterType back to dict for YAML serialization
-        serializable_config = dict(config)
-        if (config.get('text_filter_type') == TextFilterTypes.POSITIONAL.value and
-                isinstance(config.get('text_filter'), PositionalFilterType)):
-            positional_filter = cast(PositionalFilterType, config['text_filter'])
-            serializable_config['text_filter'] = {
-                'separator': positional_filter.separator,
-                'line': positional_filter.line,
-                'occurrence': positional_filter.occurrence
-            }
-
-        # Convert cluster_filter back to user-readable format
-        cluster_filter = serializable_config.get('cluster_filter', '')
-        if cluster_filter == '\n':
-            serializable_config['cluster_filter'] = '\\n'
-        elif cluster_filter == '\n\n':
-            serializable_config['cluster_filter'] = '\\n\\n'
-
-        new_preset = {preset_name: serializable_config}
+        # Get clean preset data (only non-None values)
+        preset_data = self._get_preset_data()
+        new_preset = {preset_name: preset_data}
 
         if file_path.exists():
             console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND, file_path=file_path))

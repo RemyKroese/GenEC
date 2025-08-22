@@ -57,7 +57,7 @@ def run_basic_workflow_test(
 def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with regex filtering for extraction only."""
     input_side_effect = [
-        '\n',                         # cluster split character
+        '\\n',                        # cluster split character (literal backslash-n)
         '1',                           # filter type: Regex
         r'\| ([A-Za-z]+) \|',          # regex filter
         '',                           # skip subsection slicing
@@ -80,7 +80,7 @@ def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with regex filtering for extraction and comparison."""
     input_side_effect = [
-        '\n',                         # cluster split character
+        '\\n',                        # cluster split character (literal backslash-n)
         '1',                           # filter type: Regex
         r'\| ([A-Za-z]+) \|',          # regex filter
         '',                           # skip subsection slicing
@@ -103,7 +103,7 @@ def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
 def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with regex-list filtering for extraction only."""
     input_side_effect = [
-        '\n',                         # cluster split character
+        '\\n',                        # cluster split character (literal backslash-n)
         '3',                           # filter type: Regex List
         r'\| [A-Za-z]+ \|',            # first regex pattern
         'yes',                         # add another pattern
@@ -129,7 +129,7 @@ def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with regex-list filtering for extraction and comparison."""
     input_side_effect = [
-        '\n',                         # cluster split character
+        '\\n',                        # cluster split character (literal backslash-n)
         '3',                           # filter type: Regex List
         r'\| [A-Za-z]+ \|',            # first regex pattern
         'yes',                         # add another pattern
@@ -155,7 +155,7 @@ def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
 def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with positional filtering for extraction only."""
     input_side_effect = [
-        '\n\n',                       # cluster split character (paragraphs)
+        '\\n\\n',                     # cluster split character (paragraphs, literal backslash-n)
         '2',                          # filter type: Positional
         ': ',                         # separator for splitting
         '3',                          # line number
@@ -180,7 +180,7 @@ def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_positional_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with positional filtering for extraction and comparison."""
     input_side_effect = [
-        '\n\n',                       # cluster split character (paragraphs)
+        '\\n\\n',                     # cluster split character (paragraphs, literal backslash-n)
         '2',                          # filter type: Positional
         ': ',                         # separator for splitting
         '3',                          # line number

@@ -450,8 +450,19 @@ def test_collect_presets_none_found(mock_process_entry: Mock, c_instance: Config
 def test_create_new_preset_creates_new_file(mock_write_txt: Mock, mock_write_yaml: Mock, mock_exists: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
     mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
 
-    c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
+    c_instance.configurations = [MagicMock(config={'cluster_filter': '\\n'})]
     c_instance.presets_directory = Path('/fake_dir')
+
+    c_instance.initialized_config = Initialized(
+        cluster_filter='\\n',
+        text_filter_type=None,
+        text_filter=None,
+        should_slice_clusters=None,
+        src_start_cluster_text=None,
+        src_end_cluster_text=None,
+        ref_start_cluster_text=None,
+        ref_end_cluster_text=None
+    )
 
     c_instance.create_new_preset()
 
@@ -460,7 +471,11 @@ def test_create_new_preset_creates_new_file(mock_write_txt: Mock, mock_write_yam
 
     written_data = mock_write_yaml.call_args[0][0]
     assert 'my_preset' in written_data
-    assert written_data['my_preset'] == {'cluster_filter': '\\n'}
+
+    expected_config: dict[str, Any] = {
+        'cluster_filter': '\\n'
+    }
+    assert written_data['my_preset'] == expected_config
 
 
 @pytest.mark.unit
@@ -471,8 +486,19 @@ def test_create_new_preset_creates_new_file(mock_write_txt: Mock, mock_write_yam
 def test_create_new_preset_appends_to_existing_file(mock_append_to_file: Mock, mock_write_yaml: Mock, mock_exists: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
     mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
 
-    c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
+    c_instance.configurations = [MagicMock(config={'cluster_filter': '\\n'})]
     c_instance.presets_directory = Path('/fake_dir')
+
+    c_instance.initialized_config = Initialized(
+        cluster_filter='\\n',
+        text_filter_type=None,
+        text_filter=None,
+        should_slice_clusters=None,
+        src_start_cluster_text=None,
+        src_end_cluster_text=None,
+        ref_start_cluster_text=None,
+        ref_end_cluster_text=None
+    )
 
     c_instance.create_new_preset()
 
@@ -489,8 +515,19 @@ def test_create_new_preset_retries_on_empty_name(mock_write_txt: Mock, mock_writ
     # Simulate empty input first, then a valid preset name
     mock_ask_open.side_effect = ['', '  ', 'final_preset', 'my_preset_file']
 
-    c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
+    c_instance.configurations = [MagicMock(config={'cluster_filter': '\\n'})]
     c_instance.presets_directory = Path('/fake_dir')
+
+    c_instance.initialized_config = Initialized(
+        cluster_filter='\\n',
+        text_filter_type=None,
+        text_filter=None,
+        should_slice_clusters=None,
+        src_start_cluster_text=None,
+        src_end_cluster_text=None,
+        ref_start_cluster_text=None,
+        ref_end_cluster_text=None
+    )
 
     c_instance.create_new_preset()
 
@@ -501,7 +538,11 @@ def test_create_new_preset_retries_on_empty_name(mock_write_txt: Mock, mock_writ
     # Verify the preset data passed to write_yaml
     written_data = mock_write_yaml.call_args[0][0]
     assert 'final_preset' in written_data
-    assert written_data['final_preset'] == {'cluster_filter': '\\n'}
+
+    expected_config: dict[str, Any] = {
+        'cluster_filter': '\\n'
+    }
+    assert written_data['final_preset'] == expected_config
 
     # Verify ask_open_question was called multiple times due to retries
     assert mock_ask_open.call_count >= 3

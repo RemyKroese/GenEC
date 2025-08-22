@@ -1,11 +1,11 @@
 """Unit tests for GenEC ConfigManager input collection methods."""
 from __future__ import annotations
 
-from typing import Any, Union
+from typing import Any
 from unittest.mock import patch, Mock
 import pytest
 
-from GenEC.core import TextFilterTypes, PositionalFilterType
+from GenEC.core import TextFilterTypes
 from GenEC.core.config_manager import ConfigManager
 from GenEC.core.types.preset_config import Initialized
 
@@ -202,8 +202,8 @@ def test_request_POSITIONAL_filter_type(mock_ask_open_question: Mock, mock_side_
         'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
-    result: Union[str, list[str], PositionalFilterType] = config_manager._request_text_filter(config)
-    expected: PositionalFilterType = PositionalFilterType(separator=str(mock_output[0]), line=int(mock_output[1]), occurrence=int(mock_output[2]))
+    result = config_manager._request_text_filter(config)
+    expected: dict[str, Any] = {'separator': str(mock_output[0]), 'line': int(mock_output[1]), 'occurrence': int(mock_output[2])}
     assert result == expected
 
 
