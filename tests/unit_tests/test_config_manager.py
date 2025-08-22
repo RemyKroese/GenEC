@@ -83,7 +83,7 @@ def make_entry(file_name: str, preset_name: str, target_file: str) -> dict[str, 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset', return_value={'key': 'value'})
 @patch.object(ConfigManager, 'set_config')
-def test_init_with_preset_type(mock_load_preset, mock_set_config):
+def test_init_with_preset_type(mock_load_preset: Mock, mock_set_config: Mock) -> None:
     config_manager = ConfigManager({'type': 'preset', 'value': 'file.yaml/presetA'})
     assert config_manager.configurations == []
 
@@ -98,7 +98,7 @@ def test_init_with_preset_type(mock_load_preset, mock_set_config):
     ]
 )
 @patch.object(ConfigManager, 'load_presets')
-def test_init_with_preset_list_type(mock_load_presets, mock_presets, expected_count):
+def test_init_with_preset_list_type(mock_load_presets: Mock, mock_presets: list[Configuration], expected_count: int) -> None:
     mock_load_presets.return_value = mock_presets
     config_manager = ConfigManager({'type': 'preset-list', 'value': 'fake_list'})
     assert isinstance(config_manager.configurations, list)
@@ -110,7 +110,7 @@ def test_init_with_preset_list_type(mock_load_presets, mock_presets, expected_co
 
 
 @pytest.mark.unit
-def test_init_with_invalid_type():
+def test_init_with_invalid_type() -> None:
     with pytest.raises(ValueError, match='not a valid preset parameter type'):
         ConfigManager({'type': 'invalid', 'value': 'something'})
 
@@ -119,14 +119,14 @@ def test_init_with_invalid_type():
 @pytest.mark.parametrize('preset_param, expected_result', [
     ('main_preset', ('main_preset', None)),
     ('folder/main_preset', ('folder', 'main_preset'))])
-def test_parse_preset_param(preset_param, expected_result):
+def test_parse_preset_param(preset_param: str, expected_result: tuple[str, str | None]) -> None:
     assert ConfigManager.parse_preset_param(preset_param) == expected_result
 
 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset_file')
 @patch.object(ConfigManager, '_ask_mpc_question')
-def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_preset_file, c_instance):
+def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_preset_file, c_instance: ConfigManager) -> None:
     mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     mock_ask_mpc_question.return_value = preset_name = 'main_preset'
     result = c_instance.load_preset(preset_target='')
@@ -135,7 +135,7 @@ def test_load_preset_no_preset_name(mock_ask_mpc_question, mock_load_preset_file
 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset_file')
-def test_load_preset_invalid_preset_name(mock_load_preset_file, c_instance):
+def test_load_preset_invalid_preset_name(mock_load_preset_file, c_instance: ConfigManager) -> None:
     mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     with pytest.raises(ValueError):
         c_instance.load_preset(preset_target='preset/presetX')
@@ -143,7 +143,7 @@ def test_load_preset_invalid_preset_name(mock_load_preset_file, c_instance):
 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset_file')
-def test_load_from_single_preset(mock_load_preset_file, c_instance):
+def test_load_from_single_preset(mock_load_preset_file, c_instance: ConfigManager) -> None:
     mock_load_preset_file.return_value = SINGLE_PRESET_DATA
     result = c_instance.load_preset(preset_target='preset/main_preset')
     assert result == SINGLE_PRESET_DATA['main_preset']
@@ -155,7 +155,7 @@ def test_load_from_single_preset(mock_load_preset_file, c_instance):
     ('sub_preset_A')
 ])
 @patch.object(ConfigManager, 'load_preset_file')
-def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file, c_instance, preset_name):
+def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file, c_instance: ConfigManager, preset_name) -> None:
     mock_load_preset_file.return_value = MULTIPLE_PRESETS_DATA
     result = c_instance.load_preset(preset_target=f'preset/{preset_name}')
     assert result == MULTIPLE_PRESETS_DATA[preset_name]
@@ -163,7 +163,7 @@ def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file, 
 
 @pytest.mark.unit
 @patch.object(Path, 'exists', return_value=False)
-def test_load_preset_file_file_not_found(mock_exists, c_instance):
+def test_load_preset_file_file_not_found(mock_exists, c_instance: ConfigManager) -> None:
     with pytest.raises(FileNotFoundError):
         c_instance.load_preset_file('mock_file')
 
@@ -171,7 +171,7 @@ def test_load_preset_file_file_not_found(mock_exists, c_instance):
 @pytest.mark.unit
 @patch.object(Path, 'exists', return_value=True)
 @patch.object(Path, 'open', new_callable=mock_open, read_data='')
-def test_load_preset_file_empty_file(mock_open_file, mock_exists, c_instance):
+def test_load_preset_file_empty_file(mock_open_file, mock_exists, c_instance: ConfigManager) -> None:
     with pytest.raises(ValueError):
         c_instance.load_preset_file('mock_file')
 
@@ -184,14 +184,14 @@ def test_load_preset_file_empty_file(mock_open_file, mock_exists, c_instance):
 @patch.object(Path, 'exists', return_value=True)
 @patch.object(Path, 'open', new_callable=mock_open)
 @patch('yaml.safe_load')
-def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, c_instance, preset_data):
+def test_load_preset_file_valid_file(mock_safe_load, mock_open_file, mock_exists, c_instance: ConfigManager, preset_data) -> None:
     mock_safe_load.return_value = preset_data
     result = c_instance.load_preset_file('mock_file')
     assert result == preset_data
 
 
 @pytest.mark.unit
-def test_load_presets_grouped(c_instance):
+def test_load_presets_grouped(c_instance: ConfigManager) -> None:
     grouped_entries = {
         'group_1': [
             {'preset': 'p/preset_numbers', 'target': 'file1.txt'},
@@ -219,7 +219,7 @@ def test_load_presets_grouped(c_instance):
 @pytest.mark.unit
 @patch.object(ConfigManager, '_set_cluster_text_options')
 @patch('GenEC.utils.read_yaml_file', return_value=SINGLE_PRESET_DATA)
-def test_set_config(mock__set_cluster_text_options, mock_read_yaml_file, c_instance):
+def test_set_config(mock__set_cluster_text_options, mock_read_yaml_file, c_instance: ConfigManager) -> None:
     c_instance.set_config(preset='main_preset', target_file='targetA.txt')
     c = c_instance.configurations[-1]
     assert c.preset == 'main_preset'
@@ -235,7 +235,7 @@ def test_set_config(mock__set_cluster_text_options, mock_read_yaml_file, c_insta
 @patch.object(ConfigManager, '_set_cluster_text_options')
 @patch.object(ConfigManager, '_finalize_config', return_value=SINGLE_PRESET_DATA['main_preset'])
 def test_set_config_no_preset(mock_set_cluster_filter, mock_set_text_filter_type, mock_set_text_filter,
-                              mock_should_slice_clusters, mock_cluster_text_options, mock_finalize_config, c_instance):
+                              mock_should_slice_clusters, mock_cluster_text_options, mock_finalize_config, c_instance: ConfigManager):
     c_instance.set_config()
     c = c_instance.configurations[-1]
     assert c.preset == ''
@@ -245,7 +245,7 @@ def test_set_config_no_preset(mock_set_cluster_filter, mock_set_text_filter_type
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_collect_cluster_text', side_effect=['startA', 'endA', 'startB', 'endB'])
-def test_set_cluster_text_options(mock_cluster_text, c_instance):
+def test_set_cluster_text_options(mock_cluster_text, c_instance: ConfigManager) -> None:
     config = Initialized(
         cluster_filter='\n',
         text_filter_type='regex',
@@ -267,7 +267,7 @@ def test_set_cluster_text_options(mock_cluster_text, c_instance):
 @patch.object(ConfigManager, '_collect_text_filter_type', return_value='regex')
 @patch.object(ConfigManager, '_collect_text_filter', return_value='[a-z]+')
 @patch.object(ConfigManager, '_collect_should_slice_clusters', return_value=True)
-def test_set_simple_options(mock_should_slice, mock_text_filter, mock_text_type, mock_cluster_filter, c_instance):
+def test_set_simple_options(mock_should_slice, mock_text_filter, mock_text_type, mock_cluster_filter, c_instance: ConfigManager) -> None:
     # All config options missing
     config = Initialized(
         cluster_filter=None,
@@ -287,7 +287,7 @@ def test_set_simple_options(mock_should_slice, mock_text_filter, mock_text_type,
 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset_file')
-def test_process_preset_entry_found(mock_load_preset_file, c_instance):
+def test_process_preset_entry_found(mock_load_preset_file, c_instance: ConfigManager) -> None:
     entry = make_entry('fileA', 'presetA', 'targetA.txt')
     mock_config = {
         'cluster_filter': '\n\n',
@@ -309,7 +309,7 @@ def test_process_preset_entry_found(mock_load_preset_file, c_instance):
 
 @pytest.mark.unit
 @patch.object(ConfigManager, 'load_preset_file')
-def test_process_preset_entry_not_found(mock_load_preset_file, c_instance, capsys):
+def test_process_preset_entry_not_found(mock_load_preset_file, c_instance: ConfigManager, capsys) -> None:
     entry = make_entry('fileA', 'presetX', 'targetA.txt')
     mock_load_preset_file.return_value = {'presetA': {}}
     result = c_instance._process_preset_entry(entry, entry['target_file'])
@@ -321,7 +321,7 @@ def test_process_preset_entry_not_found(mock_load_preset_file, c_instance, capsy
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_process_preset_entry')
-def test_collect_presets_all_found(mock_process_entry, c_instance):
+def test_collect_presets_all_found(mock_process_entry, c_instance: ConfigManager) -> None:
     entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
     mock_ac1 = Configuration(Initialized(), 'fileA/presetA', 'targetA.txt')
@@ -340,7 +340,7 @@ def test_collect_presets_all_found(mock_process_entry, c_instance):
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_process_preset_entry')
-def test_collect_presets_some_missing(mock_process_entry, c_instance):
+def test_collect_presets_some_missing(mock_process_entry, c_instance: ConfigManager) -> None:
     entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
     mock_ac1 = Configuration(Initialized(), 'fileA/presetA', 'targetA.txt')
@@ -357,7 +357,7 @@ def test_collect_presets_some_missing(mock_process_entry, c_instance):
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_process_preset_entry')
-def test_collect_presets_none_found(mock_process_entry, c_instance):
+def test_collect_presets_none_found(mock_process_entry, c_instance: ConfigManager) -> None:
     entry1 = make_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_entry('fileB', 'presetB', 'targetB.txt')
     mock_process_entry.side_effect = [None, None]
@@ -374,7 +374,7 @@ def test_collect_presets_none_found(mock_process_entry, c_instance):
 @patch.object(Path, 'exists', return_value=False)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'write_txt')
-def test_create_new_preset_creates_new_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
+def test_create_new_preset_creates_new_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance: ConfigManager) -> None:
     mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
 
     c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
@@ -395,7 +395,7 @@ def test_create_new_preset_creates_new_file(mock_write_txt, mock_write_yaml, moc
 @patch.object(Path, 'exists', return_value=True)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'append_to_file')
-def test_create_new_preset_appends_to_existing_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
+def test_create_new_preset_appends_to_existing_file(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance: ConfigManager) -> None:
     mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
 
     c_instance.configurations = [MagicMock(config={'cluster_filter': '\n'})]
@@ -412,7 +412,7 @@ def test_create_new_preset_appends_to_existing_file(mock_write_txt, mock_write_y
 @patch.object(Path, 'exists', return_value=False)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'write_txt')
-def test_create_new_preset_retries_on_empty_name(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance):
+def test_create_new_preset_retries_on_empty_name(mock_write_txt, mock_write_yaml, mock_exists, mock_ask_open, c_instance: ConfigManager) -> None:
     # Simulate empty input first, then a valid preset name
     mock_ask_open.side_effect = ['', '  ', 'final_preset', 'my_preset_file']
 
