@@ -4,7 +4,7 @@ load-plugins =
 
 [MESSAGES CONTROL]
 # Test-specific disables for legitimate testing patterns
-disable = 
+disable =
     protected-access,               # W0212: Allow testing private methods (_method)
     missing-function-docstring,     # C0116: Test function names are self-documenting
     unused-argument,                # W0613: Pytest fixtures may appear unused
