@@ -198,6 +198,13 @@ uv run pylint GenEC --score=yes                           # Production code lint
 uv run pylint tests --rcfile=tests/.pylintrc --score=yes  # Test code linting (relaxed)
 ```
 
+### Pre-commit Hooks
+```bash
+uv run pre-commit                                         # Run pre-commit hooks on staged files
+
+uv run pre-commit run --all-files                         # Run pre-commit hooks on all files
+```
+
 ## License
 Copyright [2025] [Remy Kroese]
 

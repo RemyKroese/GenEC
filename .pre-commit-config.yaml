@@ -1,0 +1,65 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(tests/system_tests/assets/|docs/demos/)
+      - id: end-of-file-fixer
+        exclude: ^(tests/system_tests/assets/|docs/demos/)
+      - id: check-yaml
+        exclude: ^(tests/system_tests/assets/|docs/demos/)
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: uv run flake8
+        language: system
+        types: [python]
+        args: [--count, --show-source, --statistics]
+        exclude: ^(tests/system_tests/assets/|docs/demos/)
+
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        types: [python]
+        args: [.]
+        pass_filenames: false
+        exclude: ^(tests/system_tests/assets/|docs/demos/)
+
+      - id: pylint-production
+        name: pylint (production code)
+        entry: uv run pylint
+        language: system
+        files: ^GenEC/.*\.py$
+        args: [--score=yes]
+
+      - id: pylint-tests
+        name: pylint (test code)
+        entry: uv run pylint
+        language: system
+        files: ^tests/.*\.py$
+        args: [--rcfile=tests/.pylintrc, --score=yes]
+        exclude: ^(tests/system_tests/assets/|docs/demos/)
+
+      - id: pytest-with-coverage
+        name: pytest with coverage (≥90%)
+        entry: bash
+        language: system
+        pass_filenames: false
+        args:
+          - -c
+          - |
+            echo "🧪 Running tests with coverage requirements..."
+            uv run pytest --cov=. --cov-branch --cov-fail-under=90 --cov-report=term-missing --tb=short
+            exit_code=$?
+            if [ $exit_code -ne 0 ]; then
+              echo "❌ Tests failed or coverage below 90%"
+              exit $exit_code
+            fi
+            echo "✅ All tests passed with coverage ≥90%"
+        files: \.(py)$
