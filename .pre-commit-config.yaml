@@ -9,6 +9,8 @@ repos:
       - id: check-yaml
         exclude: ^(tests/system_tests/assets/|docs/demos/)
       - id: check-added-large-files
+        args: ['--maxkb=2048']  # Allow up to 2MB for logo assets
+        exclude: ^docs/assets/logo/
       - id: check-merge-conflict
       - id: debug-statements
 
