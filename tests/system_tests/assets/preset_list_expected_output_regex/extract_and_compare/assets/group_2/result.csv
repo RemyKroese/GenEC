@@ -1,0 +1,11 @@
+data,difference,preset,reference,source,target
+BOOT,0,preset_file1/preset_b,69,69,input/regex_input_2.txt
+CALIBRATION,0,preset_file1/preset_b,69,69,input/regex_input_2.txt
+RESTART,0,preset_file1/preset_b,73,73,input/regex_input_2.txt
+SHUTDOWN,0,preset_file1/preset_b,77,77,input/regex_input_2.txt
+SYNC,0,preset_file1/preset_b,80,80,input/regex_input_2.txt
+BOOT,0,preset_file1/preset_b,69,69,input/regex_input_4.txt
+CALIBRATION,0,preset_file1/preset_b,69,69,input/regex_input_4.txt
+RESTART,0,preset_file1/preset_b,73,73,input/regex_input_4.txt
+SHUTDOWN,0,preset_file1/preset_b,77,77,input/regex_input_4.txt
+SYNC,0,preset_file1/preset_b,80,80,input/regex_input_4.txt

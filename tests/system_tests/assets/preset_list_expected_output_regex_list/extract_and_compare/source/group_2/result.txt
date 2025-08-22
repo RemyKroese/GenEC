@@ -1,6 +1,6 @@
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Preset:      preset_system_actions/preset_b                            │
-│ Target file: input_2.txt                                               │
+│ Target file: regex_list_input_2.txt                                    │
 │                                  ╷          ╷           ╷              │
 │                                  │  (count) │   (count) │              │
 │   Data                           │   Source │ Reference │ Difference   │

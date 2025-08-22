@@ -1,7 +1,7 @@
 [
     {
         "preset": "preset_system_actions/preset_b",
-        "target": "input_2.txt",
+        "target": "regex_list_input_2.txt",
         "data": {
             "High": {
                 "source": 61,

@@ -1,0 +1,7 @@
+data,preset,source,target
+ERROR,preset_file1/preset_a,157,input/regex_input_1.txt
+INFO,preset_file1/preset_a,1174,input/regex_input_1.txt
+WARNING,preset_file1/preset_a,322,input/regex_input_1.txt
+ERROR,preset_file1/preset_a,157,input/regex_input_3.txt
+INFO,preset_file1/preset_a,1174,input/regex_input_3.txt
+WARNING,preset_file1/preset_a,322,input/regex_input_3.txt

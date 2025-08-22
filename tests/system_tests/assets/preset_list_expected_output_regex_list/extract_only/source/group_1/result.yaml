@@ -1,5 +1,5 @@
 - preset: preset_system_actions/preset_a
-  target: input_1.txt
+  target: regex_list_input_1.txt
   data:
     ERROR:
       source: 48
@@ -8,7 +8,7 @@
     WARNING:
       source: 101
 - preset: preset_system_actions/preset_a
-  target: input_2.txt
+  target: regex_list_input_2.txt
   data:
     BOOT:
       source: 24

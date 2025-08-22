@@ -1,9 +1,0 @@
-- preset: ''
-  target: ''
-  data:
-    ERROR:
-      source: 157
-    INFO:
-      source: 1174
-    WARNING:
-      source: 322

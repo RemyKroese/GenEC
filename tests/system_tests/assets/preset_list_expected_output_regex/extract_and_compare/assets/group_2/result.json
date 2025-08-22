@@ -1,0 +1,64 @@
+[
+    {
+        "preset": "preset_file1/preset_b",
+        "target": "input/regex_input_2.txt",
+        "data": {
+            "BOOT": {
+                "source": 69,
+                "reference": 69,
+                "difference": 0
+            },
+            "CALIBRATION": {
+                "source": 69,
+                "reference": 69,
+                "difference": 0
+            },
+            "RESTART": {
+                "source": 73,
+                "reference": 73,
+                "difference": 0
+            },
+            "SHUTDOWN": {
+                "source": 77,
+                "reference": 77,
+                "difference": 0
+            },
+            "SYNC": {
+                "source": 80,
+                "reference": 80,
+                "difference": 0
+            }
+        }
+    },
+    {
+        "preset": "preset_file1/preset_b",
+        "target": "input/regex_input_4.txt",
+        "data": {
+            "BOOT": {
+                "source": 69,
+                "reference": 69,
+                "difference": 0
+            },
+            "CALIBRATION": {
+                "source": 69,
+                "reference": 69,
+                "difference": 0
+            },
+            "RESTART": {
+                "source": 73,
+                "reference": 73,
+                "difference": 0
+            },
+            "SHUTDOWN": {
+                "source": 77,
+                "reference": 77,
+                "difference": 0
+            },
+            "SYNC": {
+                "source": 80,
+                "reference": 80,
+                "difference": 0
+            }
+        }
+    }
+]

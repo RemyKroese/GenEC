@@ -1,33 +1,26 @@
 ┌────────────────────────────────────────────────────────────────────────┐
-│ Preset:      preset_system_actions/preset_a                            │
-│ Target file: regex_list_input_1.txt                                    │
+│ Preset:      preset_file1/preset_a                                     │
+│ Target file: input/regex_input_1.txt                                   │
 │                                  ╷          ╷           ╷              │
 │                                  │  (count) │   (count) │              │
 │   Data                           │   Source │ Reference │ Difference   │
 │ ╶────────────────────────────────┼──────────┼───────────┼────────────╴ │
-│   WARNING                        │      101 │        40 │         61   │
-│   INFO                           │      376 │       376 │          0   │
-│   ERROR                          │       48 │       109 │        -61   │
+│   ERROR                          │      157 │       157 │          0   │
+│   INFO                           │     1174 │      1174 │          0   │
+│   WARNING                        │      322 │       322 │          0   │
 │                                  ╵          ╵           ╵              │
 └────────────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────────────┐
-│ Preset:      preset_system_actions/preset_a                            │
-│ Target file: regex_list_input_2.txt                                    │
+│ Preset:      preset_file1/preset_a                                     │
+│ Target file: input/regex_input_3.txt                                   │
 │                                  ╷          ╷           ╷              │
 │                                  │  (count) │   (count) │              │
 │   Data                           │   Source │ Reference │ Difference   │
 │ ╶────────────────────────────────┼──────────┼───────────┼────────────╴ │
-│   SHUTDOWN                       │       29 │         0 │         29   │
-│   SYNC                           │       29 │         0 │         29   │
-│   BOOT                           │       24 │         0 │         24   │
-│   CALIBRATION                    │       23 │         0 │         23   │
-│   RESTART                        │       23 │         0 │         23   │
-│   MAINTENANCE                    │        0 │        23 │        -23   │
-│   REBOOT                         │        0 │        23 │        -23   │
-│   STARTUP                        │        0 │        24 │        -24   │
-│   POWEROFF                       │        0 │        29 │        -29   │
-│   SYNCHRONIZE                    │        0 │        29 │        -29   │
+│   ERROR                          │      157 │       157 │          0   │
+│   INFO                           │     1174 │      1174 │          0   │
+│   WARNING                        │      322 │       322 │          0   │
 │                                  ╵          ╵           ╵              │
 └────────────────────────────────────────────────────────────────────────┘
 
