@@ -1,6 +1,5 @@
+"""Unit tests for GenEC Comparer class."""
 from __future__ import annotations
-
-from typing import Any
 
 import pytest
 from GenEC.core.analyze import Comparer
@@ -69,7 +68,9 @@ def test_init_comparer(source: list[str], reference: list[str], expected_unique_
     (SRC_2, REF_2, EXPECTED_SRC_2, EXPECTED_REF_2),
     (SRC_3, REF_3, EXPECTED_SRC_3, EXPECTED_REF_3),
 ])
-def test_counters(source: list[str], reference: list[str], expected_source_counter: dict[str, int], expected_reference_counter: dict[str, int]) -> None:
+def test_counters(source: list[str], reference: list[str],
+                 expected_source_counter: dict[str, int],
+                 expected_reference_counter: dict[str, int]) -> None:
     c: Comparer = Comparer(source, reference)
     assert c.source_counts == expected_source_counter
     assert c.reference_counts == expected_reference_counter
