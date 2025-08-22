@@ -57,8 +57,8 @@ def run_basic_workflow_test(
 def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with regex filtering for extraction only."""
     input_side_effect = [
-        '\\n',                        # cluster split character (literal backslash-n)
         '1',                           # filter type: Regex
+        '\\n',                        # cluster split character (literal backslash-n)
         r'\| ([A-Za-z]+) \|',          # regex filter
         '',                           # skip subsection slicing
         'yes',                        # save configuration as preset
@@ -80,8 +80,8 @@ def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with regex filtering for extraction and comparison."""
     input_side_effect = [
-        '\\n',                        # cluster split character (literal backslash-n)
         '1',                           # filter type: Regex
+        '\\n',                        # cluster split character (literal backslash-n)
         r'\| ([A-Za-z]+) \|',          # regex filter
         '',                           # skip subsection slicing
         'yes',                        # save configuration as preset
@@ -103,8 +103,8 @@ def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
 def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with regex-list filtering for extraction only."""
     input_side_effect = [
-        '\\n',                        # cluster split character (literal backslash-n)
         '3',                           # filter type: Regex List
+        '\\n',                        # cluster split character (literal backslash-n)
         r'\| [A-Za-z]+ \|',            # first regex pattern
         'yes',                         # add another pattern
         r'([A-Za-z]+)',                # second regex pattern (extraction)
@@ -129,8 +129,8 @@ def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with regex-list filtering for extraction and comparison."""
     input_side_effect = [
-        '\\n',                        # cluster split character (literal backslash-n)
         '3',                           # filter type: Regex List
+        '\\n',                        # cluster split character (literal backslash-n)
         r'\| [A-Za-z]+ \|',            # first regex pattern
         'yes',                         # add another pattern
         r'([A-Za-z]+)',                # second regex pattern (extraction)
@@ -155,8 +155,8 @@ def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
 def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with positional filtering for extraction only."""
     input_side_effect = [
-        '\\n\\n',                     # cluster split character (paragraphs, literal backslash-n)
         '2',                          # filter type: Positional
+        '\\n\\n',                     # cluster split character (paragraphs, literal backslash-n)
         ': ',                         # separator for splitting
         '3',                          # line number
         '2',                          # occurrence number
@@ -180,8 +180,8 @@ def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_positional_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with positional filtering for extraction and comparison."""
     input_side_effect = [
-        '\\n\\n',                     # cluster split character (paragraphs, literal backslash-n)
         '2',                          # filter type: Positional
+        '\\n\\n',                     # cluster split character (paragraphs, literal backslash-n)
         ': ',                         # separator for splitting
         '3',                          # line number
         '2',                          # occurrence number
