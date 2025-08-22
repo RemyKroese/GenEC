@@ -1,28 +1,30 @@
 ┌───────────────────────────────────────────────┐
-│ Preset:      preset_system_actions/preset_a   │
-│ Target file: regex_list_input_1.txt           │
+│ Preset:      preset_file1/preset_b            │
+│ Target file: input/regex_input_2.txt          │
 │                                  ╷            │
 │                                  │  (count)   │
 │   Data                           │   Source   │
 │ ╶────────────────────────────────┼──────────╴ │
-│   INFO                           │      376   │
-│   WARNING                        │      101   │
-│   ERROR                          │       48   │
+│   SYNC                           │       80   │
+│   SHUTDOWN                       │       77   │
+│   RESTART                        │       73   │
+│   BOOT                           │       69   │
+│   CALIBRATION                    │       69   │
 │                                  ╵            │
 └───────────────────────────────────────────────┘
 
 ┌───────────────────────────────────────────────┐
-│ Preset:      preset_system_actions/preset_a   │
-│ Target file: regex_list_input_2.txt           │
+│ Preset:      preset_file1/preset_b            │
+│ Target file: input/regex_input_4.txt          │
 │                                  ╷            │
 │                                  │  (count)   │
 │   Data                           │   Source   │
 │ ╶────────────────────────────────┼──────────╴ │
-│   SHUTDOWN                       │       29   │
-│   SYNC                           │       29   │
-│   BOOT                           │       24   │
-│   CALIBRATION                    │       23   │
-│   RESTART                        │       23   │
+│   SYNC                           │       80   │
+│   SHUTDOWN                       │       77   │
+│   RESTART                        │       73   │
+│   BOOT                           │       69   │
+│   CALIBRATION                    │       69   │
 │                                  ╵            │
 └───────────────────────────────────────────────┘
 

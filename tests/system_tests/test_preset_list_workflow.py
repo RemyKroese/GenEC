@@ -1,39 +1,33 @@
 """System tests for preset list workflow functionality."""
 import filecmp
 import sys
-from io import StringIO
 from pathlib import Path
-from typing import Optional
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 from GenEC import main as genec_main
 
 ASSETS_DIR: Path = Path('tests/system_tests/assets').resolve()
-REGEX_EXPECTED_OUTPUT_DIR: Path = ASSETS_DIR / 'preset_list_expected_output'
-REGEX_LIST_EXPECTED_OUTPUT_DIR: Path = ASSETS_DIR / 'preset_list_expected_output_regex_list'
 OUTPUT_TYPES = ['txt', 'csv', 'json', 'yaml']
-TARGET_VARIABLES_REGEX = ['loc=input', 'prefix=file']
-TARGET_VARIABLES_REGEX_LIST = ['prefix=input']
 
 def run_preset_list_test(
-    mock_input: Mock,
-    mock_stdout: StringIO,
-    output_dir: Path,
-    expected_output_directory: Path,
-    input_folder_name: str = 'assets',
-    input_side_effect: list[str] = [],
-    extra_cli_args: Optional[list[str]] = None,
-    preset_list_name: str = 'preset_list1',
+    tmp_path: Path,
+    preset_list_name: str,
+    expected_output_subdir: str,
+    expected_output_base: Path,
+    extra_cli_args: list[str],
     source_dir: Path = ASSETS_DIR,
-    presets_dir: Path = ASSETS_DIR / 'input' / 'presets'
+    input_folder_name: str = 'assets'
 ) -> None:
-    if extra_cli_args is None:
-        extra_cli_args = []
-    mock_input.side_effect = input_side_effect
+    """Run preset list workflow test with optimized parameters."""
+    output_dir = tmp_path / 'output'
+    presets_dir = ASSETS_DIR / 'input' / 'presets'
 
-    test_args = [
+    expected_output_directory = expected_output_base / expected_output_subdir / input_folder_name
+
+    # Build CLI arguments
+    cli_args = [
         'main.py', 'preset-list',
         '--source', str(source_dir),
         '--preset-list', preset_list_name,
@@ -43,9 +37,10 @@ def run_preset_list_test(
         *extra_cli_args
     ]
 
-    with patch.object(sys, 'argv', test_args):
+    with patch.object(sys, 'argv', cli_args):
         genec_main.main()
 
+    # Verify results
     for group in ['group_1', 'group_2']:
         for ext in OUTPUT_TYPES:
             generated_file = output_dir / input_folder_name / group / f'result.{ext}'
@@ -55,79 +50,52 @@ def run_preset_list_test(
 
 
 @pytest.mark.system
-@patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
-def test_preset_list_regex_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_path: Path) -> None:
-    input_side_effect = [
-        '\\n',                         # cluster split character
-        '1',                           # filter type: Regex
-        r'\| ([A-Za-z]+) \|',          # regex filter
-        ''                             # skip subsection slicing
-    ]
-
+def test_preset_list_regex_extract_only(tmp_path: Path) -> None:
+    """Test preset list workflow with regex filtering for extraction only."""
     run_preset_list_test(
-        mock_input,
-        mock_stdout,
-        output_dir = tmp_path / 'output',
-        input_side_effect=input_side_effect,
-        expected_output_directory= REGEX_EXPECTED_OUTPUT_DIR / 'extract_only' / 'assets',
-        extra_cli_args=['--target-variables', *TARGET_VARIABLES_REGEX]
+        tmp_path=tmp_path,
+        preset_list_name='preset_list1',
+        expected_output_subdir='extract_only',
+        expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex',
+        extra_cli_args=['--target-variables', 'loc=input', 'prefix=regex_input']
     )
 
 
 @pytest.mark.system
-@patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
-def test_preset_list_regex_extract_and_compare(mock_input: Mock, mock_stdout: StringIO, tmp_path: Path) -> None:
-    input_side_effect = [
-        '\\n',                         # cluster split character
-        '1',                           # filter type: Regex
-        r'\| ([A-Za-z]+) \|',          # regex filter
-        ''                             # skip subsection slicing
-    ]
-
+def test_preset_list_regex_extract_and_compare(tmp_path: Path) -> None:
+    """Test preset list workflow with regex filtering for extraction and comparison."""
     run_preset_list_test(
-        mock_input,
-        mock_stdout,
-        output_dir = tmp_path / 'output',
-        input_side_effect=input_side_effect,
-        expected_output_directory= REGEX_EXPECTED_OUTPUT_DIR / 'extract_and_compare' / 'assets',
-        extra_cli_args=['--reference', str(ASSETS_DIR),
-                        '--target-variables', *TARGET_VARIABLES_REGEX]
+        tmp_path=tmp_path,
+        preset_list_name='preset_list1',
+        expected_output_subdir='extract_and_compare',
+        expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex',
+        extra_cli_args=['--reference', str(ASSETS_DIR), '--target-variables', 'loc=input', 'prefix=regex_input']
     )
 
 
 @pytest.mark.system
-@patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
-def test_preset_list_regex_list_extract_only(mock_input: Mock, mock_stdout: StringIO, tmp_path: Path) -> None:
+def test_preset_list_regex_list_extract_only(tmp_path: Path) -> None:
     """Test preset list workflow with regex-list filtering for extraction only."""
-
     run_preset_list_test(
-        mock_input,
-        mock_stdout,
-        output_dir = tmp_path / 'output',
-        input_folder_name = 'source',
-        source_dir= ASSETS_DIR / 'input' / 'source',
-        expected_output_directory=REGEX_LIST_EXPECTED_OUTPUT_DIR / 'extract_only' / 'source',
-        extra_cli_args=['--target-variables', *TARGET_VARIABLES_REGEX_LIST],
+        tmp_path=tmp_path,
         preset_list_name='preset_list_regex_list',
+        expected_output_subdir='extract_only',
+        expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex_list',
+        extra_cli_args=['--target-variables', 'prefix=regex_list_input'],
+        source_dir=ASSETS_DIR / 'input' / 'source',
+        input_folder_name='source'
     )
 
 
 @pytest.mark.system
-@patch('sys.stdout', new_callable=StringIO)
-@patch('builtins.input')
-def test_preset_list_regex_list_extract_and_compare(mock_input: Mock, mock_stdout: StringIO, tmp_path: Path) -> None:
+def test_preset_list_regex_list_extract_and_compare(tmp_path: Path) -> None:
     """Test preset list workflow with regex-list filtering for extraction and comparison."""
-
     run_preset_list_test(
-        mock_input,
-        mock_stdout,
-        output_dir = tmp_path / 'output',
-        input_folder_name = 'source',
-        source_dir= ASSETS_DIR / 'input' / 'source',
-        expected_output_directory = REGEX_LIST_EXPECTED_OUTPUT_DIR / 'extract_and_compare' / 'source',
-        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference'), '--target-variables', *TARGET_VARIABLES_REGEX_LIST],
+        tmp_path=tmp_path,
         preset_list_name='preset_list_regex_list',
+        expected_output_subdir='extract_and_compare',
+        expected_output_base=ASSETS_DIR / 'preset_list_expected_output_regex_list',
+        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference'), '--target-variables', 'prefix=regex_list_input'],
+        source_dir=ASSETS_DIR / 'input' / 'source',
+        input_folder_name='source'
     )

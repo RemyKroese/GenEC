@@ -1,11 +1,11 @@
 group_1:
   - preset: preset_file1/preset_a
-    target: '{loc}/{prefix}1.txt'
+    target: '{loc}/{prefix}_1.txt'
   - preset: preset_file1/preset_a
-    target: '{loc}/{prefix}3.txt'
+    target: '{loc}/{prefix}_3.txt'
 
 group_2:
   - preset: preset_file1/preset_b
-    target: '{loc}/{prefix}2.txt'
+    target: '{loc}/{prefix}_2.txt'
   - preset: preset_file1/preset_b
-    target: '{loc}/{prefix}4.txt'
+    target: '{loc}/{prefix}_4.txt'

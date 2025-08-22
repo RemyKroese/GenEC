@@ -1,4 +1,0 @@
-data,difference,preset,reference,source,target
-ERROR,-259,regex_preset/regex_extract_only,416,157,
-INFO,404,regex_preset/regex_extract_only,770,1174,
-WARNING,-145,regex_preset/regex_extract_only,467,322,

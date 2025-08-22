@@ -1,3 +1,3 @@
 data,difference,preset,reference,source,target
-High,-21,preset_system_actions/preset_b,82,61,input_2.txt
-Medium,81,preset_system_actions/preset_b,0,81,input_2.txt
+High,-21,preset_system_actions/preset_b,82,61,regex_list_input_2.txt
+Medium,81,preset_system_actions/preset_b,0,81,regex_list_input_2.txt
