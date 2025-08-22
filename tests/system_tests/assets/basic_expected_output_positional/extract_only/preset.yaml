@@ -6,7 +6,3 @@ created_preset:
     line: 3
     occurrence: 2
   should_slice_clusters: false
-  src_start_cluster_text: null
-  src_end_cluster_text: null
-  ref_start_cluster_text: null
-  ref_end_cluster_text: null

@@ -7,7 +7,6 @@ import pytest
 
 from GenEC.core.input_strategies import RegexInputStrategy, PositionalInputStrategy
 from GenEC.core.types.preset_config import Initialized
-from GenEC.core.specs import PositionalFilterType
 
 
 @pytest.fixture
@@ -57,13 +56,13 @@ def test_positional_input_strategy_invalid_line_number(mock_config: Initialized)
     strategy: PositionalInputStrategy = PositionalInputStrategy(mock_ask_question)
 
     with patch('GenEC.core.input_strategies.console') as mock_console:
-        result: PositionalFilterType = strategy.collect_input(mock_config)
+        result = strategy.collect_input(mock_config)
 
     # Should have been called 5 times total
     assert mock_ask_question.call_count == 5
-    assert result.separator == ' '
-    assert result.line == 1
-    assert result.occurrence == 2
+    assert result['separator'] == ' '
+    assert result['line'] == 1
+    assert result['occurrence'] == 2
 
     # Should have printed error messages twice (line and occurrence)
     assert mock_console.print.call_count == 2
@@ -82,12 +81,12 @@ def test_positional_input_strategy_zero_values(mock_config: Initialized) -> None
     strategy: PositionalInputStrategy = PositionalInputStrategy(mock_ask_question)
 
     with patch('GenEC.core.input_strategies.console') as mock_console:
-        result: PositionalFilterType = strategy.collect_input(mock_config)
+        result = strategy.collect_input(mock_config)
 
     # Should have been called 5 times total
     assert mock_ask_question.call_count == 5
-    assert result.line == 1
-    assert result.occurrence == 1
+    assert result['line'] == 1
+    assert result['occurrence'] == 1
 
     # Should have printed error messages twice (for zero values)
     assert mock_console.print.call_count == 2
