@@ -9,6 +9,7 @@ class Section(Enum):
     USER_CHOICE = 'user_choice'
     SET_CONFIG = 'set_config'
     WRITE_CONFIG = 'write_config'
+    ERROR_HANDLING = 'error_handling'
 
 
 # Individual prompts
@@ -40,6 +41,18 @@ class Key(Enum):
     DESTINATION_FILE_NAME = 'destination_file_name'
     DESTINATION_FILE_FOUND = 'destination_file_found'
     DESTINATION_FILE_NOT_FOUND = 'destination_file_not_found'
+
+    # ERROR_HANDLING
+    INVALID_REGEX = 'invalid_regex'
+    INVALID_REGEX_INPUT = 'invalid_regex_input'
+    INVALID_INTEGER = 'invalid_integer'
+    INVALID_LINE_NUMBER = 'invalid_line_number'
+    INVALID_OCCURRENCE_NUMBER = 'invalid_occurrence_number'
+    INVALID_FILE_PATH = 'invalid_file_path'
+    FILE_READ_ERROR = 'file_read_error'
+    PRESET_LOAD_ERROR = 'preset_load_error'
+    PRESET_VALIDATION_ERROR = 'preset_validation_error'
+    REGEX_COMPILATION_ERROR = 'regex_compilation_error'
 
 
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
@@ -75,6 +88,18 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
                                         'Default: [magenta]{presets_directory}[/magenta], or specify absolute path: '),
             Key.DESTINATION_FILE_FOUND: 'File [yellow]{file_path}[/yellow] exists → [green]appending preset[/green].',
             Key.DESTINATION_FILE_NOT_FOUND: 'File [yellow]{file_path}[/yellow] not found → [green]creating new file[/green].'
+        },
+        Section.ERROR_HANDLING: {
+            Key.INVALID_REGEX: '[bold red]ERROR:[/bold red] Invalid regex pattern: [yellow]{pattern}[/yellow]. Please enter a valid regex.',
+            Key.INVALID_REGEX_INPUT: '[red]Invalid regex pattern. Please enter a valid regex.[/red]',
+            Key.INVALID_INTEGER: '[bold red]ERROR:[/bold red] Invalid number: [yellow]{value}[/yellow]. Please enter a valid integer{bounds}.',
+            Key.INVALID_LINE_NUMBER: '[red]Invalid line number. Please enter a positive integer.[/red]',
+            Key.INVALID_OCCURRENCE_NUMBER: '[red]Invalid occurrence number. Please enter a positive integer.[/red]',
+            Key.INVALID_FILE_PATH: '[bold red]ERROR:[/bold red] Invalid file path: [yellow]{path}[/yellow]. {reason}',
+            Key.FILE_READ_ERROR: '[bold red]ERROR:[/bold red] Could not read file [yellow]{file_path}[/yellow]: {error}',
+            Key.PRESET_LOAD_ERROR: '[bold red]PRESET ERROR:[/bold red] Failed to load preset [yellow]{preset}[/yellow]: {error}',
+            Key.PRESET_VALIDATION_ERROR: '[bold red]PRESET ERROR:[/bold red] Invalid preset [yellow]{preset}[/yellow]: {error}',
+            Key.REGEX_COMPILATION_ERROR: '[red]ERROR:[/red] Invalid regex pattern: {error}'
         }
     }
 }

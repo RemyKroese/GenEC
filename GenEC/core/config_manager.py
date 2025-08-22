@@ -3,6 +3,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 from typing import Optional, Union, TypeVar, Callable, cast
 
 from rich.console import Console
@@ -161,7 +162,7 @@ class ConfigManager:
         choice = self._get_user_choice(len(options))
 
         if choice == 0:
-            exit()  # Exit the script
+            sys.exit()  # Exit the script
         else:
             return options[choice - 1]
 
@@ -335,9 +336,9 @@ class ConfigManager:
         """
         if '/' not in preset_param:
             return preset_param, None
-        else:
-            file_name, preset_name = preset_param.split('/', 1)
-            return file_name, preset_name
+
+        file_name, preset_name = preset_param.split('/', 1)
+        return file_name, preset_name
 
     def load_presets(self, presets_list_target: str, target_variables: Optional[dict[str, str]] = None) -> list[Configuration]:  # pragma: no cover
         """
@@ -455,11 +456,22 @@ class ConfigManager:
         """
         file_name = entry['preset_file']
         preset_name = entry['preset_name']
-        loaded_presets = self.load_preset_file(file_name)
-        if preset_name not in loaded_presets:
-            console.print(
-                f'preset {preset_name} not found in {file_name}. Skipping...')
+
+        try:
+            loaded_presets = self.load_preset_file(file_name)
+        except (FileNotFoundError, UnicodeDecodeError, ValueError) as e:
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.PRESET_LOAD_ERROR,
+                                        preset=f'{file_name}/{preset_name}', error=str(e)))
+            console.print(f'[yellow]Skipping preset {preset_name} from {file_name}[/yellow]')
             return None
+
+        if preset_name not in loaded_presets:
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.PRESET_VALIDATION_ERROR,
+                                        preset=f'{file_name}/{preset_name}',
+                                        error=f'Preset "{preset_name}" not found in file'))
+            console.print(f'[yellow]Skipping preset {preset_name} from {file_name}[/yellow]')
+            return None
+
         config = loaded_presets[preset_name]
         finalized_config = self._finalize_config(config)
         return Configuration(
@@ -522,14 +534,28 @@ class ConfigManager:
             If the file does not contain any presets.
         """
         presets_file_path = self.presets_directory / f'{preset_file}.yaml'
-        presets_data = utils.read_yaml_file(presets_file_path)
-        presets: dict[str, Initialized] = cast(dict[str, Initialized], presets_data)
 
-        if not presets or len(presets) == 0:
-            raise ValueError(
-                f'presets file {presets_file_path} does not contain any presets')
+        try:
+            presets_data = utils.read_yaml_file(presets_file_path)
+            presets: dict[str, Initialized] = cast(dict[str, Initialized], presets_data)
 
-        return presets
+            if not presets or len(presets) == 0:
+                raise ValueError(f'Preset file {presets_file_path} contains no presets')
+
+            return presets
+
+        except FileNotFoundError:
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.FILE_READ_ERROR,
+                                        file_path=presets_file_path, error="File not found"))
+            raise
+        except UnicodeDecodeError as e:
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.FILE_READ_ERROR,
+                                        file_path=presets_file_path, error=f"File encoding error: {e.reason}"))
+            raise
+        except Exception as e:
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.PRESET_LOAD_ERROR,
+                                        preset=preset_file, error=str(e)))
+            raise
 
     def _set_simple_options(self, config: Initialized) -> None:
         """

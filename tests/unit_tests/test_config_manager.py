@@ -312,7 +312,8 @@ def test_process_preset_entry_not_found(mock_load_preset_file, c_instance, capsy
     result = c_instance._process_preset_entry(entry, entry['target_file'])
     assert result is None
     captured = capsys.readouterr()
-    assert 'preset presetX not found in fileA' in captured.out
+    assert 'PRESET ERROR: Invalid preset fileA/presetX' in captured.out
+    assert 'Skipping preset presetX from fileA' in captured.out
 
 
 @pytest.mark.unit

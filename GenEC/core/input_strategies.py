@@ -3,9 +3,14 @@
 from abc import ABC, abstractmethod
 from typing import Union, TYPE_CHECKING, Callable
 
+from rich.console import Console
+
 from GenEC.core import PositionalFilterType, TextFilterTypes
-from GenEC.core.prompts import Section, Key, create_prompt
+from GenEC.core.prompts import create_prompt, Section, Key
+from GenEC.core.validation import validate_integer, validate_regex
 from GenEC.core.types.preset_config import Initialized
+
+console = Console()
 
 if TYPE_CHECKING:  # pragma: no cover
     pass
@@ -62,7 +67,7 @@ class RegexInputStrategy(TextFilterInputStrategy):
 
     def collect_input(self, config: Initialized) -> str:
         """
-        Collect regex pattern from user input.
+        Collect regex pattern from user input with validation.
 
         Parameters
         ----------
@@ -74,7 +79,11 @@ class RegexInputStrategy(TextFilterInputStrategy):
         str
             The regex pattern string.
         """
-        return self.ask_question(create_prompt(Section.SET_CONFIG, Key.REGEX_FILTER))
+        while True:
+            regex_input = self.ask_question(create_prompt(Section.SET_CONFIG, Key.REGEX_FILTER))
+            if validate_regex(regex_input):
+                return regex_input
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.INVALID_REGEX_INPUT))
 
     def get_filter_type(self) -> TextFilterTypes:
         """Get the regex filter type."""
@@ -99,8 +108,22 @@ class PositionalInputStrategy(TextFilterInputStrategy):
             The configured positional filter object.
         """
         separator_input = self.ask_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_SEPARATOR))
-        line = int(self.ask_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_LINE)))
-        occurrence = int(self.ask_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_OCCURRENCE)))
+
+        # Get line number with validation - create custom validation loop
+        while True:
+            line_input = self.ask_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_LINE))
+            if validate_integer(line_input, min_val=1):
+                line = int(line_input)
+                break
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.INVALID_LINE_NUMBER))
+
+        # Get occurrence number with validation - create custom validation loop
+        while True:
+            occurrence_input = self.ask_question(create_prompt(Section.SET_CONFIG, Key.POSITIONAL_OCCURRENCE))
+            if validate_integer(occurrence_input, min_val=1):
+                occurrence = int(occurrence_input)
+                break
+            console.print(create_prompt(Section.ERROR_HANDLING, Key.INVALID_OCCURRENCE_NUMBER))
 
         return PositionalFilterType(
             separator=separator_input if separator_input else ' ',
