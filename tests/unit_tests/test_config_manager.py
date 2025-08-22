@@ -1,13 +1,16 @@
+from __future__ import annotations
+
+from typing import Any, Dict
 from pathlib import Path
 import pytest
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch, mock_open, MagicMock, Mock
 
 from GenEC.core.config_manager import ConfigManager, Configuration
 from GenEC.core.types.preset_config import Initialized
 import GenEC.utils as utils
 
 
-EMPTY_CONFIG = Initialized(
+EMPTY_CONFIG: Initialized = Initialized(
             cluster_filter=None,
             text_filter_type=None,
             text_filter=None,
@@ -17,7 +20,7 @@ EMPTY_CONFIG = Initialized(
             ref_start_cluster_text=None,
             ref_end_cluster_text=None)
 
-SINGLE_PRESET_DATA = {
+SINGLE_PRESET_DATA: dict[str, dict[str, Any]] = {
     'main_preset': {
         'cluster_filter': '',
         'text_filter_type': 'regex',
@@ -30,7 +33,7 @@ SINGLE_PRESET_DATA = {
     }
 }
 
-MULTIPLE_PRESETS_DATA = {
+MULTIPLE_PRESETS_DATA: dict[str, dict[str, Any]] = {
     'main_preset': {
         'cluster_filter': '',
         'text_filter_type': 'regex',
@@ -65,15 +68,15 @@ MULTIPLE_PRESETS_DATA = {
 
 
 @pytest.fixture  # noqa: E261
-def c_instance():  # pylint: disable=all
+def c_instance() -> ConfigManager:  # pylint: disable=all
     real_set_config = ConfigManager.set_config  # store the real method
     with patch.object(ConfigManager, 'set_config', autospec=True) as mock_set_config:  # noqa: F841
-        instance = ConfigManager()
+        instance: ConfigManager = ConfigManager()
     instance.set_config = real_set_config.__get__(instance, ConfigManager)  # restore the real method on the instance
     return instance
 
 
-def make_entry(file_name, preset_name, target_file):
+def make_entry(file_name: str, preset_name: str, target_file: str) -> dict[str, str]:
     return {'preset_file': file_name, 'preset_name': preset_name, 'target_file': target_file}
 
 
