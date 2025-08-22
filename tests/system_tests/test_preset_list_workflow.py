@@ -1,9 +1,12 @@
+"""System tests for preset list workflow functionality."""
 import filecmp
-from io import StringIO
-import pytest
 import sys
+from io import StringIO
 from pathlib import Path
+from typing import Optional
 from unittest.mock import Mock, patch
+
+import pytest
 
 from GenEC import main as genec_main
 
@@ -18,8 +21,10 @@ def run_preset_list_test(
     tmp_path: Path,
     input_side_effect: list[str],
     expected_output_subdir: str,
-    extra_cli_args: list[str] = []
+    extra_cli_args: Optional[list[str]] = None
 ) -> None:
+    if extra_cli_args is None:
+        extra_cli_args = []
     mock_input.side_effect = input_side_effect
 
     source_dir = ASSETS_DIR  # note source is a directory here
