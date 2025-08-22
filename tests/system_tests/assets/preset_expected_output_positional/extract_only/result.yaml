@@ -1,0 +1,59 @@
+- preset: positional_preset/preset_b
+  target: ''
+  data:
+    '-':
+      source: 1
+    'Airflow:':
+      source: 1
+    'CPU:':
+      source: 1
+    Camera:
+      source: 1
+    Contract:
+      source: 1
+    'Date:':
+      source: 1
+    Disk:
+      source: 1
+    Dynamic:
+      source: 1
+    Fan:
+      source: 1
+    'HIPAA:':
+      source: 1
+    Hour:
+      source: 1
+    'Info:':
+      source: 1
+    Last:
+      source: 1
+    Link:
+      source: 1
+    Memory:
+      source: 1
+    Monthly:
+      source: 1
+    Next:
+      source: 1
+    Password:
+      source: 1
+    'Phone:':
+      source: 1
+    Polling:
+      source: 1
+    Power:
+      source: 1
+    Priority:
+      source: 1
+    Stored:
+      source: 1
+    Successful:
+      source: 1
+    'Type:':
+      source: 1
+    UPS:
+      source: 1
+    Upgrade:
+      source: 1
+    VLAN:
+      source: 1

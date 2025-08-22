@@ -1,0 +1,97 @@
+┌───────────────────────────────────────────────────────────┐
+│ Preset:      positional_preset/preset_c                   │
+│ Target file: positional_input_3.txt                       │
+│                                              ╷            │
+│                                              │  (count)   │
+│   Data                                       │   Source   │
+│ ╶────────────────────────────────────────────┼──────────╴ │
+│   0                                          │        1   │
+│   1.0.0 | Released                           │        1   │
+│   12,450                                     │        1   │
+│   15                                         │        1   │
+│   152 API calls | 0 errors | 92ms avg        │        1   │
+│   2,150                                      │        1   │
+│   2025-08-21 02:00                           │        1   │
+│   2025-08-21 18:00                           │        1   │
+│   2025-08-22 12:30                           │        1   │
+│   2025-08-22 16:15                           │        1   │
+│   2025-08-22 16:28                           │        1   │
+│   2025-08-23 02:00                           │        1   │
+│   2025-08-24 01:00                           │        1   │
+│   2025-08-24 03:00                           │        1   │
+│   24 vCPUs                                   │        1   │
+│   4                                          │        1   │
+│   5                                          │        1   │
+│   55 scenarios                               │        1   │
+│   6                                          │        1   │
+│   8                                          │        1   │
+│   88% efficiency measured                    │        1   │
+│   94% code verified                          │        1   │
+│   99.7% reliability achieved                 │        1   │
+│   API error spike                            │        1   │
+│   API timeout /v1/data                       │        1   │
+│   Autoscaler trigger                         │        1   │
+│   CFG-2025-083                               │        1   │
+│   Cache miss spike                           │        1   │
+│   Config changed by Mike Davis               │        1   │
+│   DEPLOYING                                  │        1   │
+│   Database connection lost                   │        1   │
+│   Error tracking                             │        1   │
+│   GAMMA-001                                  │        1   │
+│   GAMMA-INC-001                              │        1   │
+│   Good                                       │        1   │
+│   Health check                               │        1   │
+│   Health endpoint probe                      │        1   │
+│   Lead Engineer                              │        1   │
+│   Load balancer attach                       │        1   │
+│   Log cleanup                                │        1   │
+│   Memory warning                             │        1   │
+│   Passed                                     │        1   │
+│   Post-deployment verification               │        1   │
+│   Pre-deployment check                       │        1   │
+│   Requests 7500, Errors 12, Avg Latency 88ms │        1   │
+│   Rolling update                             │        1   │
+│   Running | 1.2GB RAM | 0.9 CPU | 10GB Disk  │        1   │
+│   Scale up                                   │        1   │
+│   Service discovery registration             │        1   │
+│   Slack alert sent                           │        1   │
+│   gamma-main                                 │        1   │
+│   true                                       │        1   │
+│   us-east-1                                  │        1   │
+│                                              ╵            │
+└───────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────┐
+│ Preset:      positional_preset/preset_d       │
+│ Target file: positional_input_3.txt           │
+│                                  ╷            │
+│                                  │  (count)   │
+│   Data                           │   Source   │
+│ ╶────────────────────────────────┼──────────╴ │
+│   2025-08-22                     │        2   │
+│   0                              │        1   │
+│   12,450                         │        1   │
+│   152                            │        1   │
+│   2,150                          │        1   │
+│   2025-08-21                     │        1   │
+│   2025-08-24                     │        1   │
+│   24                             │        1   │
+│   4                              │        1   │
+│   55                             │        1   │
+│   API                            │        1   │
+│   CFG-2025-083                   │        1   │
+│   Config                         │        1   │
+│   GAMMA-001                      │        1   │
+│   GAMMA-INC-001                  │        1   │
+│   Good                           │        1   │
+│   Lead                           │        1   │
+│   Passed                         │        1   │
+│   Requests                       │        1   │
+│   Running                        │        1   │
+│   Slack                          │        1   │
+│   cleanup                        │        1   │
+│   tracking                       │        1   │
+│   |                              │        1   │
+│                                  ╵            │
+└───────────────────────────────────────────────┘
+

@@ -1,0 +1,35 @@
+preset_a:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Positional'
+  text_filter:
+    separator: ': '
+    line: 3
+    occurrence: 2
+  should_slice_clusters: false
+
+preset_b:
+  cluster_filter: '\n\n===\n\n'
+  text_filter_type: 'Positional'
+  text_filter:
+    separator: ' '
+    line: 4
+    occurrence: 1
+  should_slice_clusters: false
+
+preset_c:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Positional'
+  text_filter:
+    separator: ': '
+    line: 3
+    occurrence: 2
+  should_slice_clusters: false
+
+preset_d:
+  cluster_filter: '\n\n******\n'
+  text_filter_type: 'Positional'
+  text_filter:
+    separator: ' '
+    line: 2
+    occurrence: 3
+  should_slice_clusters: false

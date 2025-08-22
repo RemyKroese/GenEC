@@ -1,0 +1,11 @@
+group_1:
+  - preset: positional_preset/preset_a
+    target: 'positional_input_1.txt'
+  - preset: positional_preset/preset_b
+    target: 'positional_input_2.txt'
+
+group_2:
+  - preset: positional_preset/preset_c
+    target: 'positional_input_3.txt'
+  - preset: positional_preset/preset_d
+    target: 'positional_input_3.txt'

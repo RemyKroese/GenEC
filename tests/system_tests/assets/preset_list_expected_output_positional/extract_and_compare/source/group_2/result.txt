@@ -1,0 +1,143 @@
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ Preset:      positional_preset/preset_c                                             │
+│ Target file: positional_input_3.txt                                                 │
+│                                               ╷          ╷           ╷              │
+│                                               │  (count) │   (count) │              │
+│   Data                                        │   Source │ Reference │ Difference   │
+│ ╶─────────────────────────────────────────────┼──────────┼───────────┼────────────╴ │
+│   0                                           │        1 │         0 │          1   │
+│   1.0.0 | Released                            │        1 │         0 │          1   │
+│   12,450                                      │        1 │         0 │          1   │
+│   15                                          │        1 │         0 │          1   │
+│   152 API calls | 0 errors | 92ms avg         │        1 │         0 │          1   │
+│   2,150                                       │        1 │         0 │          1   │
+│   2025-08-21 02:00                            │        1 │         0 │          1   │
+│   2025-08-21 18:00                            │        1 │         0 │          1   │
+│   2025-08-22 12:30                            │        1 │         0 │          1   │
+│   2025-08-22 16:15                            │        1 │         0 │          1   │
+│   2025-08-22 16:28                            │        1 │         0 │          1   │
+│   2025-08-23 02:00                            │        1 │         0 │          1   │
+│   2025-08-24 01:00                            │        1 │         0 │          1   │
+│   2025-08-24 03:00                            │        1 │         0 │          1   │
+│   24 vCPUs                                    │        1 │         0 │          1   │
+│   4                                           │        1 │         0 │          1   │
+│   5                                           │        1 │         0 │          1   │
+│   55 scenarios                                │        1 │         0 │          1   │
+│   8                                           │        1 │         0 │          1   │
+│   88% efficiency measured                     │        1 │         0 │          1   │
+│   94% code verified                           │        1 │         0 │          1   │
+│   99.7% reliability achieved                  │        1 │         0 │          1   │
+│   API timeout /v1/data                        │        1 │         0 │          1   │
+│   CFG-2025-083                                │        1 │         0 │          1   │
+│   Config changed by Mike Davis                │        1 │         0 │          1   │
+│   DEPLOYING                                   │        1 │         0 │          1   │
+│   GAMMA-001                                   │        1 │         0 │          1   │
+│   GAMMA-INC-001                               │        1 │         0 │          1   │
+│   Good                                        │        1 │         0 │          1   │
+│   Requests 7500, Errors 12, Avg Latency 88ms  │        1 │         0 │          1   │
+│   Running | 1.2GB RAM | 0.9 CPU | 10GB Disk   │        1 │         0 │          1   │
+│   gamma-main                                  │        1 │         0 │          1   │
+│   true                                        │        1 │         0 │          1   │
+│   us-east-1                                   │        1 │         0 │          1   │
+│   API error spike                             │        1 │         1 │          0   │
+│   Autoscaler trigger                          │        1 │         1 │          0   │
+│   Cache miss spike                            │        1 │         1 │          0   │
+│   Database connection lost                    │        1 │         1 │          0   │
+│   Error tracking                              │        1 │         1 │          0   │
+│   Health check                                │        1 │         1 │          0   │
+│   Health endpoint probe                       │        1 │         1 │          0   │
+│   Lead Engineer                               │        1 │         1 │          0   │
+│   Load balancer attach                        │        1 │         1 │          0   │
+│   Log cleanup                                 │        1 │         1 │          0   │
+│   Memory warning                              │        1 │         1 │          0   │
+│   Passed                                      │        1 │         1 │          0   │
+│   Post-deployment verification                │        1 │         1 │          0   │
+│   Pre-deployment check                        │        1 │         1 │          0   │
+│   Rolling update                              │        1 │         1 │          0   │
+│   Scale up                                    │        1 │         1 │          0   │
+│   Service discovery registration              │        1 │         1 │          0   │
+│   Slack alert sent                            │        1 │         1 │          0   │
+│   1                                           │        0 │         1 │         -1   │
+│   13,600                                      │        0 │         1 │         -1   │
+│   172 API calls | 2 errors | 101ms avg        │        0 │         1 │         -1   │
+│   18                                          │        0 │         1 │         -1   │
+│   2,400                                       │        0 │         1 │         -1   │
+│   2.0.0 | Released                            │        0 │         1 │         -1   │
+│   2025-08-28 03:00                            │        0 │         1 │         -1   │
+│   2025-08-28 18:10                            │        0 │         1 │         -1   │
+│   2025-08-29 04:00                            │        0 │         1 │         -1   │
+│   2025-08-29 13:40                            │        0 │         1 │         -1   │
+│   2025-08-29 15:00                            │        0 │         1 │         -1   │
+│   2025-08-29 15:16                            │        0 │         1 │         -1   │
+│   2025-08-30 01:00                            │        0 │         1 │         -1   │
+│   2025-08-31 03:00                            │        0 │         1 │         -1   │
+│   28 vCPUs                                    │        0 │         1 │         -1   │
+│   6                                           │        1 │         2 │         -1   │
+│   61 scenarios                                │        0 │         1 │         -1   │
+│   7                                           │        0 │         1 │         -1   │
+│   9                                           │        0 │         1 │         -1   │
+│   91% code verified                           │        0 │         1 │         -1   │
+│   91% efficiency measured                     │        0 │         1 │         -1   │
+│   99.8% reliability achieved                  │        0 │         1 │         -1   │
+│   ACTIVE                                      │        0 │         1 │         -1   │
+│   API timeout /v2/data                        │        0 │         1 │         -1   │
+│   CFG-2025-092                                │        0 │         1 │         -1   │
+│   Config changed by Sarah Lee                 │        0 │         1 │         -1   │
+│   DELTA-021                                   │        0 │         1 │         -1   │
+│   DELTA-INC-011                               │        0 │         1 │         -1   │
+│   Excellent                                   │        0 │         1 │         -1   │
+│   Requests 7900, Errors 14, Avg Latency 101ms │        0 │         1 │         -1   │
+│   Running | 1.3GB RAM | 1.0 CPU | 13GB Disk   │        0 │         1 │         -1   │
+│   delta-main                                  │        0 │         1 │         -1   │
+│   eu-west-1                                   │        0 │         1 │         -1   │
+│   false                                       │        0 │         1 │         -1   │
+│                                               ╵          ╵           ╵              │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Preset:      positional_preset/preset_d                                │
+│ Target file: positional_input_3.txt                                    │
+│                                  ╷          ╷           ╷              │
+│                                  │  (count) │   (count) │              │
+│   Data                           │   Source │ Reference │ Difference   │
+│ ╶────────────────────────────────┼──────────┼───────────┼────────────╴ │
+│   2025-08-22                     │        2 │         0 │          2   │
+│   0                              │        1 │         0 │          1   │
+│   12,450                         │        1 │         0 │          1   │
+│   152                            │        1 │         0 │          1   │
+│   2,150                          │        1 │         0 │          1   │
+│   2025-08-21                     │        1 │         0 │          1   │
+│   2025-08-24                     │        1 │         0 │          1   │
+│   24                             │        1 │         0 │          1   │
+│   4                              │        1 │         0 │          1   │
+│   55                             │        1 │         0 │          1   │
+│   CFG-2025-083                   │        1 │         0 │          1   │
+│   GAMMA-001                      │        1 │         0 │          1   │
+│   GAMMA-INC-001                  │        1 │         0 │          1   │
+│   Good                           │        1 │         0 │          1   │
+│   API                            │        1 │         1 │          0   │
+│   Config                         │        1 │         1 │          0   │
+│   Lead                           │        1 │         1 │          0   │
+│   Passed                         │        1 │         1 │          0   │
+│   Requests                       │        1 │         1 │          0   │
+│   Running                        │        1 │         1 │          0   │
+│   Slack                          │        1 │         1 │          0   │
+│   cleanup                        │        1 │         1 │          0   │
+│   tracking                       │        1 │         1 │          0   │
+│   |                              │        1 │         1 │          0   │
+│   1                              │        0 │         1 │         -1   │
+│   13,600                         │        0 │         1 │         -1   │
+│   172                            │        0 │         1 │         -1   │
+│   2,400                          │        0 │         1 │         -1   │
+│   2025-08-28                     │        0 │         1 │         -1   │
+│   28                             │        0 │         1 │         -1   │
+│   6                              │        0 │         1 │         -1   │
+│   61                             │        0 │         1 │         -1   │
+│   CFG-2025-092                   │        0 │         1 │         -1   │
+│   DELTA-021                      │        0 │         1 │         -1   │
+│   DELTA-INC-011                  │        0 │         1 │         -1   │
+│   Excellent                      │        0 │         1 │         -1   │
+│   2025-08-29                     │        0 │         3 │         -3   │
+│                                  ╵          ╵           ╵              │
+└────────────────────────────────────────────────────────────────────────┘
+

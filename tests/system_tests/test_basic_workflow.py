@@ -51,7 +51,7 @@ def run_basic_workflow_test(
 def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with regex filtering for extraction only."""
     input_side_effect = [
-        '\\n',                         # cluster split character
+        '\n',                         # cluster split character
         '1',                           # filter type: Regex
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
@@ -72,7 +72,7 @@ def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with regex filtering for extraction and comparison."""
     input_side_effect = [
-        '\\n',                         # cluster split character
+        '\n',                         # cluster split character
         '1',                           # filter type: Regex
         r'\| ([A-Za-z]+) \|',          # regex filter
         ''                             # skip subsection slicing
@@ -93,7 +93,7 @@ def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
 def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with regex-list filtering for extraction only."""
     input_side_effect = [
-        '\\n',                         # cluster split character
+        '\n',                         # cluster split character
         '3',                           # filter type: Regex List
         r'\| [A-Za-z]+ \|',            # first regex pattern
         'yes',                         # add another pattern
@@ -117,7 +117,7 @@ def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with regex-list filtering for extraction and comparison."""
     input_side_effect = [
-        '\\n',                         # cluster split character
+        '\n',                         # cluster split character
         '3',                           # filter type: Regex List
         r'\| [A-Za-z]+ \|',            # first regex pattern
         'yes',                         # add another pattern
@@ -134,4 +134,50 @@ def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
         expected_output_base=ASSETS_DIR / 'basic_expected_output_regex_list',
         source_file=ASSETS_DIR / 'input' / 'source' / 'regex_list_input_1.txt',
         extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference' / 'regex_list_input_1.txt')]
+    )
+
+
+@pytest.mark.system
+def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
+    """Test basic workflow with positional filtering for extraction only."""
+    input_side_effect = [
+        '\n\n',     # cluster split character (paragraphs)
+        '2',          # filter type: Positional
+        ': ',          # separator for splitting
+        '3',          # line number
+        '2',          # occurrence number
+        ''            # skip subsection slicing
+    ]
+    input_side_effect.append('no')
+
+    run_basic_workflow_test(
+        tmp_path=tmp_path,
+        input_side_effect=input_side_effect,
+        expected_output_subdir='extract_only',
+        expected_output_base=ASSETS_DIR / 'basic_expected_output_positional',
+        source_file=ASSETS_DIR / 'input' / 'source' / 'positional_input_1.txt',
+        extra_cli_args=[]
+    )
+
+
+@pytest.mark.system
+def test_basic_workflow_positional_extract_and_compare(tmp_path: Path) -> None:
+    """Test basic workflow with positional filtering for extraction and comparison."""
+    input_side_effect = [
+        '\n\n',     # cluster split character (paragraphs)
+        '2',          # filter type: Positional
+        ': ',          # separator for splitting
+        '3',          # line number
+        '2',          # occurrence number
+        ''            # skip subsection slicing
+    ]
+    input_side_effect.append('no')
+
+    run_basic_workflow_test(
+        tmp_path=tmp_path,
+        input_side_effect=input_side_effect,
+        expected_output_subdir='extract_and_compare',
+        expected_output_base=ASSETS_DIR / 'basic_expected_output_positional',
+        source_file=ASSETS_DIR / 'input' / 'source' / 'positional_input_1.txt',
+        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference' / 'positional_input_1.txt')]
     )

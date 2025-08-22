@@ -1,0 +1,82 @@
+data,difference,preset,reference,source,target
+1.28 (industry standard,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+1.32 (industry standard,1,positional_preset/preset_a,0,1,positional_input_1.txt
+100%,1,positional_preset/preset_a,0,1,positional_input_1.txt
+147 (threshold,1,positional_preset/preset_a,0,1,positional_input_1.txt
+15,1,positional_preset/preset_a,0,1,positional_input_1.txt
+16,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+162 (threshold,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+"2 releases, all successful",-1,positional_preset/preset_a,1,0,positional_input_1.txt
+2.8 TB daily average,1,positional_preset/preset_a,0,1,positional_input_1.txt
+21% improvement in response time,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+"23 technical staff, 7 management",-1,positional_preset/preset_a,1,0,positional_input_1.txt
+23% improvement in response time,1,positional_preset/preset_a,0,1,positional_input_1.txt
+"24 technical staff, 6 management",1,positional_preset/preset_a,0,1,positional_input_1.txt
+"3 releases, all successful",1,positional_preset/preset_a,0,1,positional_input_1.txt
+3.2 TB daily average,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+4.5/5.0 average rating,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+4.6/5.0 average rating,1,positional_preset/preset_a,0,1,positional_input_1.txt
+43 units operational,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+45 units operational,1,positional_preset/preset_a,0,1,positional_input_1.txt
+47,1,positional_preset/preset_a,0,1,positional_input_1.txt
+"47,892 successful, 147 failed",1,positional_preset/preset_a,0,1,positional_input_1.txt
+"49,321 successful, 162 failed",-1,positional_preset/preset_a,1,0,positional_input_1.txt
+"5 vendors, all meeting SLAs",-1,positional_preset/preset_a,1,0,positional_input_1.txt
+52,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+"6 vendors, all meeting SLAs",1,positional_preset/preset_a,0,1,positional_input_1.txt
+65% allocated and active,1,positional_preset/preset_a,0,1,positional_input_1.txt
+67% allocated and active,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+8 systems updated,1,positional_preset/preset_a,0,1,positional_input_1.txt
+9 systems updated,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+93/100 rating,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+96/100 rating,1,positional_preset/preset_a,0,1,positional_input_1.txt
+99%,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+CPU 45% | RAM 67% | Disk 23%,1,positional_preset/preset_a,0,1,positional_input_1.txt
+CPU 49% | RAM 61% | Disk 27%,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+all controls operational and reviewed,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+all controls operational and tested,1,positional_preset/preset_a,0,1,positional_input_1.txt
+avg 1.2s (target,1,positional_preset/preset_a,0,1,positional_input_1.txt
+avg 1.35s (target,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+avg 217ms (target,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+avg 234ms (target,1,positional_preset/preset_a,0,1,positional_input_1.txt
+completed,0,positional_preset/preset_a,1,1,positional_input_1.txt
+excellent (95/100 score),1,positional_preset/preset_a,0,1,positional_input_1.txt
+operational status green,1,positional_preset/preset_a,0,1,positional_input_1.txt
+operational status yellow,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+peak 89% during 14:00-16:00,1,positional_preset/preset_a,0,1,positional_input_1.txt
+peak 92% during 15:00-17:00,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+phase 2 completed (45% total progress),1,positional_preset/preset_a,0,1,positional_input_1.txt
+phase 3 started (52% total progress),-1,positional_preset/preset_a,1,0,positional_input_1.txt
+quarterly drill passed,1,positional_preset/preset_a,0,1,positional_input_1.txt
+semi-annual drill passed,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+under budget by 4.1%,1,positional_preset/preset_a,0,1,positional_input_1.txt
+under budget by 5.2%,-1,positional_preset/preset_a,1,0,positional_input_1.txt
+very good (93/100 score),-1,positional_preset/preset_a,1,0,positional_input_1.txt
+-,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Airflow:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+CPU:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Camera,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Contract,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Date:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Disk,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Dynamic,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Fan,0,positional_preset/preset_b,1,1,positional_input_2.txt
+HIPAA:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Hour,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Info:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Last,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Link,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Memory,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Monthly,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Next,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Password,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Phone:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Polling,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Power,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Priority,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Stored,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Successful,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Type:,0,positional_preset/preset_b,1,1,positional_input_2.txt
+UPS,0,positional_preset/preset_b,1,1,positional_input_2.txt
+Upgrade,0,positional_preset/preset_b,1,1,positional_input_2.txt
+VLAN,0,positional_preset/preset_b,1,1,positional_input_2.txt

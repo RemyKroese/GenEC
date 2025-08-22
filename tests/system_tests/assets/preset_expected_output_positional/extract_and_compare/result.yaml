@@ -1,0 +1,115 @@
+- preset: positional_preset/preset_b
+  target: ''
+  data:
+    '-':
+      source: 1
+      reference: 1
+      difference: 0
+    'Airflow:':
+      source: 1
+      reference: 1
+      difference: 0
+    'CPU:':
+      source: 1
+      reference: 1
+      difference: 0
+    Camera:
+      source: 1
+      reference: 1
+      difference: 0
+    Contract:
+      source: 1
+      reference: 1
+      difference: 0
+    'Date:':
+      source: 1
+      reference: 1
+      difference: 0
+    Disk:
+      source: 1
+      reference: 1
+      difference: 0
+    Dynamic:
+      source: 1
+      reference: 1
+      difference: 0
+    Fan:
+      source: 1
+      reference: 1
+      difference: 0
+    'HIPAA:':
+      source: 1
+      reference: 1
+      difference: 0
+    Hour:
+      source: 1
+      reference: 1
+      difference: 0
+    'Info:':
+      source: 1
+      reference: 1
+      difference: 0
+    Last:
+      source: 1
+      reference: 1
+      difference: 0
+    Link:
+      source: 1
+      reference: 1
+      difference: 0
+    Memory:
+      source: 1
+      reference: 1
+      difference: 0
+    Monthly:
+      source: 1
+      reference: 1
+      difference: 0
+    Next:
+      source: 1
+      reference: 1
+      difference: 0
+    Password:
+      source: 1
+      reference: 1
+      difference: 0
+    'Phone:':
+      source: 1
+      reference: 1
+      difference: 0
+    Polling:
+      source: 1
+      reference: 1
+      difference: 0
+    Power:
+      source: 1
+      reference: 1
+      difference: 0
+    Priority:
+      source: 1
+      reference: 1
+      difference: 0
+    Stored:
+      source: 1
+      reference: 1
+      difference: 0
+    Successful:
+      source: 1
+      reference: 1
+      difference: 0
+    'Type:':
+      source: 1
+      reference: 1
+      difference: 0
+    UPS:
+      source: 1
+      reference: 1
+      difference: 0
+    Upgrade:
+      source: 1
+      reference: 1
+      difference: 0
+    VLAN:
+      source: 1
+      reference: 1
+      difference: 0

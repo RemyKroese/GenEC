@@ -1,0 +1,124 @@
+data,difference,preset,reference,source,target
+0,1,positional_preset/preset_c,0,1,positional_input_3.txt
+1,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+1.0.0 | Released,1,positional_preset/preset_c,0,1,positional_input_3.txt
+"12,450",1,positional_preset/preset_c,0,1,positional_input_3.txt
+"13,600",-1,positional_preset/preset_c,1,0,positional_input_3.txt
+15,1,positional_preset/preset_c,0,1,positional_input_3.txt
+152 API calls | 0 errors | 92ms avg,1,positional_preset/preset_c,0,1,positional_input_3.txt
+172 API calls | 2 errors | 101ms avg,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+18,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+"2,150",1,positional_preset/preset_c,0,1,positional_input_3.txt
+"2,400",-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2.0.0 | Released,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-21 02:00,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-21 18:00,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-22 12:30,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-22 16:15,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-22 16:28,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-23 02:00,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-24 01:00,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-24 03:00,1,positional_preset/preset_c,0,1,positional_input_3.txt
+2025-08-28 03:00,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-28 18:10,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-29 04:00,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-29 13:40,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-29 15:00,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-29 15:16,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-30 01:00,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+2025-08-31 03:00,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+24 vCPUs,1,positional_preset/preset_c,0,1,positional_input_3.txt
+28 vCPUs,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+4,1,positional_preset/preset_c,0,1,positional_input_3.txt
+5,1,positional_preset/preset_c,0,1,positional_input_3.txt
+55 scenarios,1,positional_preset/preset_c,0,1,positional_input_3.txt
+6,-1,positional_preset/preset_c,2,1,positional_input_3.txt
+61 scenarios,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+7,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+8,1,positional_preset/preset_c,0,1,positional_input_3.txt
+88% efficiency measured,1,positional_preset/preset_c,0,1,positional_input_3.txt
+9,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+91% code verified,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+91% efficiency measured,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+94% code verified,1,positional_preset/preset_c,0,1,positional_input_3.txt
+99.7% reliability achieved,1,positional_preset/preset_c,0,1,positional_input_3.txt
+99.8% reliability achieved,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+ACTIVE,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+API error spike,0,positional_preset/preset_c,1,1,positional_input_3.txt
+API timeout /v1/data,1,positional_preset/preset_c,0,1,positional_input_3.txt
+API timeout /v2/data,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+Autoscaler trigger,0,positional_preset/preset_c,1,1,positional_input_3.txt
+CFG-2025-083,1,positional_preset/preset_c,0,1,positional_input_3.txt
+CFG-2025-092,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+Cache miss spike,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Config changed by Mike Davis,1,positional_preset/preset_c,0,1,positional_input_3.txt
+Config changed by Sarah Lee,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+DELTA-021,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+DELTA-INC-011,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+DEPLOYING,1,positional_preset/preset_c,0,1,positional_input_3.txt
+Database connection lost,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Error tracking,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Excellent,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+GAMMA-001,1,positional_preset/preset_c,0,1,positional_input_3.txt
+GAMMA-INC-001,1,positional_preset/preset_c,0,1,positional_input_3.txt
+Good,1,positional_preset/preset_c,0,1,positional_input_3.txt
+Health check,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Health endpoint probe,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Lead Engineer,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Load balancer attach,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Log cleanup,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Memory warning,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Passed,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Post-deployment verification,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Pre-deployment check,0,positional_preset/preset_c,1,1,positional_input_3.txt
+"Requests 7500, Errors 12, Avg Latency 88ms",1,positional_preset/preset_c,0,1,positional_input_3.txt
+"Requests 7900, Errors 14, Avg Latency 101ms",-1,positional_preset/preset_c,1,0,positional_input_3.txt
+Rolling update,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Running | 1.2GB RAM | 0.9 CPU | 10GB Disk,1,positional_preset/preset_c,0,1,positional_input_3.txt
+Running | 1.3GB RAM | 1.0 CPU | 13GB Disk,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+Scale up,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Service discovery registration,0,positional_preset/preset_c,1,1,positional_input_3.txt
+Slack alert sent,0,positional_preset/preset_c,1,1,positional_input_3.txt
+delta-main,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+eu-west-1,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+false,-1,positional_preset/preset_c,1,0,positional_input_3.txt
+gamma-main,1,positional_preset/preset_c,0,1,positional_input_3.txt
+true,1,positional_preset/preset_c,0,1,positional_input_3.txt
+us-east-1,1,positional_preset/preset_c,0,1,positional_input_3.txt
+0,1,positional_preset/preset_d,0,1,positional_input_3.txt
+1,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+"12,450",1,positional_preset/preset_d,0,1,positional_input_3.txt
+"13,600",-1,positional_preset/preset_d,1,0,positional_input_3.txt
+152,1,positional_preset/preset_d,0,1,positional_input_3.txt
+172,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+"2,150",1,positional_preset/preset_d,0,1,positional_input_3.txt
+"2,400",-1,positional_preset/preset_d,1,0,positional_input_3.txt
+2025-08-21,1,positional_preset/preset_d,0,1,positional_input_3.txt
+2025-08-22,2,positional_preset/preset_d,0,2,positional_input_3.txt
+2025-08-24,1,positional_preset/preset_d,0,1,positional_input_3.txt
+2025-08-28,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+2025-08-29,-3,positional_preset/preset_d,3,0,positional_input_3.txt
+24,1,positional_preset/preset_d,0,1,positional_input_3.txt
+28,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+4,1,positional_preset/preset_d,0,1,positional_input_3.txt
+55,1,positional_preset/preset_d,0,1,positional_input_3.txt
+6,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+61,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+API,0,positional_preset/preset_d,1,1,positional_input_3.txt
+CFG-2025-083,1,positional_preset/preset_d,0,1,positional_input_3.txt
+CFG-2025-092,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+Config,0,positional_preset/preset_d,1,1,positional_input_3.txt
+DELTA-021,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+DELTA-INC-011,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+Excellent,-1,positional_preset/preset_d,1,0,positional_input_3.txt
+GAMMA-001,1,positional_preset/preset_d,0,1,positional_input_3.txt
+GAMMA-INC-001,1,positional_preset/preset_d,0,1,positional_input_3.txt
+Good,1,positional_preset/preset_d,0,1,positional_input_3.txt
+Lead,0,positional_preset/preset_d,1,1,positional_input_3.txt
+Passed,0,positional_preset/preset_d,1,1,positional_input_3.txt
+Requests,0,positional_preset/preset_d,1,1,positional_input_3.txt
+Running,0,positional_preset/preset_d,1,1,positional_input_3.txt
+Slack,0,positional_preset/preset_d,1,1,positional_input_3.txt
+cleanup,0,positional_preset/preset_d,1,1,positional_input_3.txt
+tracking,0,positional_preset/preset_d,1,1,positional_input_3.txt
+|,0,positional_preset/preset_d,1,1,positional_input_3.txt
