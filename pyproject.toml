@@ -94,7 +94,8 @@ show_missing = true
 skip_covered = true
 exclude_lines = [
     "pragma: no cover",
-    "if __name__ == .__main__.:"
+    "if __name__ == .__main__.:",
+    "def main\\(\\) -> None:"
 ]
 
 [tool.mypy]
