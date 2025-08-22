@@ -1,7 +1,7 @@
 [
     {
         "preset": "preset_file1/preset_a",
-        "target": "input/regex_input_1.txt",
+        "target": "input/source/regex_input_1.txt",
         "data": {
             "ERROR": {
                 "source": 157
@@ -16,7 +16,7 @@
     },
     {
         "preset": "preset_file1/preset_a",
-        "target": "input/regex_input_3.txt",
+        "target": "input/source/regex_input_3.txt",
         "data": {
             "ERROR": {
                 "source": 157

@@ -1,7 +1,7 @@
 [
     {
         "preset": "preset_file1/preset_b",
-        "target": "input/regex_input_2.txt",
+        "target": "input/source/regex_input_2.txt",
         "data": {
             "BOOT": {
                 "source": 69
@@ -22,7 +22,7 @@
     },
     {
         "preset": "preset_file1/preset_b",
-        "target": "input/regex_input_4.txt",
+        "target": "input/source/regex_input_4.txt",
         "data": {
             "BOOT": {
                 "source": 69

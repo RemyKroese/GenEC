@@ -1,7 +1,7 @@
 data,difference,preset,reference,source,target
-ERROR,0,preset_file1/preset_a,157,157,input/regex_input_1.txt
-INFO,0,preset_file1/preset_a,1174,1174,input/regex_input_1.txt
-WARNING,0,preset_file1/preset_a,322,322,input/regex_input_1.txt
-ERROR,0,preset_file1/preset_a,157,157,input/regex_input_3.txt
-INFO,0,preset_file1/preset_a,1174,1174,input/regex_input_3.txt
-WARNING,0,preset_file1/preset_a,322,322,input/regex_input_3.txt
+ERROR,0,preset_file1/preset_a,157,157,input/source/regex_input_1.txt
+INFO,0,preset_file1/preset_a,1174,1174,input/source/regex_input_1.txt
+WARNING,0,preset_file1/preset_a,322,322,input/source/regex_input_1.txt
+ERROR,0,preset_file1/preset_a,157,157,input/source/regex_input_3.txt
+INFO,0,preset_file1/preset_a,1174,1174,input/source/regex_input_3.txt
+WARNING,0,preset_file1/preset_a,322,322,input/source/regex_input_3.txt

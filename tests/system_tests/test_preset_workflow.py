@@ -60,7 +60,7 @@ def test_preset_regex_extract_only(tmp_path: Path) -> None:
         preset_name='preset_a',
         preset_file='preset_file1',
         expected_output_base=ASSETS_DIR / 'preset_expected_output_regex',
-        source_file=ASSETS_DIR / 'input' / 'regex_input_1.txt',
+        source_file=ASSETS_DIR / 'input' / 'source' / 'regex_input_1.txt',
         extra_cli_args=[]
     )
 
@@ -74,8 +74,8 @@ def test_preset_regex_extract_and_compare(tmp_path: Path) -> None:
         preset_name='preset_a',
         preset_file='preset_file1',
         expected_output_base=ASSETS_DIR / 'preset_expected_output_regex',
-        source_file=ASSETS_DIR / 'input' / 'regex_input_1.txt',
-        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'regex_input_1.txt')]
+        source_file=ASSETS_DIR / 'input' / 'source' / 'regex_input_1.txt',
+        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'source' / 'regex_input_1.txt')]
     )
 
 
