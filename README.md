@@ -2,8 +2,6 @@
 
 <div align="center">
   <img src="docs/assets/logo/GenEC-logo-transparent.png" alt="GenEC Logo" width="200"/>
-
-  **Generic Extraction & Comparison Tool**
 </div>
 
 [![Build Status](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg?branch=main)](https://github.com/RemyKroese/GenEC/actions)
