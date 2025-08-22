@@ -8,7 +8,7 @@ class MetaData(Enum):
     """Metadata for GenEC."""
 
     TOOL = 'GenEC'
-    VERSION = '0.1.0-beta'
+    VERSION = '1.0.0'
     REPOSITORY = 'https://github.com/RemyKroese/GenEC'
     AUTHOR = 'Remy Kroese'
 

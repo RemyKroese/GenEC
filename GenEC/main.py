@@ -14,6 +14,13 @@ else:
 sys.path.insert(0, str(project_path))
 
 from GenEC.core import workflows, Workflows  # noqa: E402  # pylint: disable=wrong-import-position
+from GenEC.core.specs import MetaData  # noqa: E402  # pylint: disable=wrong-import-position
+
+
+QUICK_EXAMPLES = ('Quick examples:\n'
+                  'GenEC basic --source data.txt\n'
+                  'GenEC preset --source data.txt --preset preset_file_name_without_extension/preset_name\n'
+                  'GenEC preset-list --preset-list preset_list_file.yaml --source my/data/folder/')
 
 
 def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:
@@ -100,6 +107,18 @@ def parse_arguments() -> argparse.Namespace:
         Namespace containing parsed arguments including workflow selection,
         file paths, output options, and presets.
     """
+    parser = argparse.ArgumentParser(
+        prog='GenEC',
+        description='Generic Extraction & Comparison tool for data analysis workflows.',
+        epilog=(QUICK_EXAMPLES),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument('--version', action='version',
+                        version=f'{MetaData.TOOL.value} {MetaData.VERSION.value}')
+
+    subparsers = parser.add_subparsers(dest='workflow', required=True,
+                                       help='Available workflows (use <workflow> --help for details)')
+
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument('-s', '--source', type=str, required=True,
                         help='Source file to extract data from.')
@@ -115,11 +134,6 @@ def parse_arguments() -> argparse.Namespace:
     common_preset.add_argument('-d', '--presets-directory', type=str, required=False,
                                default=project_path / 'presets',
                                help='Directory where presets are stored. default: %(default)s')
-
-    parser = argparse.ArgumentParser(
-        prog='GenEC',
-        description='Extract specific data from files and compare the differences between them.')
-    subparsers = parser.add_subparsers(dest='workflow', required=True)
 
     # Basic workflow
     subparsers.add_parser(name=Workflows.BASIC.value, parents=[common],
@@ -152,11 +166,29 @@ def main() -> None:
 
     Parses command-line arguments and runs the selected workflow.
     """
-    args = parse_arguments()
+    # Handle GUI users who double-click the executable
+    if len(sys.argv) == 1 and getattr(sys, 'frozen', False):
+        print(f'{MetaData.TOOL.value}: Generic Extraction & Comparison Tool v{MetaData.VERSION.value}')
+        print('\nThis is a command-line tool. Please use from terminal/command prompt.')
+        print('\n')
+        print(QUICK_EXAMPLES)
+        print('\nFor full help: GenEC.exe --help')
+        input('\nPress Enter to exit...')
+        return
 
-    print('\n')  # Create some space between command argument and the output sequence
-
-    workflows.get_workflow(args.workflow, args).run()
+    try:
+        args = parse_arguments()
+        print('\n')  # Create some space between command argument and the output sequence
+        workflows.get_workflow(args.workflow, args).run()
+    except KeyboardInterrupt:
+        print('\n\nOperation cancelled by user.')
+        sys.exit(1)
+    except SystemExit as e:
+        raise e
+    except Exception as e:  # pylint: disable=broad-except
+        print(f'\nError: {e}')
+        print('\nFor help: GenEC --help or GenEC <workflow> --help')
+        sys.exit(1)
 
 
 if __name__ == '__main__':
