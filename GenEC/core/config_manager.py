@@ -193,7 +193,7 @@ class ConfigManager:
                 console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
 
     # Configuration Collection Methods
-    def _collect_cluster_filter(self, config: Initialized) -> str:
+    def _collect_cluster_filter(self, config: Initialized, filter_type: Optional[str] = None) -> str:
         """
         Get or request the cluster splitting character(s) from the user.
 
@@ -201,6 +201,8 @@ class ConfigManager:
         ----------
         config : Initialized
             The configuration object containing preset values.
+        filter_type : Optional[str], optional
+            The filter type for context-aware prompts, by default None
 
         Returns
         -------
@@ -208,8 +210,10 @@ class ConfigManager:
             The character(s) used to split text clusters.
         """
         def get_cluster_filter() -> str:
-            user_input = self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER))
-            return user_input or '\\n'  # Store escaped string for display/presets
+            user_input = self._ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER, filter_type=filter_type))
+            if not user_input:
+                return '\\n\\n' if filter_type == TextFilterTypes.POSITIONAL.value else '\\n'
+            return user_input
 
         result = self._resolve_config_value(config, ConfigOptions.CLUSTER_FILTER, get_cluster_filter)
         return result
@@ -580,7 +584,7 @@ class ConfigManager:
         config[ConfigOptions.TEXT_FILTER_TYPE.value] = self._collect_text_filter_type(
             config)
         config[ConfigOptions.CLUSTER_FILTER.value] = self._collect_cluster_filter(
-            config)
+            config, filter_type=config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
         config[ConfigOptions.TEXT_FILTER.value] = self._collect_text_filter(
             config)
         config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = self._collect_should_slice_clusters(
