@@ -1,7 +1,7 @@
 # [GenEC: Generic Extraction & Comparison Tool](https://github.com/RemyKroese/GenEC)
 
 <div align="center">
-  <img src="docs/assets/logo/genec-logo-transparent.png" alt="GenEC Logo" width="200"/>
+  <img src="docs/assets/logo/GenEC-logo-transparent.png" alt="GenEC Logo" width="200"/>
 
   **Generic Extraction & Comparison Tool**
 </div>
