@@ -1,0 +1,56 @@
+data,preset,source,target
+1.32 (industry standard,positional_preset/preset_a,1,positional_input_1.txt
+100%,positional_preset/preset_a,1,positional_input_1.txt
+147 (threshold,positional_preset/preset_a,1,positional_input_1.txt
+15,positional_preset/preset_a,1,positional_input_1.txt
+2.8 TB daily average,positional_preset/preset_a,1,positional_input_1.txt
+23% improvement in response time,positional_preset/preset_a,1,positional_input_1.txt
+"24 technical staff, 6 management",positional_preset/preset_a,1,positional_input_1.txt
+"3 releases, all successful",positional_preset/preset_a,1,positional_input_1.txt
+4.6/5.0 average rating,positional_preset/preset_a,1,positional_input_1.txt
+45 units operational,positional_preset/preset_a,1,positional_input_1.txt
+47,positional_preset/preset_a,1,positional_input_1.txt
+"47,892 successful, 147 failed",positional_preset/preset_a,1,positional_input_1.txt
+"6 vendors, all meeting SLAs",positional_preset/preset_a,1,positional_input_1.txt
+65% allocated and active,positional_preset/preset_a,1,positional_input_1.txt
+8 systems updated,positional_preset/preset_a,1,positional_input_1.txt
+96/100 rating,positional_preset/preset_a,1,positional_input_1.txt
+CPU 45% | RAM 67% | Disk 23%,positional_preset/preset_a,1,positional_input_1.txt
+all controls operational and tested,positional_preset/preset_a,1,positional_input_1.txt
+avg 1.2s (target,positional_preset/preset_a,1,positional_input_1.txt
+avg 234ms (target,positional_preset/preset_a,1,positional_input_1.txt
+completed,positional_preset/preset_a,1,positional_input_1.txt
+excellent (95/100 score),positional_preset/preset_a,1,positional_input_1.txt
+operational status green,positional_preset/preset_a,1,positional_input_1.txt
+peak 89% during 14:00-16:00,positional_preset/preset_a,1,positional_input_1.txt
+phase 2 completed (45% total progress),positional_preset/preset_a,1,positional_input_1.txt
+quarterly drill passed,positional_preset/preset_a,1,positional_input_1.txt
+under budget by 4.1%,positional_preset/preset_a,1,positional_input_1.txt
+-,positional_preset/preset_b,1,positional_input_2.txt
+Airflow:,positional_preset/preset_b,1,positional_input_2.txt
+CPU:,positional_preset/preset_b,1,positional_input_2.txt
+Camera,positional_preset/preset_b,1,positional_input_2.txt
+Contract,positional_preset/preset_b,1,positional_input_2.txt
+Date:,positional_preset/preset_b,1,positional_input_2.txt
+Disk,positional_preset/preset_b,1,positional_input_2.txt
+Dynamic,positional_preset/preset_b,1,positional_input_2.txt
+Fan,positional_preset/preset_b,1,positional_input_2.txt
+HIPAA:,positional_preset/preset_b,1,positional_input_2.txt
+Hour,positional_preset/preset_b,1,positional_input_2.txt
+Info:,positional_preset/preset_b,1,positional_input_2.txt
+Last,positional_preset/preset_b,1,positional_input_2.txt
+Link,positional_preset/preset_b,1,positional_input_2.txt
+Memory,positional_preset/preset_b,1,positional_input_2.txt
+Monthly,positional_preset/preset_b,1,positional_input_2.txt
+Next,positional_preset/preset_b,1,positional_input_2.txt
+Password,positional_preset/preset_b,1,positional_input_2.txt
+Phone:,positional_preset/preset_b,1,positional_input_2.txt
+Polling,positional_preset/preset_b,1,positional_input_2.txt
+Power,positional_preset/preset_b,1,positional_input_2.txt
+Priority,positional_preset/preset_b,1,positional_input_2.txt
+Stored,positional_preset/preset_b,1,positional_input_2.txt
+Successful,positional_preset/preset_b,1,positional_input_2.txt
+Type:,positional_preset/preset_b,1,positional_input_2.txt
+UPS,positional_preset/preset_b,1,positional_input_2.txt
+Upgrade,positional_preset/preset_b,1,positional_input_2.txt
+VLAN,positional_preset/preset_b,1,positional_input_2.txt

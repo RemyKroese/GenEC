@@ -105,3 +105,31 @@ def test_preset_regex_list_extract_and_compare(tmp_path: Path) -> None:
         source_file=ASSETS_DIR / 'input' / 'source' / 'regex_list_input_1.txt',
         extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference' / 'regex_list_input_1.txt')]
     )
+
+
+@pytest.mark.system
+def test_preset_positional_extract_only(tmp_path: Path) -> None:
+    """Test preset workflow with positional extractor, extract only."""
+    run_preset_workflow_test(
+        tmp_path=tmp_path,
+        expected_output_subdir='extract_only',
+        preset_name='preset_b',
+        preset_file='positional_preset',
+        expected_output_base=ASSETS_DIR / 'preset_expected_output_positional',
+        source_file=ASSETS_DIR / 'input' / 'source' / 'positional_input_2.txt',
+        extra_cli_args=[]
+    )
+
+
+@pytest.mark.system
+def test_preset_positional_extract_and_compare(tmp_path: Path) -> None:
+    """Test preset workflow with positional extractor, extract and compare."""
+    run_preset_workflow_test(
+        tmp_path=tmp_path,
+        expected_output_subdir='extract_and_compare',
+        preset_name='preset_b',
+        preset_file='positional_preset',
+        expected_output_base=ASSETS_DIR / 'preset_expected_output_positional',
+        source_file=ASSETS_DIR / 'input' / 'source' / 'positional_input_2.txt',
+        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference' / 'positional_input_2.txt')]
+    )

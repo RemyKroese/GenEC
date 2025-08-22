@@ -108,3 +108,31 @@ def test_preset_list_regex_list_extract_and_compare(tmp_path: Path) -> None:
         source_dir=REGEX_LIST_SOURCE_DIR,
         input_folder_name=REGEX_LIST_INPUT_FOLDER_NAME
     )
+
+
+@pytest.mark.system
+def test_preset_list_positional_extract_only(tmp_path: Path) -> None:
+    """Test preset list workflow with positional filtering for extraction only."""
+    run_preset_list_test(
+        tmp_path=tmp_path,
+        preset_list_name='preset_list_positional',
+        expected_output_subdir='extract_only',
+        expected_output_base=ASSETS_DIR / 'preset_list_expected_output_positional',
+        extra_cli_args=['--target-variables', 'prefix=positional_input'],
+        source_dir=REGEX_LIST_SOURCE_DIR,
+        input_folder_name=REGEX_LIST_INPUT_FOLDER_NAME
+    )
+
+
+@pytest.mark.system
+def test_preset_list_positional_extract_and_compare(tmp_path: Path) -> None:
+    """Test preset list workflow with positional filtering for extraction and comparison."""
+    run_preset_list_test(
+        tmp_path=tmp_path,
+        preset_list_name='preset_list_positional',
+        expected_output_subdir='extract_and_compare',
+        expected_output_base=ASSETS_DIR / 'preset_list_expected_output_positional',
+        extra_cli_args=['--reference', str(ASSETS_DIR / 'input' / 'reference'), '--target-variables', 'prefix=positional_input'],
+        source_dir=REGEX_LIST_SOURCE_DIR,
+        input_folder_name=REGEX_LIST_INPUT_FOLDER_NAME
+    )

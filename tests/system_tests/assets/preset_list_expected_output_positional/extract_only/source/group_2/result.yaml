@@ -1,0 +1,160 @@
+- preset: positional_preset/preset_c
+  target: positional_input_3.txt
+  data:
+    '0':
+      source: 1
+    1.0.0 | Released:
+      source: 1
+    12,450:
+      source: 1
+    '15':
+      source: 1
+    152 API calls | 0 errors | 92ms avg:
+      source: 1
+    2,150:
+      source: 1
+    2025-08-21 02:00:
+      source: 1
+    2025-08-21 18:00:
+      source: 1
+    2025-08-22 12:30:
+      source: 1
+    2025-08-22 16:15:
+      source: 1
+    2025-08-22 16:28:
+      source: 1
+    2025-08-23 02:00:
+      source: 1
+    2025-08-24 01:00:
+      source: 1
+    2025-08-24 03:00:
+      source: 1
+    24 vCPUs:
+      source: 1
+    '4':
+      source: 1
+    '5':
+      source: 1
+    55 scenarios:
+      source: 1
+    '6':
+      source: 1
+    '8':
+      source: 1
+    88% efficiency measured:
+      source: 1
+    94% code verified:
+      source: 1
+    99.7% reliability achieved:
+      source: 1
+    API error spike:
+      source: 1
+    API timeout /v1/data:
+      source: 1
+    Autoscaler trigger:
+      source: 1
+    CFG-2025-083:
+      source: 1
+    Cache miss spike:
+      source: 1
+    Config changed by Mike Davis:
+      source: 1
+    DEPLOYING:
+      source: 1
+    Database connection lost:
+      source: 1
+    Error tracking:
+      source: 1
+    GAMMA-001:
+      source: 1
+    GAMMA-INC-001:
+      source: 1
+    Good:
+      source: 1
+    Health check:
+      source: 1
+    Health endpoint probe:
+      source: 1
+    Lead Engineer:
+      source: 1
+    Load balancer attach:
+      source: 1
+    Log cleanup:
+      source: 1
+    Memory warning:
+      source: 1
+    Passed:
+      source: 1
+    Post-deployment verification:
+      source: 1
+    Pre-deployment check:
+      source: 1
+    Requests 7500, Errors 12, Avg Latency 88ms:
+      source: 1
+    Rolling update:
+      source: 1
+    Running | 1.2GB RAM | 0.9 CPU | 10GB Disk:
+      source: 1
+    Scale up:
+      source: 1
+    Service discovery registration:
+      source: 1
+    Slack alert sent:
+      source: 1
+    gamma-main:
+      source: 1
+    'true':
+      source: 1
+    us-east-1:
+      source: 1
+- preset: positional_preset/preset_d
+  target: positional_input_3.txt
+  data:
+    '0':
+      source: 1
+    12,450:
+      source: 1
+    '152':
+      source: 1
+    2,150:
+      source: 1
+    '2025-08-21':
+      source: 1
+    '2025-08-22':
+      source: 2
+    '2025-08-24':
+      source: 1
+    '24':
+      source: 1
+    '4':
+      source: 1
+    '55':
+      source: 1
+    API:
+      source: 1
+    CFG-2025-083:
+      source: 1
+    Config:
+      source: 1
+    GAMMA-001:
+      source: 1
+    GAMMA-INC-001:
+      source: 1
+    Good:
+      source: 1
+    Lead:
+      source: 1
+    Passed:
+      source: 1
+    Requests:
+      source: 1
+    Running:
+      source: 1
+    Slack:
+      source: 1
+    cleanup:
+      source: 1
+    tracking:
+      source: 1
+    '|':
+      source: 1

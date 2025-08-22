@@ -1,0 +1,37 @@
+┌───────────────────────────────────────────────┐
+│ Preset:      positional_preset/preset_b       │
+│                                  ╷            │
+│                                  │  (count)   │
+│   Data                           │   Source   │
+│ ╶────────────────────────────────┼──────────╴ │
+│   -                              │        1   │
+│   Airflow:                       │        1   │
+│   CPU:                           │        1   │
+│   Camera                         │        1   │
+│   Contract                       │        1   │
+│   Date:                          │        1   │
+│   Disk                           │        1   │
+│   Dynamic                        │        1   │
+│   Fan                            │        1   │
+│   HIPAA:                         │        1   │
+│   Hour                           │        1   │
+│   Info:                          │        1   │
+│   Last                           │        1   │
+│   Link                           │        1   │
+│   Memory                         │        1   │
+│   Monthly                        │        1   │
+│   Next                           │        1   │
+│   Password                       │        1   │
+│   Phone:                         │        1   │
+│   Polling                        │        1   │
+│   Power                          │        1   │
+│   Priority                       │        1   │
+│   Stored                         │        1   │
+│   Successful                     │        1   │
+│   Type:                          │        1   │
+│   UPS                            │        1   │
+│   Upgrade                        │        1   │
+│   VLAN                           │        1   │
+│                                  ╵            │
+└───────────────────────────────────────────────┘
+

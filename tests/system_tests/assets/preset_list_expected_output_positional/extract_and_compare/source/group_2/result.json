@@ -1,0 +1,629 @@
+[
+    {
+        "preset": "positional_preset/preset_c",
+        "target": "positional_input_3.txt",
+        "data": {
+            "0": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "1": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "1.0.0 | Released": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "12,450": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "13,600": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "15": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "152 API calls | 0 errors | 92ms avg": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "172 API calls | 2 errors | 101ms avg": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "18": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2,150": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2,400": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2.0.0 | Released": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-21 02:00": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-21 18:00": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-22 12:30": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-22 16:15": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-22 16:28": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-23 02:00": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-24 01:00": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-24 03:00": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-28 03:00": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-28 18:10": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-29 04:00": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-29 13:40": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-29 15:00": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-29 15:16": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-30 01:00": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-31 03:00": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "24 vCPUs": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "28 vCPUs": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "4": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "5": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "55 scenarios": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "6": {
+                "source": 1,
+                "reference": 2,
+                "difference": -1
+            },
+            "61 scenarios": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "7": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "8": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "88% efficiency measured": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "9": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "91% code verified": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "91% efficiency measured": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "94% code verified": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "99.7% reliability achieved": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "99.8% reliability achieved": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "ACTIVE": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "API error spike": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "API timeout /v1/data": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "API timeout /v2/data": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Autoscaler trigger": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "CFG-2025-083": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "CFG-2025-092": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Cache miss spike": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Config changed by Mike Davis": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Config changed by Sarah Lee": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "DELTA-021": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "DELTA-INC-011": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "DEPLOYING": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Database connection lost": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Error tracking": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Excellent": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "GAMMA-001": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "GAMMA-INC-001": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Good": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Health check": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Health endpoint probe": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Lead Engineer": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Load balancer attach": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Log cleanup": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Memory warning": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Passed": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Post-deployment verification": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Pre-deployment check": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Requests 7500, Errors 12, Avg Latency 88ms": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Requests 7900, Errors 14, Avg Latency 101ms": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Rolling update": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Running | 1.2GB RAM | 0.9 CPU | 10GB Disk": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Running | 1.3GB RAM | 1.0 CPU | 13GB Disk": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Scale up": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Service discovery registration": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Slack alert sent": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "delta-main": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "eu-west-1": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "false": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "gamma-main": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "true": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "us-east-1": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            }
+        }
+    },
+    {
+        "preset": "positional_preset/preset_d",
+        "target": "positional_input_3.txt",
+        "data": {
+            "0": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "1": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "12,450": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "13,600": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "152": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "172": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2,150": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2,400": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-21": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-22": {
+                "source": 2,
+                "reference": 0,
+                "difference": 2
+            },
+            "2025-08-24": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "2025-08-28": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "2025-08-29": {
+                "source": 0,
+                "reference": 3,
+                "difference": -3
+            },
+            "24": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "28": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "4": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "55": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "6": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "61": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "API": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "CFG-2025-083": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "CFG-2025-092": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Config": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "DELTA-021": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "DELTA-INC-011": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "Excellent": {
+                "source": 0,
+                "reference": 1,
+                "difference": -1
+            },
+            "GAMMA-001": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "GAMMA-INC-001": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Good": {
+                "source": 1,
+                "reference": 0,
+                "difference": 1
+            },
+            "Lead": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Passed": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Requests": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Running": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "Slack": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "cleanup": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "tracking": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            },
+            "|": {
+                "source": 1,
+                "reference": 1,
+                "difference": 0
+            }
+        }
+    }
+]
