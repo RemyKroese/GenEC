@@ -1,0 +1,9 @@
+created_preset:
+  cluster_filter: \n
+  text_filter_type: Regex
+  text_filter: \| ([A-Za-z]+) \|
+  should_slice_clusters: false
+  src_start_cluster_text: null
+  src_end_cluster_text: null
+  ref_start_cluster_text: null
+  ref_end_cluster_text: null
