@@ -21,10 +21,11 @@ jobs:
           uv run flake8 --count --show-source --statistics
       - name: Lint with pylint
         run: |
-          uv run pylint GenEC
+          uv run pylint GenEC --score=yes
+          uv run pylint tests --rcfile=tests/.pylintrc --score=yes
       - name: Type check with mypy
         run: |
-          uv run mypy GenEC
+          uv run mypy .
 
   unit_tests:
     runs-on: ${{ matrix.os }}

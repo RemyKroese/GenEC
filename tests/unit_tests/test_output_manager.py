@@ -85,7 +85,8 @@ def test_process_various_output_types(mock_write_output: Mock, mock_print: Mock,
             expected_create_calls, any_order=False)
         assert mock_create_table.call_count == len(expected_create_calls)
 
-        assert mock_print.call_count == len(expected_create_calls)
+        # OutputManager calls console.print twice per entry: once for '\n' and once for the table
+        assert mock_print.call_count == len(expected_create_calls) * 2
 
         # Build expected_output_path using pathlib to mirror your code logic
         root_path: str = Path('').name  # empty string here
