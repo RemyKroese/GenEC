@@ -46,6 +46,12 @@ def run_basic_workflow_test(
         assert generated_file.exists(), f'Missing generated file: {generated_file}'
         assert filecmp.cmp(generated_file, expected_file, shallow=False), f"File content mismatch for: {ext}"
 
+    # Verify preset file was created and matches expected
+    generated_preset_file = tmp_path / 'test_preset.yaml'
+    expected_preset_file = expected_output_directory / 'preset.yaml'
+    assert generated_preset_file.exists(), f'Missing generated preset file: {generated_preset_file}'
+    assert filecmp.cmp(generated_preset_file, expected_preset_file, shallow=False), "Preset file content mismatch"
+
 
 @pytest.mark.system
 def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
@@ -54,9 +60,11 @@ def test_basic_workflow_regex_extract_only(tmp_path: Path) -> None:
         '\n',                         # cluster split character
         '1',                           # filter type: Regex
         r'\| ([A-Za-z]+) \|',          # regex filter
-        ''                             # skip subsection slicing
+        '',                           # skip subsection slicing
+        'yes',                        # save configuration as preset
+        'created_preset',             # preset name
+        str(tmp_path / 'test_preset') # preset file name (without .yaml extension)
     ]
-    input_side_effect.append('no')
 
     run_basic_workflow_test(
         tmp_path=tmp_path,
@@ -75,9 +83,11 @@ def test_basic_workflow_regex_extract_and_compare(tmp_path: Path) -> None:
         '\n',                         # cluster split character
         '1',                           # filter type: Regex
         r'\| ([A-Za-z]+) \|',          # regex filter
-        ''                             # skip subsection slicing
+        '',                           # skip subsection slicing
+        'yes',                        # save configuration as preset
+        'created_preset',             # preset name
+        str(tmp_path / 'test_preset') # preset file name (without .yaml extension)
     ]
-    input_side_effect.append('no')
 
     run_basic_workflow_test(
         tmp_path=tmp_path,
@@ -99,9 +109,11 @@ def test_basic_workflow_regex_list_extract_only(tmp_path: Path) -> None:
         'yes',                         # add another pattern
         r'([A-Za-z]+)',                # second regex pattern (extraction)
         'no',                          # no more patterns
-        ''                             # skip subsection slicing
+        '',                           # skip subsection slicing
+        'yes',                        # save configuration as preset
+        'created_preset',             # preset name
+        str(tmp_path / 'test_preset') # preset file name (without .yaml extension)
     ]
-    input_side_effect.append('no')
 
     run_basic_workflow_test(
         tmp_path=tmp_path,
@@ -123,9 +135,11 @@ def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
         'yes',                         # add another pattern
         r'([A-Za-z]+)',                # second regex pattern (extraction)
         'no',                          # no more patterns
-        ''                             # skip subsection slicing
+        '',                           # skip subsection slicing
+        'yes',                        # save configuration as preset
+        'created_preset',             # preset name
+        str(tmp_path / 'test_preset') # preset file name (without .yaml extension)
     ]
-    input_side_effect.append('no')
 
     run_basic_workflow_test(
         tmp_path=tmp_path,
@@ -141,14 +155,16 @@ def test_basic_workflow_regex_list_extract_and_compare(tmp_path: Path) -> None:
 def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
     """Test basic workflow with positional filtering for extraction only."""
     input_side_effect = [
-        '\n\n',     # cluster split character (paragraphs)
-        '2',          # filter type: Positional
-        ': ',          # separator for splitting
-        '3',          # line number
-        '2',          # occurrence number
-        ''            # skip subsection slicing
+        '\n\n',                       # cluster split character (paragraphs)
+        '2',                          # filter type: Positional
+        ': ',                         # separator for splitting
+        '3',                          # line number
+        '2',                          # occurrence number
+        '',                           # skip subsection slicing
+        'yes',                        # save configuration as preset
+        'created_preset',             # preset name
+        str(tmp_path / 'test_preset') # preset file name (without .yaml extension)
     ]
-    input_side_effect.append('no')
 
     run_basic_workflow_test(
         tmp_path=tmp_path,
@@ -164,14 +180,16 @@ def test_basic_workflow_positional_extract_only(tmp_path: Path) -> None:
 def test_basic_workflow_positional_extract_and_compare(tmp_path: Path) -> None:
     """Test basic workflow with positional filtering for extraction and comparison."""
     input_side_effect = [
-        '\n\n',     # cluster split character (paragraphs)
-        '2',          # filter type: Positional
-        ': ',          # separator for splitting
-        '3',          # line number
-        '2',          # occurrence number
-        ''            # skip subsection slicing
+        '\n\n',                       # cluster split character (paragraphs)
+        '2',                          # filter type: Positional
+        ': ',                         # separator for splitting
+        '3',                          # line number
+        '2',                          # occurrence number
+        '',                           # skip subsection slicing
+        'yes',                        # save configuration as preset
+        'created_preset',             # preset name
+        str(tmp_path / 'test_preset') # preset file name (without .yaml extension)
     ]
-    input_side_effect.append('no')
 
     run_basic_workflow_test(
         tmp_path=tmp_path,
