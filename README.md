@@ -1,5 +1,11 @@
 # [GenEC: Generic Extraction & Comparison Tool](https://github.com/RemyKroese/GenEC)
 
+<div align="center">
+  <img src="docs/assets/logo/genec-logo-transparent.png" alt="GenEC Logo" width="200"/>
+
+  **Generic Extraction & Comparison Tool**
+</div>
+
 [![Build Status](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg?branch=main)](https://github.com/RemyKroese/GenEC/actions)
 [![Codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg?branch=main)](https://codecov.io/gh/RemyKroese/GenEC)
 [![Latest Release](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
