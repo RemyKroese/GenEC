@@ -706,7 +706,25 @@ class ConfigManager:
         if not file_path.is_absolute():
             file_path = self.presets_directory / file_path
 
-        new_preset = {preset_name: config}
+        # Convert PositionalFilterType back to dict for YAML serialization
+        serializable_config = dict(config)
+        if (config.get('text_filter_type') == TextFilterTypes.POSITIONAL.value and
+                isinstance(config.get('text_filter'), PositionalFilterType)):
+            positional_filter = cast(PositionalFilterType, config['text_filter'])
+            serializable_config['text_filter'] = {
+                'separator': positional_filter.separator,
+                'line': positional_filter.line,
+                'occurrence': positional_filter.occurrence
+            }
+
+        # Convert cluster_filter back to user-readable format
+        cluster_filter = serializable_config.get('cluster_filter', '')
+        if cluster_filter == '\n':
+            serializable_config['cluster_filter'] = '\\n'
+        elif cluster_filter == '\n\n':
+            serializable_config['cluster_filter'] = '\\n\\n'
+
+        new_preset = {preset_name: serializable_config}
 
         if file_path.exists():
             console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND, file_path=file_path))

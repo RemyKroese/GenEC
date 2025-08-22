@@ -460,7 +460,7 @@ def test_create_new_preset_creates_new_file(mock_write_txt: Mock, mock_write_yam
 
     written_data = mock_write_yaml.call_args[0][0]
     assert 'my_preset' in written_data
-    assert written_data['my_preset'] == {'cluster_filter': '\n'}
+    assert written_data['my_preset'] == {'cluster_filter': '\\n'}
 
 
 @pytest.mark.unit
@@ -501,7 +501,7 @@ def test_create_new_preset_retries_on_empty_name(mock_write_txt: Mock, mock_writ
     # Verify the preset data passed to write_yaml
     written_data = mock_write_yaml.call_args[0][0]
     assert 'final_preset' in written_data
-    assert written_data['final_preset'] == {'cluster_filter': '\n'}
+    assert written_data['final_preset'] == {'cluster_filter': '\\n'}
 
     # Verify ask_open_question was called multiple times due to retries
     assert mock_ask_open.call_count >= 3
