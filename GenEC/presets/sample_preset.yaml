@@ -17,7 +17,7 @@
 
 # This preset can be used by executiong the tool with the parameter "--preset sample_preset/main_preset"
 main_preset: &main_preset
-  cluster_filter: ''                        # Characters to split clusters on, e.g. "\\n" for newline characters
+  cluster_filter: ''                        # Characters to split clusters on, e.g. "\n" for newline characters
   text_filter_type: ''                      # REGEX, REGEX_LIST, POSITIONAL
   text_filter: ''                           # The actual data that needs to be analyzed
   should_slice_clusters: false              # specify whether only a subsection of the clusters should be analyzed
