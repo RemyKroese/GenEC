@@ -44,6 +44,86 @@ def test_collect_cluster_filter_from_config() -> None:
 
 
 @pytest.mark.unit
+@patch.object(ConfigManager, '_ask_open_question')
+def test_collect_cluster_filter_empty_input_positional_filter(mock_ask_open_question: Mock) -> None:
+    """Test cluster filter default behavior for positional filter with empty user input."""
+    mock_ask_open_question.return_value = ''
+    config_manager: ConfigManager = ConfigManager(auto_configure=False)
+    config: Initialized = {
+        'cluster_filter': None,
+        'text_filter_type': None,
+        'text_filter': None,
+        'should_slice_clusters': None,
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
+        'ref_end_cluster_text': None
+    }
+    result = config_manager._collect_cluster_filter(config, filter_type=TextFilterTypes.POSITIONAL.value)
+    assert result == '\\n\\n'
+
+
+@pytest.mark.unit
+@patch.object(ConfigManager, '_ask_open_question')
+def test_collect_cluster_filter_empty_input_regex_filter(mock_ask_open_question: Mock) -> None:
+    """Test cluster filter default behavior for regex filter with empty user input."""
+    mock_ask_open_question.return_value = ''
+    config_manager: ConfigManager = ConfigManager(auto_configure=False)
+    config: Initialized = {
+        'cluster_filter': None,
+        'text_filter_type': None,
+        'text_filter': None,
+        'should_slice_clusters': None,
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
+        'ref_end_cluster_text': None
+    }
+    result = config_manager._collect_cluster_filter(config, filter_type=TextFilterTypes.REGEX.value)
+    assert result == '\\n'
+
+
+@pytest.mark.unit
+@patch.object(ConfigManager, '_ask_open_question')
+def test_collect_cluster_filter_empty_input_regex_list_filter(mock_ask_open_question: Mock) -> None:
+    """Test cluster filter default behavior for regex-list filter with empty user input."""
+    mock_ask_open_question.return_value = ''
+    config_manager: ConfigManager = ConfigManager(auto_configure=False)
+    config: Initialized = {
+        'cluster_filter': None,
+        'text_filter_type': None,
+        'text_filter': None,
+        'should_slice_clusters': None,
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
+        'ref_end_cluster_text': None
+    }
+    result = config_manager._collect_cluster_filter(config, filter_type=TextFilterTypes.REGEX_LIST.value)
+    assert result == '\\n'
+
+
+@pytest.mark.unit
+@patch.object(ConfigManager, '_ask_open_question')
+def test_collect_cluster_filter_empty_input_no_filter_type(mock_ask_open_question: Mock) -> None:
+    """Test cluster filter default behavior with empty user input and no filter type."""
+    mock_ask_open_question.return_value = ''
+    config_manager: ConfigManager = ConfigManager(auto_configure=False)
+    config: Initialized = {
+        'cluster_filter': None,
+        'text_filter_type': None,
+        'text_filter': None,
+        'should_slice_clusters': None,
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
+        'ref_end_cluster_text': None
+    }
+    result = config_manager._collect_cluster_filter(config, filter_type=None)
+    assert result == '\\n'
+
+
+@pytest.mark.unit
 @patch.object(ConfigManager, '_ask_mpc_question')
 def test_collect_text_filter_type(mock_ask_mpc_question: Mock) -> None:
     mock_ask_mpc_question.return_value = 'regex'

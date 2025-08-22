@@ -1,6 +1,7 @@
 """Collection of prompts for CLI interaction."""
 
 from enum import Enum
+from typing import Optional
 
 
 class Section(Enum):
@@ -23,6 +24,9 @@ class Key(Enum):
 
     # SET_CONFIG
     CLUSTER_FILTER = 'cluster_filter'
+    CLUSTER_FILTER_POSITIONAL = 'cluster_filter_positional'
+    CLUSTER_FILTER_REGEX = 'cluster_filter_regex'
+    CLUSTER_FILTER_REGEX_LIST = 'cluster_filter_regex_list'
     SHOULD_SLICE_CLUSTERS = 'should_slice_clusters'
     CLUSTER_TEXT = 'cluster_text'
     TEXT_FILTER_TYPE = 'text_filter_type'
@@ -58,11 +62,15 @@ class Key(Enum):
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
 ENTER_IS_WHITESPACE = '[gold]Enter[/gold]=[purple]whitespace ( )[/purple]'
 ENTER_IS_NEW_LINE = '[gold]Enter[/gold]=[purple]newline (\\n)[/purple]'
+ENTER_IS_DOUBLE_NEW_LINE = '[gold]Enter[/gold]=[purple]double newline (\\n\\n)[/purple]'
 
 prompts: dict[str, dict[Section, dict[Key, str]]] = {
     'common': {
         Section.SET_CONFIG: {
             Key.CLUSTER_FILTER: f'[bold cyan]Enter character(s) to split clusters[/bold cyan] \\[{ENTER_IS_NEW_LINE}]: ',
+            Key.CLUSTER_FILTER_POSITIONAL: f'[bold cyan]Enter character(s) to split clusters[/bold cyan] \\[{ENTER_IS_DOUBLE_NEW_LINE}]: ',
+            Key.CLUSTER_FILTER_REGEX: f'[bold cyan]Enter character(s) to split clusters[/bold cyan] \\[{ENTER_IS_NEW_LINE}]: ',
+            Key.CLUSTER_FILTER_REGEX_LIST: f'[bold cyan]Enter character(s) to split clusters[/bold cyan] \\[{ENTER_IS_NEW_LINE}]: ',
             Key.SHOULD_SLICE_CLUSTERS: f'[bold cyan]Compare only a subsection of clusters?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: ',
             Key.CLUSTER_TEXT: ('[bold cyan]Text in {cluster} cluster where subsection should {position}[/bold cyan]'
                                f'\\[{ENTER_IS_SKIP}]: '),
@@ -105,23 +113,36 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
 }
 
 
-def create_prompt(feature: Section, prompt_key: Key, workflow: str = 'common', **kwargs: object) -> str:
+def create_prompt(feature: Section, prompt_key: Key, workflow: str = 'common',
+                  filter_type: Optional[str] = None, **kwargs: object) -> str:
     """
-    Retrieve a formatted CLI prompt string for the given feature and prompt key.
+    Retrieve a formatted CLI prompt string with optional filter-type context.
 
     Parameters
     ----------
-    feature : Features
+    feature : Section
         Feature category of the prompt
-    prompt_key : PromptKeys
+    prompt_key : Key
         Specific prompt identifier
     workflow : str, optional
         Workflow context to use, by default 'common'
+    filter_type : Optional[str], optional
+        Filter type context for SET_CONFIG prompts, by default None
 
     Returns
     -------
     str
         Formatted prompt string ready for display or input()
     """
+    # Try filter-specific prompt first if we're in SET_CONFIG
+    if filter_type and feature == Section.SET_CONFIG:
+        filter_specific_key_name = f"{prompt_key.value}_{filter_type.lower()}"
+        # Check if filter-specific key exists
+        for key in Key:
+            if key.value == filter_specific_key_name and key in prompts[workflow][feature]:
+                text = prompts[workflow][feature][key]
+                return text.format(**kwargs) if kwargs else text
+
+    # Fall back to default prompt
     text = prompts[workflow][feature][prompt_key]
     return text.format(**kwargs) if kwargs else text

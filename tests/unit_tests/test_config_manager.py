@@ -11,8 +11,6 @@ from GenEC.core.config_manager import ConfigManager, Configuration
 from GenEC.core.types.preset_config import Initialized, Finalized
 import GenEC.utils as utils
 
-# pylint: disable=protected-access
-
 
 EMPTY_CONFIG: Initialized = Initialized(
             cluster_filter=None,
