@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg?branch=main)](https://github.com/RemyKroese/GenEC/actions)
 [![Codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg?branch=main)](https://codecov.io/gh/RemyKroese/GenEC)
 [![Latest Release](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
-[![Next Version](https://img.shields.io/badge/1.0.0-94%25-brightgreen)]()
+[![Next Version](https://img.shields.io/badge/1.0.0-97%25-brightgreen)]()
 [![Last Commit](https://img.shields.io/github/last-commit/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC/commits)
 [![License: Apache 2.0](https://img.shields.io/github/license/RemyKroese/GenEC)](./LICENSE)
 [![Top Language](https://img.shields.io/github/languages/top/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC)
@@ -12,7 +12,7 @@
 
 ### 1.0.0 release progress
 
-`██████████████████████████████████████████████████████████████████████████████████████████████      `
+`█████████████████████████████████████████████████████████████████████████████████████████████████   `
 
 
 ## Overview
