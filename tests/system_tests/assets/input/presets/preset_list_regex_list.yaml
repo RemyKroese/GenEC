@@ -1,0 +1,9 @@
+group_1:
+  - preset: preset_system_actions/preset_a
+    target: '{prefix}_1.txt'
+  - preset: preset_system_actions/preset_a
+    target: '{prefix}_2.txt'
+
+group_2:
+  - preset: preset_system_actions/preset_b
+    target: '{prefix}_2.txt'

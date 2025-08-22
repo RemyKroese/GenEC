@@ -1,0 +1,4 @@
+data,difference,preset,reference,source,target
+ERROR,-259,regex_list_preset/regex_list_extract_only,416,157,
+INFO,404,regex_list_preset/regex_list_extract_only,770,1174,
+WARNING,-145,regex_list_preset/regex_list_extract_only,467,322,
