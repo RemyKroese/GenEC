@@ -1,6 +1,6 @@
 """Type hinting support for configuration data."""
 
-from typing import Optional, TypedDict, Union
+from typing import Any, Optional, TypedDict, Union
 from GenEC.core.specs import PositionalFilterType
 
 
@@ -20,7 +20,7 @@ class Initialized(TypedDict):
 
     cluster_filter: Optional[str]
     text_filter_type: Optional[str]
-    text_filter: Optional[Union[str, list[str], PositionalFilterType]]
+    text_filter: Optional[Union[str, list[str], PositionalFilterType, dict[str, Any]]]
     should_slice_clusters: Optional[bool]
     src_start_cluster_text: Optional[str]
     src_end_cluster_text: Optional[str]

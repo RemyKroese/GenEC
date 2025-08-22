@@ -542,6 +542,12 @@ class ConfigManager:
             if not presets or len(presets) == 0:
                 raise ValueError(f'Preset file {presets_file_path} contains no presets')
 
+            # Convert positional filter dictionaries to PositionalFilterType objects
+            for preset_name, preset_config in presets.items():
+                text_filter = preset_config.get('text_filter')
+                if isinstance(text_filter, dict):
+                    presets[preset_name]['text_filter'] = PositionalFilterType(**text_filter)
+
             return presets
 
         except FileNotFoundError:
