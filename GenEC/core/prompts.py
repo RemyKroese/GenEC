@@ -85,29 +85,31 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
         },
         Section.USER_CHOICE: {
             Key.CHOICE: '[bold cyan]Select option[/bold cyan] [0-{max_index}]: ',
-            Key.INVALID_CHOICE: '[bold red]ERROR:[/bold red] Invalid choice.',
+            Key.INVALID_CHOICE: '[bold red]ERROR: Invalid choice.[/bold red]',
             Key.EXIT_OPTION: '[bold]0.[/bold] [purple]Exit[/purple]'
         },
         Section.WRITE_CONFIG: {
             Key.REQUEST_SAVE: f'[bold cyan]Save this configuration?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: ',
             Key.NEW_PRESET_NAME: '[bold cyan]Preset name:[/bold cyan] ',
-            Key.INVALID_PRESET_NAME: '[bold red]ERROR:[/bold red] Preset name cannot be empty.',
+            Key.INVALID_PRESET_NAME: '[bold red]ERROR: Preset name cannot be empty.[/bold red]',
             Key.DESTINATION_FILE_NAME: ('[bold cyan]Destination YAML file[/bold cyan] (existing file will be appended).\n'
                                         'Default: [magenta]{presets_directory}[/magenta], or specify absolute path: '),
             Key.DESTINATION_FILE_FOUND: 'File [yellow]{file_path}[/yellow] exists → [green]appending preset[/green].',
             Key.DESTINATION_FILE_NOT_FOUND: 'File [yellow]{file_path}[/yellow] not found → [green]creating new file[/green].'
         },
         Section.ERROR_HANDLING: {
-            Key.INVALID_REGEX: '[bold red]ERROR:[/bold red] Invalid regex pattern: [yellow]{pattern}[/yellow]. Please enter a valid regex.',
-            Key.INVALID_REGEX_INPUT: '[red]Invalid regex pattern. Please enter a valid regex.[/red]',
-            Key.INVALID_INTEGER: '[bold red]ERROR:[/bold red] Invalid number: [yellow]{value}[/yellow]. Please enter a valid integer{bounds}.',
-            Key.INVALID_LINE_NUMBER: '[red]Invalid line number. Please enter a positive integer.[/red]',
-            Key.INVALID_OCCURRENCE_NUMBER: '[red]Invalid occurrence number. Please enter a positive integer.[/red]',
-            Key.INVALID_FILE_PATH: '[bold red]ERROR:[/bold red] Invalid file path: [yellow]{path}[/yellow]. {reason}',
-            Key.FILE_READ_ERROR: '[bold red]ERROR:[/bold red] Could not read file [yellow]{file_path}[/yellow]: {error}',
-            Key.PRESET_LOAD_ERROR: '[bold red]PRESET ERROR:[/bold red] Failed to load preset [yellow]{preset}[/yellow]: {error}',
+            Key.INVALID_REGEX: ('[bold red]ERROR: Invalid regex pattern:[/bold red] [yellow]{pattern}[/yellow]. '
+                                '[bold red]Please enter a valid regex.[/bold red]'),
+            Key.INVALID_REGEX_INPUT: '[bold red]Invalid regex pattern. Please enter a valid regex.[/bold red]',
+            Key.INVALID_INTEGER: ('[bold red]ERROR:[/bold red] Invalid number: [yellow]{value}[/yellow]. '
+                                  '[bold red]Please enter a valid integer{bounds}.[/bold red]'),
+            Key.INVALID_LINE_NUMBER: '[bold red]Invalid line number. Please enter a positive integer.[/bold red]',
+            Key.INVALID_OCCURRENCE_NUMBER: '[bold red]Invalid occurrence number. Please enter a positive integer.[/bold red]',
+            Key.INVALID_FILE_PATH: '[bold red]ERROR: Invalid file path:[/bold red] [yellow]{path}[/yellow]. {reason}',
+            Key.FILE_READ_ERROR: '[bold red]ERROR: Could not read file[/bold red] [yellow]{file_path}[/yellow]: {error}',
+            Key.PRESET_LOAD_ERROR: '[bold red]PRESET ERROR: Failed to load preset[/bold red] [yellow]{preset}[/yellow]: {error}',
             Key.PRESET_VALIDATION_ERROR: '[bold red]PRESET ERROR:[/bold red] Invalid preset [yellow]{preset}[/yellow]: {error}',
-            Key.REGEX_COMPILATION_ERROR: '[red]ERROR:[/red] Invalid regex pattern: {error}'
+            Key.REGEX_COMPILATION_ERROR: '[bold red]ERROR: Invalid regex pattern:[/bold red] [yellow]{error}[/yellow]'
         }
     }
 }
