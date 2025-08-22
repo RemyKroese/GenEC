@@ -1,0 +1,33 @@
+[MASTER]
+# Inherit from parent configuration
+load-plugins =
+
+[MESSAGES CONTROL]
+# Test-specific disables for legitimate testing patterns
+disable = 
+    protected-access,               # W0212: Allow testing private methods (_method)
+    missing-function-docstring,     # C0116: Test function names are self-documenting
+    unused-argument,                # W0613: Pytest fixtures may appear unused
+    redefined-outer-name,           # W0621: Pytest fixtures commonly redefine names
+    too-many-arguments,             # R0913: Test functions may need many parameters
+    too-many-positional-arguments, # R0917: Test functions may need many parameters
+    duplicate-code,                 # R0801: Test fixtures often have similar structure
+    consider-using-f-string,        # C0209: String formatting preference in tests is flexible
+    # Inherit production disables
+    too-few-public-methods,         # R0903: from pyproject.toml
+    invalid-name                    # C0103: from pyproject.toml
+
+[FORMAT]
+# Inherit from parent
+max-line-length = 150
+
+[DESIGN]
+# Test functions can have more arguments than production code
+max-args = 10
+max-locals = 20
+
+[SIMILARITIES]
+# Allow more code duplication in tests (fixtures, setup patterns)
+min-similarity-lines = 10
+ignore-comments = yes
+ignore-docstrings = yes

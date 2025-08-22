@@ -176,17 +176,26 @@ uv run pytest
 uv run pytest --cov=. --cov-branch
 ```
 
-
 ### Subtests
 ```bash
-uv run pytest -m system    # Runs system-level tests
+uv run pytest -m system                                   # Runs system-level tests
 
-uv run pytest -m unit      # Runs unit tests
+uv run pytest -m unit                                     # Runs unit tests
 ```
 
 ### Repeat tests
 ```bash
 uv run pytest --count 10
+```
+
+### Linting & Type Checking
+```bash
+uv run flake8                                             # Code style and formatting
+
+uv run mypy .                                             # Type checking
+
+uv run pylint GenEC --score=yes                           # Production code linting (strict)
+uv run pylint tests --rcfile=tests/.pylintrc --score=yes  # Test code linting (relaxed)
 ```
 
 ## License
