@@ -53,11 +53,24 @@ filterwarnings = [
 max-line-length = 150
 
 [tool.pylint.MASTER]
-ignore-patterns = ["__init__.py", "tests/*", "build/*"]
+ignore-patterns = ["__init__.py", "build/*"]
 
 disable = [
     "R0903",  # too few public methods
     "C0103",  # invalid-name
+]
+
+[tool.pylint."messages control"]
+disable = [
+    # Test-specific disables (applied globally due to pylint configuration limitations)
+    "protected-access",  # Allow protected access for testing private methods
+    "missing-function-docstring",  # Test function names are self-documenting
+    "unused-argument",  # Pytest fixtures may appear unused (W0613)
+    "redefined-outer-name",  # Pytest fixtures commonly redefine outer names (W0621)
+    "too-many-arguments",  # Test functions may need many parameters (R0913)
+    "too-many-positional-arguments",  # Test functions may need many parameters (R0917)
+    "duplicate-code",  # Test fixtures often have similar structure (R0801)
+    "consider-using-f-string",  # String formatting preference in tests is flexible (C0209)
 ]
 
 [tool.flake8]

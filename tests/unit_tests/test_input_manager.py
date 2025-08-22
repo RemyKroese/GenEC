@@ -1,11 +1,11 @@
+"""Unit tests for GenEC ConfigManager input collection methods."""
 from __future__ import annotations
 
 from typing import Any, Union
-from io import StringIO
-import pytest
 from unittest.mock import patch, Mock
+import pytest
 
-from GenEC.core import ConfigOptions, TextFilterTypes, PositionalFilterType
+from GenEC.core import TextFilterTypes, PositionalFilterType
 from GenEC.core.config_manager import ConfigManager
 from GenEC.core.types.preset_config import Initialized
 
@@ -15,13 +15,13 @@ def test_collect_cluster_filter(mock_ask_open_question: Mock) -> None:
     mock_ask_open_question.return_value = ';'
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
-        'cluster_filter': None, 
-        'text_filter_type': None, 
-        'text_filter': None, 
+        'cluster_filter': None,
+        'text_filter_type': None,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._collect_cluster_filter(config) == ';'
@@ -32,12 +32,12 @@ def test_collect_cluster_filter_from_config() -> None:
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': '\n',
-        'text_filter_type': None, 
-        'text_filter': None, 
+        'text_filter_type': None,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._collect_cluster_filter(config) == '\n'
@@ -50,12 +50,12 @@ def test_collect_text_filter_type(mock_ask_mpc_question: Mock) -> None:
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': None, 
-        'text_filter': None, 
+        'text_filter_type': None,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._collect_text_filter_type(config) == 'regex'
@@ -68,12 +68,12 @@ def test_collect_text_filter(mock_request_text_filter: Mock) -> None:
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': None, 
-        'text_filter': None, 
+        'text_filter_type': None,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._collect_text_filter(config) == 'filter1'
@@ -90,12 +90,12 @@ def test_collect_should_slice_clusters(mock_ask_open_question: Mock, user_input:
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': None, 
-        'text_filter': None, 
+        'text_filter_type': None,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._collect_should_slice_clusters(config) == expected
@@ -114,12 +114,12 @@ def test_collect_cluster_text(mock_ask_open_question: Mock, config_option: str, 
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': None, 
-        'text_filter': None, 
+        'text_filter_type': None,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     result: str = config_manager._collect_cluster_text(config, config_option, position, src_or_ref)
@@ -171,12 +171,12 @@ def test_request_REGEX_filter_type(mock_ask_open_question: Mock) -> None:
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': TextFilterTypes.REGEX.value, 
-        'text_filter': None, 
+        'text_filter_type': TextFilterTypes.REGEX.value,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._request_text_filter(config) == 'my_filter'
@@ -194,12 +194,12 @@ def test_request_POSITIONAL_filter_type(mock_ask_open_question: Mock, mock_side_
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': TextFilterTypes.POSITIONAL.value, 
-        'text_filter': None, 
+        'text_filter_type': TextFilterTypes.POSITIONAL.value,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     result: Union[str, list[str], PositionalFilterType] = config_manager._request_text_filter(config)
@@ -219,12 +219,12 @@ def test_request_REGEX_LIST_filter_type(mock_ask_open_question: Mock, mock_side_
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': TextFilterTypes.REGEX_LIST.value, 
-        'text_filter': None, 
+        'text_filter_type': TextFilterTypes.REGEX_LIST.value,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     assert config_manager._request_text_filter(config) == mock_output
@@ -239,12 +239,12 @@ def test_request_unsupported_filter_type(filter_type: str) -> None:
     config_manager: ConfigManager = ConfigManager(auto_configure=False)
     config: Initialized = {
         'cluster_filter': None,
-        'text_filter_type': filter_type, 
-        'text_filter': None, 
+        'text_filter_type': filter_type,
+        'text_filter': None,
         'should_slice_clusters': None,
-        'src_start_cluster_text': None, 
-        'src_end_cluster_text': None, 
-        'ref_start_cluster_text': None, 
+        'src_start_cluster_text': None,
+        'src_end_cluster_text': None,
+        'ref_start_cluster_text': None,
         'ref_end_cluster_text': None
     }
     with pytest.raises(ValueError):
