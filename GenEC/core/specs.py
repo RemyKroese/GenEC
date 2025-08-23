@@ -112,19 +112,15 @@ class TextFilterTypes(Enum):
     Attributes
     ----------
     REGEX : str
-        Filter using a regular expression.
-    POSITIONAL : str
-        Filter using a positional extraction method.
+        1) Filter using a regular expression.
     REGEX_LIST : str
-        Filter using a list of regular expressions applied sequentially.
-    KEYWORD : str
-        Keyword-based filter (currently unsupported).
-    SPLIT_KEYWORDS : str
-        Split-keywords filter (currently unsupported).
+        2) Filter using a list of regular expressions applied sequentially.
+    POSITIONAL : str
+        3) Filter using a positional extraction method.
     """
 
     REGEX = 'Regex'
-    POSITIONAL = 'Positional'
     REGEX_LIST = 'Regex-list'
-    KEYWORD = 'Keyword_UNSUPPORTED'
-    SPLIT_KEYWORDS = 'Split-keywords_UNSUPPORTED'
+    POSITIONAL = 'Positional'
+    # KEYWORD = 'Keyword_UNSUPPORTED'
+    # SPLIT_KEYWORDS = 'Split-keywords_UNSUPPORTED'
