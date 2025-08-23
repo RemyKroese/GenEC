@@ -30,6 +30,9 @@ Beyond extraction, GenEC can also compare the extracted data against reference f
 Designed for users of all technical levels, GenEC supports both manual workflows and automated pipelines,
 making data analysis straightforward and accessible.
 
+## Documentation
+[For in-depth explanation on setup, workflows, configuration, and filters; visit the detailed documentation in docs/overview.md](docs/overview.md)
+
 ## Installation
 
 GenEC requires **Python 3.9 or higher**
