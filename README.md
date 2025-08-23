@@ -96,15 +96,15 @@ python -m GenEC.main basic -s <source_file> -r <reference_file> -o <output_direc
 #### Preset workflow
 
 ```bash
-python -m GenEC.main preset -s <source_file> -r <reference_file> -p <file_name_without_extension/preset_name> -x <preset_directory> [options]
+python -m GenEC.main preset -s <source_file> -p <file_name_without_extension/preset_name> -d <presets_directory> [options]
 ```
 
 #### Preset-list workflow
 
 ```bash
-python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> -l <file_name_without_extension> -x <preset_directory> [options]
+python -m GenEC.main preset-list -s <source_directory> -l <preset_list_file> -d <presets_directory> [options]
 
-python -m GenEC.main preset-list -s <source_directory> -r <reference_directory> -l <file_name_without_extension> -x <preset_directory> -v myvar1=value1 myvar2=value2
+python -m GenEC.main preset-list -s <source_directory> -l <preset_list_file> -d <presets_directory> -v myvar1=value1 myvar2=value2
 ```
 
 ---

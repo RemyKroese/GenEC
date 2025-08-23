@@ -133,3 +133,4 @@ dmypy.json
 
 # Copilot instructions (local configuration)
 .github/copilot-instructions.md
+docs/copilot-doc-context.md
