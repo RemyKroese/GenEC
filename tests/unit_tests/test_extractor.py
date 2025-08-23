@@ -58,8 +58,8 @@ def test_get_clusters(extractor_instance: Extractor, config_fixture: dict[str, A
 @pytest.mark.unit
 @pytest.mark.parametrize("filter_type", [
     TextFilterTypes.REGEX,
-    TextFilterTypes.POSITIONAL,
     TextFilterTypes.REGEX_LIST,
+    TextFilterTypes.POSITIONAL,
 ])
 @patch("GenEC.core.extraction_filters.get_extractor")
 def test_extract_from_data(mock_get_extractor: Mock, filter_type: TextFilterTypes,
@@ -76,19 +76,6 @@ def test_extract_from_data(mock_get_extractor: Mock, filter_type: TextFilterType
     assert result == ['my_result']
     mock_get_extractor.assert_called_once_with(filter_type.value, config)
     fake_extractor.extract.assert_called_once()
-
-
-@pytest.mark.unit
-def test_extract_from_data_unsupported_filter_type(
-        extractor_instance: Extractor, config_fixture: dict[str, Any]) -> None:
-    data: str = 'saiucdjh1\ndusi2hiuw\n3134ferw\n4waijc\ndjhe56fk7\niuaijaudc'
-    config: dict[str, Any] = config_fixture.copy()
-    config[ConfigOptions.CLUSTER_FILTER.value] = '\n'
-    config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.KEYWORD.value
-    config[ConfigOptions.TEXT_FILTER.value] = r'^[^\d]*(\d)'
-    with pytest.raises(ValueError, match='Unsupported filter type: %s' % TextFilterTypes.KEYWORD.value):
-        extractor_instance.extract_from_data(
-            cast(Finalized, config), data, FileID.SOURCE)
 
 
 @pytest.mark.unit

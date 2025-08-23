@@ -159,7 +159,6 @@ class ConfigManager:
         console.print(create_prompt(Section.USER_CHOICE, Key.EXIT_OPTION))
         for i, option in enumerate(options, 1):
             console.print(f'{i}. {option}')
-        console.print('\n')
 
         choice = self._get_user_choice(len(options))
 
