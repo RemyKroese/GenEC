@@ -1,5 +1,7 @@
 # Basic Workflow
 
+**[← Back to Documentation Overview](../overview.md)**
+
 <div align="center">
   <img src="../assets/logo/GenEC-logo-transparent.png" alt="GenEC Logo" width="200"/>
 </div>
@@ -8,34 +10,17 @@
 
 ## Context
 
-### What is it
-The Basic Workflow is GenEC's interactive mode that guides users through configuration setup via command-line prompts. It's designed for first-time users, ad-hoc analysis, and situations where you want to experiment with different settings before saving them as presets.
+The Basic Workflow is GenEC's interactive mode that guides users through configuration setup via command-line prompts. Unlike the preset workflows where configuration is defined in YAML files, the Basic Workflow walks you through each configuration decision step-by-step, making it ideal for learning GenEC's capabilities and experimenting with different settings.
 
-### How does it work
-The Basic Workflow operates through a step-by-step interactive process:
-
-1. **Command execution**: Run `uv run python GenEC/main.py basic --source <file>` with required source file
-2. **Interactive prompts**: GenEC presents a series of configuration questions in logical order
-3. **Real-time validation**: Each input is validated immediately with helpful error messages and retry prompts
-4. **Configuration building**: Responses are compiled into a complete configuration object
-5. **Execution**: GenEC processes the files using the configured settings
-6. **Optional saving**: After successful execution, users can save the configuration as a preset for future use
-
-**Implementation details to be aware of:**
-- Uses the `BasicWorkflow` class registered via the registry pattern (`@register_workflow("basic")`)
-- Leverages input strategies (`get_input_strategy()`) for filter-specific prompts
-- Configuration is built incrementally using the `ConfigManager.set_config()` method
-- All user prompts are centralized in `prompts.py` with Rich formatting for consistency
-- Supports both extract-only and extract-and-compare modes based on whether reference file is provided
-- Configuration validation occurs at each step to prevent invalid combinations
+When you run the Basic Workflow, GenEC will ask you a series of questions about how you want to extract data from your files. You'll choose what type of text filter to use (regex patterns, positional extraction, or multi-stage filtering), define how your text should be divided into processable chunks, and specify the exact patterns or positions for data extraction. The workflow validates your inputs in real-time, providing helpful error messages and allowing you to retry if something doesn't work as expected.
 
 ### When to use
-The Basic Workflow is optimal for:
-- **First-time users** learning GenEC's capabilities and understanding available options
-- **Experimental analysis** where you want to test different filter types and settings
-- **One-off tasks** that don't require automation or repeatability
-- **Configuration development** before creating reusable preset files
-- **Training scenarios** where understanding the full configuration process is valuable
+- **First-time users**
+- **Experimental analysis**
+- **One-off tasks**
+- **Preset creation**
+
+When using the same parameters repeatedly in the basic workflow, considering creating a [preset](preset.md) instead.
 
 ## How to use
 
@@ -51,8 +36,6 @@ The Basic Workflow is optimal for:
 **Basic syntax:**
 ```bash
 uv run python GenEC/main.py basic --source <source_file> [--reference <reference_file>]
-# Alternative syntax:
-python -m GenEC.main basic --source <source_file> [--reference <reference_file>]
 ```
 
 **With custom output control:**
@@ -81,57 +64,7 @@ The Basic Workflow prompts for all configuration parameters interactively. No YA
 | Configuration | Options | Description |
 |---------------|---------|-------------|
 | **Filter Type** | Regex, Regex-list, Positional | Text extraction method |
-| **Cluster Filter** | Any string (default: `\n`) | How to divide text into processable chunks |
+| **Cluster Filter** | Any string | How to divide text into processable clusters |
 | **Text Filter** | Varies by filter type | Pattern or position specification for data extraction |
-| **Slice Clusters** | yes/no | Whether to limit processing to specific text sections |
+| **Slice Clusters** | yes/no | Whether to limit processing to specific text clusters |
 | **Save Configuration** | yes/no | Option to save settings as preset for future use |
-
-## Example
-
-### Input
-```bash
-uv run python GenEC/main.py basic --source logs/application.log
-```
-
-### Output
-```
-Choose filter type:
-0. Exit
-1. Regex
-2. Regex-list
-3. Positional
-Select option (0-3): 1
-
-Enter character(s) to split clusters [Enter=newline (\n)]:
-Regex filter: ERROR: (.+)
-
-Compare only a subsection of clusters? [yes/y, Enter=skip]:
-
-Processing source file: logs/application.log
-Extraction completed: 5 entries found
-
-Save this configuration? [yes/y, Enter=skip]: y
-Preset name: error_extraction
-Destination YAML file: error_analysis
-
-Configuration saved successfully.
-Results saved to: output/basic_error_extraction/
-```
-
-**Results directory structure:**
-```
-output/basic_error_extraction/
-├── <source_filename>/
-│   ├── result.json    # Structured JSON output
-│   ├── result.txt     # Human-readable text format
-│   ├── result.csv     # Tabular CSV format
-│   └── result.yaml    # YAML format output
-└── (additional files for other sources if multiple runs)
-```
-
-**Saved preset file:**
-```
-/path/to/specified/location/error_analysis.yaml  # User-specified preset location
-```
-
-→ [Complete Basic Workflow Demo](../demos/basic-workflow-demo.md)

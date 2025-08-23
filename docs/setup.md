@@ -1,5 +1,7 @@
 # Setup and Installation
 
+**[← Back to Documentation Overview](overview.md)**
+
 <div align="center">
   <img src="assets/logo/GenEC-logo-transparent.png" alt="GenEC Logo" width="200"/>
 </div>

@@ -1,5 +1,7 @@
 # Preset-List Workflow
 
+**[← Back to Documentation Overview](../overview.md)**
+
 <div align="center">
   <img src="../assets/logo/GenEC-logo-transparent.png" alt="GenEC Logo" width="200"/>
 </div>
@@ -8,37 +10,18 @@
 
 ## Context
 
-### What is it
 The Preset-List Workflow enables batch processing of multiple configurations defined within a single YAML file, allowing users to execute numerous extraction and comparison operations in sequence. This workflow is GenEC's most powerful automation mode, designed for comprehensive analysis scenarios where multiple extraction patterns need to be applied to the same dataset.
 
-### How does it work
-The Preset-List Workflow operates through a batch execution model:
+When you use the Preset-List Workflow, GenEC reads a special YAML file that references multiple existing preset configurations and applies each one sequentially to your source directory. Instead of creating inline configurations, preset-list files reference your existing preset files, making it easy to mix and match different extraction strategies. Each preset runs independently and saves its results to separate directories, giving you a comprehensive analysis from multiple perspectives in a single execution.
 
-1. **Preset list loading**: GenEC reads a YAML file containing multiple preset configurations
-2. **Sequential execution**: Each preset configuration is processed individually in the order defined
-3. **Independent validation**: Each preset is validated separately before execution
-4. **Isolated processing**: Each configuration runs independently with its own output directory
-5. **Aggregated results**: Results from all presets are saved in separate directories under a common parent folder
-6. **Progress tracking**: GenEC provides status updates for each preset execution
-
-**Implementation details to be aware of:**
-- Uses the `PresetListWorkflow` class registered via the registry pattern (`@register_workflow("preset-list")`)
-- Processes YAML files containing a list of preset configurations under a single key
-- Each preset within the list follows the same structure as individual preset files
-- Execution order follows the sequence defined in the YAML file
-- Each preset execution is independent - failure of one preset doesn't stop others
-- Output directories are created with indexed naming for organization
-- All filter types (regex, regex-list, positional) are supported within each preset
+This workflow is particularly powerful because it allows you to leverage all your existing presets in combination. You can apply different filter types, extraction patterns, and comparison logic to the same dataset without running separate commands. GenEC handles the organization automatically, creating structured output directories that make it easy to review and compare results from different extraction approaches.
 
 ### When to use
-The Preset-List Workflow is optimal for:
-- **Comprehensive analysis** requiring multiple extraction patterns on the same data
-- **Batch processing scenarios** where different configurations need to be applied systematically
-- **Quality assurance testing** with multiple validation patterns
-- **Research and exploration** where various extraction approaches are being compared
-- **Automated reporting** requiring data extraction from multiple perspectives
-- **Migration scenarios** where data needs to be extracted using different legacy patterns
-- **Performance testing** of different filter configurations
+- **Comprehensive analysis**
+- **Batch data processing**
+- **Automated reporting**
+
+Preset-list is mass-executes [presets](preset.md). So in situations where folders, instead of files should be analyzed, preset-list should be used.
 
 ## How to use
 
@@ -57,8 +40,6 @@ The Preset-List Workflow is optimal for:
 **Basic syntax:**
 ```bash
 uv run python GenEC/main.py preset-list --preset-list <preset_list_name> --source <source_directory> [--reference <reference_directory>]
-# Alternative syntax:
-python -m GenEC.main preset-list --preset-list <preset_list_name> --source <source_directory> [--reference <reference_directory>]
 ```
 
 **Extract-only mode:**
@@ -80,7 +61,6 @@ uv run python GenEC/main.py preset-list -l analysis_suite -s logs/current/ -r lo
 Preset list files reference existing preset configurations:
 
 ```yaml
-# Preset list referencing existing preset configurations
 group_name_1:
   - preset: 'preset_file/preset_name'    # Reference to existing preset
     target: 'filename.txt'               # Target file for this preset
@@ -95,57 +75,22 @@ group_name_2:
 ```
 
 **Configuration validation rules:**
-- Top-level keys are group names for organizing preset executions
-- Each group contains a list of preset-target pairs
 - `preset` field references existing preset files in format `file/preset_name`
 - `target` field specifies the filename within source/reference directories
-- Variable substitution uses `{variable_name}` syntax in target fields
-- Referenced preset files must exist in the presets directory
-- All target files must exist in the specified source directory
-
-**Variable Substitution:**
-```yaml
-# Preset list with variables
-analysis_group:
-  - preset: 'error_patterns/critical_errors'
-    target: '{environment}_application.log'
-  - preset: 'error_patterns/warnings'
-    target: '{environment}_warnings.log'
-
-# CLI usage with variables:
-# --target-variables environment=production
-# Results in targets: production_application.log, production_warnings.log
-```**Configuration validation rules:**
-- Top-level keys are group names for organizing preset executions
-- Each group contains a list of preset-target pairs
-- `preset` field references existing preset files in format `file/preset_name`
-- `target` field specifies the filename within source/reference directories
-- Variable substitution uses `{variable_name}` syntax in target fields
-- Referenced preset files must exist in the presets directory
-- All target files must exist in the specified source directory
+- Variable names in target fields must be provided via CLI with the `--target-variables` parameter
 
 ### Preset List Management
 **Creating preset lists:**
 - First create individual preset files with desired configurations
 - Create preset list files that reference existing presets
-- Use descriptive group names for logical organization
 - Ensure all referenced preset files exist before execution
-
-**Naming conventions:**
-- Use descriptive list names: `daily_analysis`, `error_monitoring`, `performance_checks`
-- Group names should be clear: `critical_errors`, `warning_patterns`, `info_messages`
-- Follow snake_case naming throughout
-- Store in `GenEC/presets/` directory with `.yaml` extension
-
-**Prerequisites:**
-- All referenced preset files must exist in presets directory
-- All target files must exist in source directory
-- Variable names in target fields must be provided via CLI
+- Store in `GenEC/presets/` directory with `.yaml` extension for automatic discovery
+- Alternatively the presets can be stored elsewhere, but then the `--presets-directory` parameter must be provided.
 
 ### Output Organization
 The Preset-List Workflow creates a structured output hierarchy:
 ```
-output/preset_list_<preset_list_name>/
+<specified_output_directory>/
 ├── <source_directory_name>/
 │   ├── <group_1>/
 │   │   ├── result.json
@@ -158,103 +103,5 @@ output/preset_list_<preset_list_name>/
 │   │   ├── result.csv
 │   │   └── result.yaml
 │   └── (additional groups as defined)
-└── execution_summary.json  # Overall execution status
+└──────────────────────────────────────
 ```
-
-## Example
-
-### Configuration File: `GenEC/presets/log_analysis.yaml`
-```yaml
-error_monitoring:
-  - preset: 'error_patterns/critical_errors'
-    target: 'application.log'
-  - preset: 'error_patterns/warnings'
-    target: 'application.log'
-
-performance_monitoring:
-  - preset: 'performance_patterns/response_times'
-    target: 'performance.log'
-  - preset: 'performance_patterns/memory_usage'
-    target: 'system.log'
-```
-
-**Referenced preset files must exist:**
-- `GenEC/presets/error_patterns.yaml` containing `critical_errors` and `warnings` presets
-- `GenEC/presets/performance_patterns.yaml` containing `response_times` and `memory_usage` presets
-
-### Input
-```bash
-uv run python GenEC/main.py preset-list --preset-list log_analysis --source logs/ --reference baseline_logs/
-```
-
-### Output
-```
-Loading preset list: log_analysis
-Found 2 groups to process
-
-Processing group 1/2: error_monitoring
-  Preset: error_patterns/critical_errors → application.log
-    Source: 8 entries found
-    Reference: 5 entries found
-  Preset: error_patterns/warnings → application.log
-    Source: 15 entries found
-    Reference: 12 entries found
-
-Processing group 2/2: performance_monitoring
-  Preset: performance_patterns/response_times → performance.log
-    Source: 42 entries found
-    Reference: 38 entries found
-  Preset: performance_patterns/memory_usage → system.log
-    Source: 23 entries found
-    Reference: 19 entries found
-
-All groups completed successfully
-Results saved to: output/preset_list_log_analysis/
-```
-
-**Results directory structure:**
-```
-output/preset_list_log_analysis/
-├── logs/                           # Source directory name
-│   ├── error_monitoring/           # First group results
-│   │   ├── result.json            # Combined results from group presets
-│   │   ├── result.txt             # Human-readable format
-│   │   ├── result.csv             # Tabular format
-│   │   ├── result.yaml            # YAML format
-│   │   └── comparison_summary.txt # Comparison details (if reference provided)
-│   ├── performance_monitoring/    # Second group results
-│   │   ├── result.json
-│   │   ├── result.txt
-│   │   ├── result.csv
-│   │   ├── result.yaml
-│   │   └── comparison_summary.txt
-└── execution_summary.json         # Overall execution status and statistics
-```
-
-**Sample execution_summary.json:**
-```json
-{
-  "preset_list_name": "log_analysis",
-  "total_groups": 2,
-  "successful_groups": 2,
-  "failed_groups": 0,
-  "group_summary": [
-    {
-      "group_name": "error_monitoring",
-      "status": "success",
-      "presets_executed": 2,
-      "total_source_entries": 23,
-      "total_reference_entries": 17
-    },
-    {
-      "group_name": "performance_monitoring",
-      "status": "success",
-      "presets_executed": 2,
-      "total_source_entries": 65,
-      "total_reference_entries": 57
-    }
-  ]
-}
-```
-
-→ [Complete Preset-List Workflow Demo](../demos/preset-list-workflow-demo.md)
