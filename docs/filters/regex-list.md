@@ -1,36 +1,27 @@
-# Regex-List Filter
+# Regex-list Filter
+
+**[← Back to Documentation Overview](../overview.md)**
 
 <div align="center">
   <img src="../assets/logo/GenEC-logo-transparent.png" alt="GenEC Logo" width="200"/>
 </div>
 
-> **Prerequisites**: Ensure GenEC is properly installed → [Setup and Installation](../setup.md)egex-list Filter
-
 > **Prerequisites**: Ensure GenEC is properly installed → [Setup and Installation](../setup.md)
 
 ## Context
 
-### What is it
-The Regex-list Filter applies **multiple regex patterns sequentially** to progressively filter and refine text clusters before extracting data. It's designed for complex hierarchical data where you need to first filter to relevant sections, then extract specific information.
+The Regex-list filter applies multiple regex patterns sequentially to progressively filter and refine text clusters before extracting data. It's designed for complex hierarchical data where you need to first filter to relevant sections, then extract specific information. The first patterns act as filters (clusters must contain these patterns), while the final pattern performs the actual data extraction from the remaining clusters.
 
-### How does it work
-1. **Sequential filtering**: Applies N-1 patterns as filters to reduce the dataset
-2. **Final extraction**: The last pattern extracts data using its first capture group
-3. **Progressive refinement**: Each filter step reduces the number of clusters
-4. **All-or-nothing matching**: Clusters must match ALL filter patterns to be processed
+When you use the Regex-list filter, GenEC applies your patterns in sequence, using the first patterns as filters and the last pattern for data extraction. For example, you might first filter for lines containing "WARNING", then filter those results for lines containing "SensorA", and finally extract sensor values with a pattern like `([0-9]+)`. This progressive refinement allows you to precisely target data in complex files where simple patterns would be too broad or capture unwanted information.
 
-**Implementation details to be aware of:**
-- Filters are applied in the order specified in the list
-- First N-1 patterns act as **filters only** (no extraction)
-- Only the **last pattern** extracts data using its capture group
-- If any pattern fails to match a cluster, that cluster is excluded
-- Each pattern is applied within individual clusters (not across clusters)
+For each entry in the regex-list, clusters that do not match the regex pattern will be removed from further data extraction. So, each pattern must match within the same text cluster for data to be extracted. This means if you're processing line-by-line (the default), all your patterns must match elements within individual lines, not across multiple lines. The last regex pattern in the list behaves exactly the same as how the [regex filter type](regex.md) behaves.
 
 ### When to use
-- **Complex log analysis** requiring multi-level filtering
-- **Hierarchical data extraction** from structured text
-- **Conditional extraction** based on multiple criteria
-- **Precision filtering** when simple regex is too broad
+- **(Complex) pattern-based data extraction**
+- **Conditional data extraction**
+- **Low-performance regex patterns**
+
+This filter type excels at simplifying regex patterns, whilst also improving performance. However, for very simple regex patterns, the normal [regex filter type](regex.md) can be used instead.
 
 ## How to use
 
@@ -49,45 +40,3 @@ text_filter:
   - "database"
   - "connection (.+)"
 ```
-
-**Pattern Guidelines:**
-- **Filter patterns** (first N-1): Should match desired content (no capture groups needed)
-- **Extraction pattern** (last): Must have exactly one capture group `(.+)`
-- Order matters: most restrictive to least restrictive typically works best
-
-## Example
-
-### Input
-```bash
-# Source data
-2024-01-15 ERROR: Database connection failed to server-01
-2024-01-15 ERROR: User authentication failed
-2024-01-15 INFO: Database query completed successfully
-2024-01-15 ERROR: Database connection timeout to server-02
-2024-01-15 WARN: Cache miss detected
-
-# Regex-list patterns
-1. "ERROR"           # Filter: only ERROR lines
-2. "Database"        # Filter: only database-related errors
-3. "connection (.+)" # Extract: connection details
-```
-
-### Output
-```json
-[
-  {
-    "file_name": "application.log",
-    "line_number": 1,
-    "line_content": "2024-01-15 ERROR: Database connection failed to server-01",
-    "extracted_data": "failed to server-01"
-  },
-  {
-    "file_name": "application.log",
-    "line_number": 4,
-    "line_content": "2024-01-15 ERROR: Database connection timeout to server-02",
-    "extracted_data": "timeout to server-02"
-  }
-]
-```
-
-**→ [Complete Regex-list Filter Demo](../demos/filter-comparison-demo.md#regex-list-filter)**
