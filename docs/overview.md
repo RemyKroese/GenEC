@@ -43,14 +43,6 @@ Setup and customization options:
 - **[Preset-List Configuration](configuration/preset-list.md)** - Batch processing with preset references
 - **[Output Formats](configuration/output-formats.md)** - JSON, TXT, CSV, YAML output options
 
-# Demos
-Practical tutorials with real examples:
-
-- **[Basic Workflow Demo](demos/basic-workflow-demo.md)** - First-time user walkthrough
-- **[Preset Workflow Demo](demos/preset-workflow-demo.md)** - Configuration file setup
-- **[Preset-List Demo](demos/preset-list-demo.md)** - Batch processing tutorial
-- **[Filter Comparison Demo](demos/filter-comparison-demo.md)** - Choosing the right filter
-
 # Feature Matrix
 
 | Feature                | Basic | Preset | Preset-list |
