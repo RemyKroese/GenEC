@@ -27,9 +27,9 @@ making data analysis straightforward and accessible.
 
 | Getting Started | Workflows | Text Filters | Configuration |
 |----------------|-----------|--------------|---------------|
-| **[Documentation](docs/overview.md)** | **[Basic](docs/workflows/basic.md)** - Interactive setup | **[Regex](docs/filters/regex.md)** - Pattern matching | **[Output Formats](docs/configuration/output-formats.md)** - File types |
-| **[Setup Guide](docs/setup.md)** | **[Preset](docs/workflows/preset.md)** - Automated single-file | **[Regex-list](docs/filters/regex-list.md)** - Multi-pattern | **[Presets](docs/configuration/preset.md)** - YAML configs |
-|  | **[Preset-list](docs/workflows/preset-list.md)** - Batch processing | **[Positional](docs/filters/positional.md)** - Position-based | **[Preset-lists](docs/configuration/preset-list.md)** - Batch processing |
+| [Documentation](docs/overview.md) | [Basic](docs/workflows/basic.md) | [Regex](docs/filters/regex.md) | [Output Formats](docs/configuration/output-formats.md) |
+| [Setup Guide](docs/setup.md) | [Preset](docs/workflows/preset.md) | [Regex-list](docs/filters/regex-list.md) | [Presets](docs/configuration/preset.md) |
+|  | [Preset-list](docs/workflows/preset-list.md) | [Positional](docs/filters/positional.md) | [Preset-lists](docs/configuration/preset-list.md) |
 
 ## Installation
 
