@@ -21,7 +21,7 @@ This workflow is particularly powerful because it allows you to leverage all you
 - **Batch data processing**
 - **Automated reporting**
 
-Preset-list is mass-executes [presets](preset.md). So in situations where folders, instead of files should be analyzed, preset-list should be used.
+Preset-list mass-executes [presets](preset.md). So in situations where folders, instead of files should be analyzed, preset-list should be used.
 
 ## How to use
 
