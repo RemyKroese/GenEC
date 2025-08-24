@@ -30,10 +30,9 @@ def print_footer() -> None:
 
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     footer = Text()
-    footer.append(f'{MetaData.TOOL.value} v{MetaData.VERSION.value}    |  {now}\n', style="bold green")
-    footer.append(f'Author: {MetaData.AUTHOR.value}  |  GitHub: {MetaData.REPOSITORY.value} ', style="dim cyan")
-
-    print('\n\n')
+    footer.append('\n')
+    footer.append(f'{MetaData.TOOL.value} {MetaData.VERSION.value} - Generated on {now}\n', style="bold green")
+    footer.append(f'{MetaData.REPOSITORY.value}', style="dim cyan")
     console.print(footer)
 
 

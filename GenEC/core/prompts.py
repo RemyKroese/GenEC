@@ -74,7 +74,7 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
             Key.SHOULD_SLICE_CLUSTERS: f'[bold cyan]Compare only a subsection of clusters?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: ',
             Key.CLUSTER_TEXT: ('[bold cyan]Text in {cluster} cluster where subsection should {position}[/bold cyan]'
                                f'\\[{ENTER_IS_SKIP}]: '),
-            Key.TEXT_FILTER_TYPE: '[bold cyan]Choose filter type:[/bold cyan]\n',
+            Key.TEXT_FILTER_TYPE: '[bold cyan]Choose filter type:[/bold cyan]',
             Key.UNSUPPORTED_FILTER_TYPE: '[bold red]ERROR:[/bold red] Unsupported filter type: [yellow]{filter_type}[/yellow]',
             Key.POSITIONAL_SEPARATOR: f'[bold cyan]Separator for counting[/bold cyan] \\[{ENTER_IS_WHITESPACE}]: ',
             Key.POSITIONAL_LINE: '[bold cyan]Line number in cluster:[/bold cyan] ',
