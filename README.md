@@ -7,16 +7,9 @@
 [![Build Status](https://github.com/RemyKroese/GenEC/actions/workflows/python-ci.yml/badge.svg?branch=main)](https://github.com/RemyKroese/GenEC/actions)
 [![Codecov](https://codecov.io/gh/RemyKroese/GenEC/branch/main/graph/badge.svg?branch=main)](https://codecov.io/gh/RemyKroese/GenEC)
 [![Latest Release](https://img.shields.io/github/v/release/RemyKroese/GenEC?sort=semver&label=Latest)](https://github.com/RemyKroese/GenEC/releases/latest)
-[![Next Version](https://img.shields.io/badge/1.0.0-97%25-brightgreen)]()
 [![Last Commit](https://img.shields.io/github/last-commit/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC/commits)
 [![License: Apache 2.0](https://img.shields.io/github/license/RemyKroese/GenEC)](./LICENSE)
 [![Top Language](https://img.shields.io/github/languages/top/RemyKroese/GenEC)](https://github.com/RemyKroese/GenEC)
-
-
-
-### 1.0.0 release progress
-
-`█████████████████████████████████████████████████████████████████████████████████████████████████   `
 
 
 ## Overview
@@ -30,8 +23,13 @@ Beyond extraction, GenEC can also compare the extracted data against reference f
 Designed for users of all technical levels, GenEC supports both manual workflows and automated pipelines,
 making data analysis straightforward and accessible.
 
-## Documentation
-[For in-depth explanation on setup, workflows, configuration, and filters; visit the detailed documentation in docs/overview.md](docs/overview.md)
+## Quick Navigation
+
+| Getting Started | Workflows | Text Filters | Configuration |
+|----------------|-----------|--------------|---------------|
+| **[Documentation](docs/overview.md)** | **[Basic](docs/workflows/basic.md)** - Interactive setup | **[Regex](docs/filters/regex.md)** - Pattern matching | **[Output Formats](docs/configuration/output-formats.md)** - File types |
+| **[Setup Guide](docs/setup.md)** | **[Preset](docs/workflows/preset.md)** - Automated single-file | **[Regex-list](docs/filters/regex-list.md)** - Multi-pattern | **[Presets](docs/configuration/preset.md)** - YAML configs |
+|  | **[Preset-list](docs/workflows/preset-list.md)** - Batch processing | **[Positional](docs/filters/positional.md)** - Position-based | **[Preset-lists](docs/configuration/preset-list.md)** - Batch processing |
 
 ## Installation
 
@@ -56,10 +54,18 @@ uv sync --group dist  # include distribution packages
 
 ## Usage
 
-GenEC supports three workflow commands, which utilize different CLI arguments:
-- **basic** — define extraction and comparison directly at runtime.
-- **preset** — use a single YAML preset for configuration.
-- **preset-list** — run bulk analysis with multiple presets listed in a YAML file.
+GenEC supports three workflow commands with different automation levels and use cases, as well as 3 different filter types:
+
+**Workflows**
+- **[basic](docs/workflows/basic.md)** - Interactive configuration at runtime. Perfect for learning and experimentation.
+- **[preset](docs/workflows/preset.md)** - YAML-based automation for single files. Ideal for repeated analysis tasks.
+- **[preset-list](docs/workflows/preset-list.md)** - Batch processing with multiple presets. Best for comprehensive analysis workflows.
+
+**Filter types**
+- **[Regex](docs/filters/regex.md)** - Pattern-based matching using regex.
+- **[Regex-list](docs/filters/regex-list.md)** - Complex pattern-based matching using more than 1 regex.
+- **[Positional](docs/filters/positional.md)** - Position-based matching using line numbers and positions on the line itself.
+
 
 
 ### Common Arguments
@@ -68,51 +74,51 @@ GenEC supports three workflow commands, which utilize different CLI arguments:
 |----------------------|-------|----------|--------------------------------------------------------------------|
 | `--source`           | `-s`  | Yes      | Path to the source for data extraction.                      |
 | `--reference`        | `-r`  | No       | Path to the reference for comparison. |
-| `--output-directory` | `-o`  | No       | Directory to save output files. |
+| `--output-directory` | `-o`  | No       | Directory to save output files (terminal-only by default). |
 | `--output-types`     | `-t`  | No       | List of output file types to generate. Choices: `csv`, `json`, `txt`, `yaml`. Note that multiple can be selected. |
 
-*`--source` and `--reference` arguments accept **file paths** for the basic and preset workflows, and **directory paths** when using `preset-list` workflow.
+`--source` and `--reference` arguments accept **file paths** for the basic and preset workflows, and **directory paths** when using `preset-list` workflow.
 
-**`--output-directory` and `--output-types` must be used together.
+`--output-directory` and `--output-types` must be used together. Without these parameters, results are displayed in terminal only.
 
 ### Workflow-Specific Arguments
 
 | Workflow       | Argument              | Short | Required | Description                                               |
 |----------------|-----------------------|-------|----------|-----------------------------------------------------------|
-| **basic**      | (none additional)     |       |          | Extraction strategy defined at runtime.     |
-| **preset**     | `--preset`            | `-p`  | Yes      | Extraction strategy determined through a preset.     |
+| **basic**      | (none additional)     |       |          | Interactive configuration - [Learn more →](docs/workflows/basic.md)     |
+| **preset**     | `--preset`            | `-p`  | Yes      | YAML preset reference - [Learn more →](docs/workflows/preset.md)     |
 |                | `--presets-directory` | `-d`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
-| **preset-list**| `--preset-list`       | `-l`  | Yes      | YAML file listing multiple presets for batch processing.  |
+| **preset-list**| `--preset-list`       | `-l`  | Yes      | Batch processing configuration - [Learn more →](docs/workflows/preset-list.md)  |
 |                | `--presets-directory` | `-d`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
-|                | `--target-variables`  |       | No       | Key-value pairs (`key=value`) to dynamically substitute variables in preset target paths. Can be specified multiple times.|
+|                | `--target-variables`  | `-v`  | No       | Key-value pairs (`key=value`) for variable substitution. Can be specified multiple times.|
 
 ### Example Commands
 
 #### Basic workflow
 
 ```bash
-python -m GenEC.main basic -s <source_file> [options]
+uv run python GenEC/main.py basic -s <source_file> [options]
 
-python -m GenEC.main basic -s <source_file> -r <reference_file> -o <output_directory> -t txt csv json yaml
+uv run python GenEC/main.py basic -s <source_file> -r <reference_file> -o <output_directory> -t txt csv json yaml
 ```
 
 #### Preset workflow
 
 ```bash
-python -m GenEC.main preset -s <source_file> -p <file_name_without_extension/preset_name> -d <presets_directory> [options]
+uv run python GenEC/main.py preset -s <source_file> -p <file_name_without_extension/preset_name> -d <presets_directory> [options]
 ```
 
 #### Preset-list workflow
 
 ```bash
-python -m GenEC.main preset-list -s <source_directory> -l <preset_list_file> -d <presets_directory> [options]
+uv run python GenEC/main.py preset-list -s <source_directory> -l <preset_list_file> -d <presets_directory> [options]
 
-python -m GenEC.main preset-list -s <source_directory> -l <preset_list_file> -d <presets_directory> -v myvar1=value1 myvar2=value2
+uv run python GenEC/main.py preset-list -s <source_directory> -l <preset_list_file> -d <presets_directory> -v myvar1=value1 myvar2=value2
 ```
 
 ---
 
-## Quick-start
+## Examples
 
 ### Basic workflow
 ```bash
@@ -147,29 +153,33 @@ uv run python GenEC/main.py preset-list -s docs/demos/quick_start/source -r docs
 
 ## Configuration
 
-GenEC allows customization through YAML configuration files. A sample preset  may look like:
+GenEC offers powerful configuration through YAML preset files that define extraction and comparison strategies. This enables consistent, repeatable analysis workflows.
 
+**Basic preset structure:**
 ```yaml
-preset_a:
-  cluster_filter: '\n'
-  text_filter_type: 'Regex'
-  text_filter: '\| ([A-Za-z]+) \|'
-  should_slice_clusters: false
-  src_start_cluster_text: ''
-  src_end_cluster_text: ''
-  ref_start_cluster_text: ''
-  ref_end_cluster_text: ''
+preset_name:
+  cluster_filter: '\n'                    # How to split text into processable chunks
+  text_filter_type: 'Regex'               # Filter method: 'Regex', 'Regex-list', 'Positional'
+  text_filter: '\| ([A-Za-z]+) \|'        # Extraction pattern (varies by filter type)
+  should_slice_clusters: false            # Enable/disable cluster range selection
 ```
 
-Note that GenEC can use grouping within the Regex filter type `()` to construct more complex output data.
+GenEC supports advanced features including:
+- **Variable substitution** - Dynamic target paths in preset-lists
+- **Cluster slicing** - Process specific sections of large files
+- **YAML inheritance** - Reusable configuration templates
+- **Multiple output formats** - JSON, CSV, TXT, YAML
 
-Modify these parameters according to your extraction and comparison needs. Please see the [Sample preset
-YAML](GenEC/presets/sample_preset.yaml) for more information. Creation of more in-depth documentation on these yaml configurations
-files is still in progress.
+**Configuration Documentation:**
+- **[Preset Configuration](docs/configuration/preset.md)**
+- **[Preset-List Configuration](docs/configuration/preset-list.md)**
+- **[Output Formats](docs/configuration/output-formats.md)**
 
 ---
 
 ## Testing
+
+> **Prerequisites**: Ensure GenEC is properly installed → [Setup and Installation](docs/setup.md)
 
 Run the test suite from the root directory. Requires dev packages to be installed
 
