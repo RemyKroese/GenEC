@@ -39,9 +39,9 @@ Understanding GenEC's data extraction capabilities:
 ## Configuration
 Setup and customization options:
 
+- **[Preset Configuration](configuration/preset.md)** - Creating and managing YAML preset files
+- **[Preset-List Configuration](configuration/preset-list.md)** - Batch processing with preset references
 - **[Output Formats](configuration/output-formats.md)** - JSON, TXT, CSV, YAML output options
-- **[Reference Comparison](configuration/comparison.md)** - File comparison features
-- **[Advanced Options](configuration/advanced-options.md)** - Additional parameters and settings
 
 # Demos
 Practical tutorials with real examples:
@@ -56,11 +56,11 @@ Practical tutorials with real examples:
 | Feature                | Basic | Preset | Preset-list |
 |-----------------------:|:-----:|:------:|:-----------:|
 | **Interactive Setup**  | ✅    | ❌    | ❌          |
-| **Automation**         | ❌    | ✅    | ✅          |
-| **Batch Processing**   | ❌    | ❌    | ✅          |
-| **YAML Configuration** | ❌    | ✅    | ✅          |
 | **All Filter Types**   | ✅    | ✅    | ✅          |
 | **Comparison Mode**    | ✅    | ✅    | ✅          |
+| **Automation**         | ❌    | ✅    | ✅          |
+| **YAML Configuration** | ❌    | ✅    | ✅          |
+| **Batch Processing**   | ❌    | ❌    | ✅          |
 
 # Support
 
