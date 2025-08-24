@@ -1,0 +1,46 @@
+
+###############################################################
+# GenEC Example Preset-List File
+#
+# Demonstrates:
+# - Batch processing
+# - Variable substitution in target paths
+# - Output organization by group
+#
+# See docs: https://github.com/RemyKroese/GenEC/tree/main/docs/configuration/preset-list.md
+###############################################################
+
+error_analysis:
+  - preset: example_preset/error_codes
+    target: 'app.log'
+  - preset: example_preset/timestamps
+    target: 'system.log'
+  - preset: example_preset/sliced_errors
+    target: 'errors.log'
+
+warning_analysis:
+  - preset: example_preset/warning_sensor_value
+    target: 'warnings.log'
+  - preset: example_preset/sliced_warnings
+    target: 'warnings.log'
+
+info_analysis:
+  - preset: example_preset/multi_match_extract
+    target: 'info.log'
+
+positional_demo:
+  - preset: example_preset/third_word_line2
+    target: 'multi_line.txt'
+  - preset: example_preset/first_value_comma
+    target: 'values.csv'
+
+log_inheritance:
+  - preset: example_preset/error_log
+    target: '{env}_error.log'
+
+# Example with multiple variables
+variable_demo:
+  - preset: example_preset/error_codes
+    target: '{env}_{date}_app.log'
+  - preset: example_preset/timestamps
+    target: '{env}_{date}_system.log'
