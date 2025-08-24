@@ -73,6 +73,8 @@ preset_name:
 - `should_slice_clusters` can be `true`/`false` to enable/disable text slicing
 - All cluster text fields are optional and default to empty strings
 
+Visit the [preset configuration documentation](../configuration/preset.md) for more information on these configuration structures.
+
 ### Preset File Management
 **Creating presets:**
 - Use the Basic Workflow and save configuration at completion
