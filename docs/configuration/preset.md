@@ -199,3 +199,5 @@ extract_numbers:
   text_filter: '[0-9]+'
   should_slice_clusters: false
 ```
+
+For more examples, see the [Example preset file](../../GenEC/presets/example_preset.yaml)

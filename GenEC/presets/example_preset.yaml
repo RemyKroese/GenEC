@@ -1,0 +1,103 @@
+###############################################################
+# GenEC Example Preset File
+#
+# Demonstrates:
+# - All filter types (Regex, Regex-list, Positional)
+# - Cluster slicing
+# - YAML inheritance
+#
+# See docs: https://github.com/RemyKroese/GenEC/tree/main/docs/configuration/preset.md
+###############################################################
+
+# 1. Simple regex: extract error codes
+error_codes:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex'
+  text_filter: 'Code=(\S+)'
+  should_slice_clusters: false
+
+# 2. Regex: extract timestamps
+timestamps:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex'
+  text_filter: '(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
+  should_slice_clusters: false
+
+# 3. Regex-list: match WARNING + Sensor + value
+warning_sensor_value:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex-list'
+  text_filter:
+    - 'WARNING'
+    - 'Sensor[A-Z]'
+    - 'Value=(\d+)'
+  should_slice_clusters: false
+
+# 4. Regex-list: match multiple patterns, extract last
+multi_match_extract:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex-list'
+  text_filter:
+    - 'INFO'
+    - 'Module: ([A-Za-z0-9_]+)'
+    - 'Status: ([A-Z]+)'
+  should_slice_clusters: false
+
+# 5. Positional: extract 3rd word from 2nd line in cluster
+third_word_line2:
+  cluster_filter: '\n\n'
+  text_filter_type: 'Positional'
+  text_filter:
+    separator: ' '
+    line: 2
+    occurrence: 3
+  should_slice_clusters: false
+
+# 6. Positional: extract 1st value after comma from 1st line
+first_value_comma:
+  cluster_filter: '\n'
+  text_filter_type: 'Positional'
+  text_filter:
+    separator: ','
+    line: 1
+    occurrence: 1
+  should_slice_clusters: false
+
+# 7. Regex with cluster slicing
+sliced_errors:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex'
+  text_filter: 'ERROR: (.+)'
+  should_slice_clusters: true
+  src_start_cluster_text: '=== LOG START ==='
+  src_end_cluster_text: '=== LOG END ==='
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+# 8. Regex-list with cluster slicing
+sliced_warnings:
+  cluster_filter: '\n'
+  text_filter_type: 'Regex-list'
+  text_filter:
+    - 'WARNING'
+    - 'Code=(\S+)'
+  should_slice_clusters: true
+  src_start_cluster_text: '=== WARNINGS START ==='
+  src_end_cluster_text: '=== WARNINGS END ==='
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+# 9. Inheritance: base preset for log extraction
+base_log: &base_log
+  cluster_filter: '\n'
+  should_slice_clusters: false
+  src_start_cluster_text: ''
+  src_end_cluster_text: ''
+  ref_start_cluster_text: ''
+  ref_end_cluster_text: ''
+
+# 10. Inheritance: error log using base_log
+error_log:
+  <<: *base_log
+  text_filter_type: 'Regex'
+  text_filter: 'ERROR: (.+)'

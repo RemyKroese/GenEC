@@ -134,3 +134,5 @@ data_validation:
   - preset: 'validation_presets/format_compliance'
     target: '{dataset}_format.txt'
 ```
+
+For more examples, see the [Example preset list file](../../GenEC/presets/example_preset-list.yaml)
