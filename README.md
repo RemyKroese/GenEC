@@ -41,7 +41,7 @@ For execution:
 ```bash
 pip install uv
 uv sync
-uv run <command>
+uv run python GenEC/main.py --help
 ```
 
 For developing:
