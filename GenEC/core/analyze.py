@@ -3,7 +3,8 @@
 from typing import Optional, TYPE_CHECKING
 
 from GenEC import utils
-from GenEC.core import extraction_filters, FileID, ConfigOptions, TextFilterTypes
+from GenEC.core import extraction_filters, FileID, TextFilterTypes
+from GenEC.core.prompts import create_prompt, Section, Key
 from GenEC.core.types.output import DataCompare
 
 if TYPE_CHECKING:
@@ -44,16 +45,10 @@ class Extractor:
         """
         clusters = self.get_clusters(config, data, file)
 
-        # Get filter type from either legacy or new config format
-        if hasattr(config, 'get'):
-            filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
-        else:
-            filter_type = config.filter_type
+        if config.filter_type not in [t.value for t in TextFilterTypes] or 'UNSUPPORTED' in config.filter_type:
+            raise ValueError(create_prompt(Section.SET_CONFIG, Key.UNSUPPORTED_FILTER_TYPE, filter_type=config.filter_type))
 
-        if filter_type not in [t.value for t in TextFilterTypes] or 'UNSUPPORTED' in filter_type:
-            raise ValueError(f"Unsupported filter type: {filter_type}")
-
-        extractor = extraction_filters.get_extractor(filter_type, config)
+        extractor = extraction_filters.get_extractor(config.filter_type, config)
         return extractor.extract(clusters)
 
     def get_clusters(self, config: 'BaseConfiguration', data: str, file: int) -> list[str]:
@@ -78,9 +73,6 @@ class Extractor:
         list[str]
             A list of text clusters, optionally sliced based on keywords.
         """
-        # New BaseConfiguration dataclass format
-        cluster_filter = config.cluster_filter
-        should_slice = config.should_slice_clusters
         if file == FileID.SOURCE:
             start_keyword = config.src_start_cluster_text
             end_keyword = config.src_end_cluster_text
@@ -89,8 +81,8 @@ class Extractor:
             end_keyword = config.ref_end_cluster_text
 
         # Using '' is not a valid argument for split(). So None is used instead
-        clusters = data.split(utils.normalize_cluster_filter(cluster_filter) if cluster_filter else None)
-        if should_slice:
+        clusters = data.split(utils.normalize_cluster_filter(config.cluster_filter) if config.cluster_filter else None)
+        if config.should_slice_clusters:
             return self.get_sliced_clusters(clusters, start_keyword, end_keyword)
         return clusters
 
