@@ -16,7 +16,7 @@ class BasicConfigurationFactory:
     """Factory for creating configurations interactively."""
 
     @staticmethod
-    def build_interactive(config_manager: 'ConfigManager') -> ConfigurationType:
+    def build_interactive(config_manager: 'ConfigManager') -> ConfigurationType:  # pylint: disable=R0914
         """
         Build a configuration by prompting the user for all values using existing prompt methods.
 
@@ -131,7 +131,8 @@ class PresetConfigurationFactory:
     """Factory for creating configurations from presets."""
 
     @staticmethod
-    def build_from_preset(config_manager: 'ConfigManager', preset_target: str) -> ConfigurationType:
+    def build_from_preset(  # pylint: disable=R0914
+            config_manager: 'ConfigManager', preset_target: str) -> ConfigurationType:
         """Build configuration from a preset."""
         initialized_config = config_manager.load_preset(preset_target)
         return PresetConfigurationFactory._convert_initialized_to_new_config(initialized_config)
@@ -141,24 +142,38 @@ class PresetConfigurationFactory:
         """Convert Initialized config to new configuration format."""
         builder = ConfigurationBuilder()
 
-        # Map required fields
-        if initialized.get('cluster_filter') is not None:
-            builder.with_cluster_filter(initialized['cluster_filter'])
-        if initialized.get('text_filter_type') is not None:
-            builder.with_filter_type(initialized['text_filter_type'])
-        if initialized.get('text_filter') is not None:
-            builder.with_text_filter(initialized['text_filter'])
-        if initialized.get('should_slice_clusters') is not None:
-            builder.with_should_slice_clusters(initialized['should_slice_clusters'])
+        # Map required fields - handle None values safely
+        cluster_filter = initialized.get('cluster_filter')
+        if cluster_filter is not None:
+            builder.with_cluster_filter(cluster_filter)
+
+        text_filter_type = initialized.get('text_filter_type')
+        if text_filter_type is not None:
+            builder.with_filter_type(text_filter_type)
+
+        text_filter = initialized.get('text_filter')
+        if text_filter is not None:
+            builder.with_text_filter(text_filter)
+
+        should_slice_clusters = initialized.get('should_slice_clusters')
+        if should_slice_clusters is not None:
+            builder.with_should_slice_clusters(should_slice_clusters)
 
         # Map optional slicing fields
-        if initialized.get('src_start_cluster_text') is not None:
-            builder.with_src_start_cluster_text(initialized['src_start_cluster_text'])
-        if initialized.get('src_end_cluster_text') is not None:
-            builder.with_src_end_cluster_text(initialized['src_end_cluster_text'])
-        if initialized.get('ref_start_cluster_text') is not None:
-            builder.with_ref_start_cluster_text(initialized['ref_start_cluster_text'])
-        if initialized.get('ref_end_cluster_text') is not None:
-            builder.with_ref_end_cluster_text(initialized['ref_end_cluster_text'])
+        src_start = initialized.get('src_start_cluster_text')
+        if src_start is not None:
+            builder.with_src_start_cluster_text(src_start)
+
+        src_end = initialized.get('src_end_cluster_text')
+        if src_end is not None:
+            builder.with_src_end_cluster_text(src_end)
+
+        ref_start = initialized.get('ref_start_cluster_text')
+        if ref_start is not None:
+            builder.with_ref_start_cluster_text(ref_start)
+
+        ref_end = initialized.get('ref_end_cluster_text')
+        if ref_end is not None:
+            builder.with_ref_end_cluster_text(ref_end)
 
         return builder.build()

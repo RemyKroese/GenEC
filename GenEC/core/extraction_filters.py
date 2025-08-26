@@ -2,13 +2,16 @@
 
 from abc import ABC, abstractmethod
 import re
-from typing import Callable, Dict, Type, TypeVar, Union, TYPE_CHECKING
+from typing import Callable, Dict, Type, TypeVar, Union, TYPE_CHECKING, cast
 
 from rich.console import Console
 
 from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
 from GenEC.core.types.preset_config import Finalized
 from GenEC.core.prompts import create_prompt, Section, Key
+
+# Import at module level to avoid import-outside-toplevel issue
+import GenEC.core.configuration as config_module
 
 if TYPE_CHECKING:
     from GenEC.core.configuration import ConfigurationType
@@ -29,12 +32,11 @@ class BaseExtractor(ABC):
     def __init__(self, config: Union[Finalized, 'ConfigurationType']):
         self.config = config
 
-    def get_text_filter(self):
+    def get_text_filter(self) -> Union[str, list[str], PositionalFilterType, None]:
         """Get text filter from config regardless of format."""
         if hasattr(self.config, 'get'):
             return self.config.get(ConfigOptions.TEXT_FILTER.value)
-        else:
-            return self.config.text_filter
+        return self.config.text_filter
 
     @abstractmethod
     def extract(self, clusters: list[str]) -> list[str]:  # pragma: no cover
@@ -92,7 +94,7 @@ def register_extractor(name: str) -> Callable[[Type[E]], Type[E]]:
     return decorator
 
 
-def get_extractor(name: str, config: Finalized) -> BaseExtractor:
+def get_extractor(name: str, config: Union[Finalized, 'ConfigurationType']) -> BaseExtractor:
     """
     Retrieve a registered extractor instance by name.
 
@@ -262,22 +264,21 @@ class RegexListExtractor(BaseExtractor):
 
         # Copy the config for safe modification
         if hasattr(self.config, 'get'):
-            # Legacy config format
-            new_config: Finalized = {
-                **self.config,
-                ConfigOptions.TEXT_FILTER_TYPE.value: TextFilterTypes.REGEX.value,
-                ConfigOptions.TEXT_FILTER.value: text_filters[-1],
-            }
-        else:
-            # New dataclass config format - create a temporary RegexConfiguration
-            from GenEC.core.configuration import RegexConfiguration
-            new_config = RegexConfiguration(
-                cluster_filter=self.config.cluster_filter,
-                should_slice_clusters=self.config.should_slice_clusters,
-                text_filter=text_filters[-1],
-                src_start_cluster_text=self.config.src_start_cluster_text,
-                src_end_cluster_text=self.config.src_end_cluster_text,
-                ref_start_cluster_text=self.config.ref_start_cluster_text,
-                ref_end_cluster_text=self.config.ref_end_cluster_text,
-            )
-        return RegexExtractor(new_config).extract(clusters)
+            # Legacy config format - safely copy the TypedDict
+            legacy_config = cast(Finalized, self.config)
+            new_config = dict(legacy_config)
+            new_config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
+            new_config[ConfigOptions.TEXT_FILTER.value] = text_filters[-1]
+            return RegexExtractor(cast(Finalized, new_config)).extract(clusters)
+
+        # New dataclass config format - create a temporary RegexConfiguration
+        dataclass_config = config_module.RegexConfiguration(
+            cluster_filter=self.config.cluster_filter,
+            should_slice_clusters=self.config.should_slice_clusters,
+            text_filter=text_filters[-1],
+            src_start_cluster_text=self.config.src_start_cluster_text,
+            src_end_cluster_text=self.config.src_end_cluster_text,
+            ref_start_cluster_text=self.config.ref_start_cluster_text,
+            ref_end_cluster_text=self.config.ref_end_cluster_text,
+        )
+        return RegexExtractor(dataclass_config).extract(clusters)

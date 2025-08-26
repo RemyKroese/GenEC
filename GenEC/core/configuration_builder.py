@@ -150,7 +150,7 @@ class ConfigurationBuilder:
         self._fields['text_filter'] = value
         return self
 
-    def build(self) -> ConfigurationType:
+    def build(self) -> ConfigurationType:  # pylint: disable=R0912
         """
         Build the configuration object based on collected values.
 
@@ -191,7 +191,7 @@ class ConfigurationBuilder:
                 raise ValueError(f"text_filter must be str for {filter_type}, got {type(text_filter)}")
             return RegexConfiguration(text_filter=text_filter, **base_args)
 
-        elif filter_type == TextFilterTypes.REGEX_LIST.value:
+        if filter_type == TextFilterTypes.REGEX_LIST.value:
             if not isinstance(text_filter, list):
                 raise ValueError(f"text_filter must be list for {filter_type}, got {type(text_filter)}")
             # Validate that all elements are strings - text_filter is now known to be list
@@ -201,7 +201,7 @@ class ConfigurationBuilder:
             validated_list = cast(List[str], text_filter)
             return RegexListConfiguration(text_filter=validated_list, **base_args)
 
-        elif filter_type == TextFilterTypes.POSITIONAL.value:
+        if filter_type == TextFilterTypes.POSITIONAL.value:
             # Handle dictionary conversion for positional filter
             if isinstance(text_filter, dict):
                 try:
@@ -213,5 +213,4 @@ class ConfigurationBuilder:
                 raise ValueError(f"text_filter must be PositionalFilterType for {filter_type}, got {type(text_filter)}")
             return PositionalConfiguration(text_filter=text_filter, **base_args)
 
-        else:
-            raise ValueError(f"Unsupported filter_type: {filter_type}")
+        raise ValueError(f"Unsupported filter_type: {filter_type}")

@@ -69,9 +69,10 @@ def test_extract_text_from_clusters_by_regex(
         tst_config: dict[str, Any], regex_pattern: str, expected: list[str]) -> None:
     clusters: list[str] = ['text48291more_384even11more', 'single_number7_test2', 'random345text19again8',
                            'prefix98middle771end', 'data1204with66extra99', 'noise550letters43final7']
-    extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(
-        cast(Finalized, tst_config))
-    extractor.config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
+    # Create a mutable config for testing
+    test_config = cast(Finalized, tst_config.copy())
+    test_config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
+    extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(test_config)
     assert extractor.extract(clusters) == expected
 
 
@@ -82,10 +83,11 @@ def test_extract_text_from_clusters_by_position(
         'line_1\nline_2 word_1 word_2',
         'line_3\nline_4 word_3 word_4',
         'line_5']
-    extractor: extraction_filters.PositionalExtractor = extraction_filters.PositionalExtractor(
-        cast(Finalized, tst_config))
-    extractor.config[ConfigOptions.TEXT_FILTER.value] = PositionalFilterType(
+    # Create a mutable config for testing
+    test_config = cast(Finalized, tst_config.copy())
+    test_config[ConfigOptions.TEXT_FILTER.value] = PositionalFilterType(
         separator=' ', line=2, occurrence=3)
+    extractor: extraction_filters.PositionalExtractor = extraction_filters.PositionalExtractor(test_config)
     assert extractor.extract(clusters) == ['word_2', 'word_4']
 
 
@@ -107,9 +109,10 @@ def test_extract_text_from_clusters_by_regex_list(mock_regex_extractor: Mock, ts
                                                   expected_filtered_clusters: list[str]) -> None:
     mock_regex_instance: MagicMock = MagicMock()
     mock_regex_extractor.return_value = mock_regex_instance
-    extractor: extraction_filters.RegexListExtractor = extraction_filters.RegexListExtractor(
-        cast(Finalized, tst_config))
-    extractor.config[ConfigOptions.TEXT_FILTER.value] = regex_filters
+    # Create a mutable config for testing
+    test_config = cast(Finalized, tst_config.copy())
+    test_config[ConfigOptions.TEXT_FILTER.value] = regex_filters
+    extractor: extraction_filters.RegexListExtractor = extraction_filters.RegexListExtractor(test_config)
 
     extractor.extract(clusters)
 

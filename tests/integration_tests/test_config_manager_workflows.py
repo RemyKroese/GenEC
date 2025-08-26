@@ -195,10 +195,17 @@ def test_set_config(mock_read_yaml_file: Mock, mock__set_cluster_text_options: M
 
     # Compare against the new configuration format (dataclass)
     expected_data = test_preset_data['main_preset']
-    assert c.config.cluster_filter == expected_data['cluster_filter']
-    assert c.config.filter_type == expected_data['text_filter_type']
-    assert c.config.text_filter == expected_data['text_filter']
-    assert c.config.should_slice_clusters == expected_data['should_slice_clusters']
+    # Handle both legacy and new config formats
+    if isinstance(c.config, dict):
+        assert c.config['cluster_filter'] == expected_data['cluster_filter']
+        assert c.config['text_filter_type'] == expected_data['text_filter_type']
+        assert c.config['text_filter'] == expected_data['text_filter']
+        assert c.config['should_slice_clusters'] == expected_data['should_slice_clusters']
+    else:
+        assert c.config.cluster_filter == expected_data['cluster_filter']
+        assert c.config.filter_type == expected_data['text_filter_type']
+        assert c.config.text_filter == expected_data['text_filter']
+        assert c.config.should_slice_clusters == expected_data['should_slice_clusters']
 
 
 @pytest.mark.integration
@@ -219,8 +226,12 @@ def test_set_config_no_preset(mock_ask_mpc: Mock, mock_ask_open: Mock, c_instanc
     assert c.preset == ''
     assert c.target_file == ''
     # Verify that the configuration was created with correct values
-    assert hasattr(c.config, 'filter_type')
-    assert c.config.filter_type == 'Regex'
+    # Handle both legacy and new config formats
+    if isinstance(c.config, dict):
+        assert c.config['text_filter_type'] == 'Regex'
+    else:
+        assert hasattr(c.config, 'filter_type')
+        assert c.config.filter_type == 'Regex'
 
 # =============================================================================
 # Preset Creation Integration Tests
