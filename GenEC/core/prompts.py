@@ -57,6 +57,14 @@ class Key(Enum):
     PRESET_VALIDATION_ERROR = 'preset_validation_error'
     REGEX_COMPILATION_ERROR = 'regex_compilation_error'
 
+    # CONFIGURATION_BUILDER
+    REQUIRED_FIELD_MISSING = 'required_field_missing'
+    TEXT_FILTER_TYPE_MISMATCH_STR = 'text_filter_type_mismatch_str'
+    TEXT_FILTER_TYPE_MISMATCH_LIST = 'text_filter_type_mismatch_list'
+    TEXT_FILTER_TYPE_MISMATCH_POSITIONAL = 'text_filter_type_mismatch_positional'
+    TEXT_FILTER_LIST_ITEM_TYPE_ERROR = 'text_filter_list_item_type_error'
+    INVALID_POSITIONAL_FILTER_CONFIG = 'invalid_positional_filter_config'
+
 
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
 ENTER_IS_WHITESPACE = '[gold]Enter[/gold]=[purple]whitespace ( )[/purple]'
@@ -108,7 +116,23 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
             Key.FILE_READ_ERROR: '[bold red]ERROR: Could not read file[/bold red] [yellow]{file_path}[/yellow]: {error}',
             Key.PRESET_LOAD_ERROR: '[bold red]PRESET ERROR: Failed to load preset[/bold red] [yellow]{preset}[/yellow]: {error}',
             Key.PRESET_VALIDATION_ERROR: '[bold red]PRESET ERROR:[/bold red] Invalid preset [yellow]{preset}[/yellow]: {error}',
-            Key.REGEX_COMPILATION_ERROR: '[bold red]ERROR: Invalid regex pattern:[/bold red] [yellow]{error}[/yellow]'
+            Key.REGEX_COMPILATION_ERROR: '[bold red]ERROR: Invalid regex pattern:[/bold red] [yellow]{error}[/yellow]',
+            Key.REQUIRED_FIELD_MISSING: ('[bold red]ERROR: Required field[/bold red] [yellow]{field_name}[/yellow] '
+                                         '[bold red]is missing[/bold red]'),
+            Key.TEXT_FILTER_TYPE_MISMATCH_STR: ('[bold red]ERROR: text_filter must be str for[/bold red] '
+                                                '[yellow]{filter_type}[/yellow], [bold red]got[/bold red] '
+                                                '[yellow]{actual_type}[/yellow]'),
+            Key.TEXT_FILTER_TYPE_MISMATCH_LIST: ('[bold red]ERROR: text_filter must be list for[/bold red] '
+                                                 '[yellow]{filter_type}[/yellow], [bold red]got[/bold red] '
+                                                 '[yellow]{actual_type}[/yellow]'),
+            Key.TEXT_FILTER_TYPE_MISMATCH_POSITIONAL: ('[bold red]ERROR: text_filter must be PositionalFilterType for[/bold red] '
+                                                       '[yellow]{filter_type}[/yellow], [bold red]got[/bold red] '
+                                                       '[yellow]{actual_type}[/yellow]'),
+            Key.TEXT_FILTER_LIST_ITEM_TYPE_ERROR: ('[bold red]ERROR: Item[/bold red] [yellow]{item_index}[/yellow] '
+                                                   '[bold red]in text_filter must be string, got[/bold red] '
+                                                   '[yellow]{actual_type}[/yellow]'),
+            Key.INVALID_POSITIONAL_FILTER_CONFIG: ('[bold red]ERROR: Invalid positional filter configuration:[/bold red] '
+                                                   '[yellow]{error}[/yellow]')
         }
     }
 }
