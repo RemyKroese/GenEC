@@ -2,12 +2,13 @@
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Callable, Dict, Optional, Type, TypeVar, TYPE_CHECKING
+from typing import Callable, Optional, Type, TypeVar, TYPE_CHECKING
 
 from GenEC import utils
 from GenEC.core import FileID, Workflows
 from GenEC.core.analyze import Extractor, Comparer
-from GenEC.core.config_manager import ConfigManager, LegacyConfiguration
+from GenEC.core.config_manager import ConfigManager
+from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.output_manager import OutputManager
 from GenEC.core.types.output import DataExtract, DataCompare, Entry
 
@@ -44,7 +45,7 @@ class Workflow(ABC):
             Configuration manager instance that provides workflow configurations.
         """
 
-    def _get_data(self, configurations: list[LegacyConfiguration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
+    def _get_data(self, configurations: list[BaseConfiguration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
         """
         Read source and reference files based on the workflow configurations.
 
@@ -64,7 +65,7 @@ class Workflow(ABC):
         return source_data, ref_data
 
     def _process_configurations(self,
-                                configurations: list[LegacyConfiguration],
+                                configurations: list[BaseConfiguration],
                                 source_data: dict[str, str],
                                 ref_data: Optional[dict[str, str]]
                                 ) -> defaultdict[str, list[Entry]]:
@@ -91,11 +92,11 @@ class Workflow(ABC):
 
         for configuration in configurations:
             source_text = source_data.get(configuration.target_file, '')
-            source_filtered = extractor.extract_from_data(configuration.config, source_text, FileID.SOURCE)
+            source_filtered = extractor.extract_from_data(configuration, source_text, FileID.SOURCE)
 
             if ref_data:  # extract and compare
                 ref_text = ref_data.get(configuration.target_file, '')
-                ref_filtered = extractor.extract_from_data(configuration.config, ref_text, FileID.REFERENCE)
+                ref_filtered = extractor.extract_from_data(configuration, ref_text, FileID.REFERENCE)
                 comparer = Comparer(source_filtered, ref_filtered)
                 comparison_result: dict[str, DataCompare] = comparer.compare()
                 results[configuration.group].append(Entry(
@@ -125,7 +126,7 @@ class Workflow(ABC):
 
 
 E = TypeVar('E', bound=Workflow)
-_workflow_registry: Dict[str, Type[Workflow]] = {}
+_workflow_registry: dict[str, Type[Workflow]] = {}
 
 
 def register_workflow(name: str) -> Callable[[Type[E]], Type[E]]:

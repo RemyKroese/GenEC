@@ -1,7 +1,6 @@
 """Collection of prompts for CLI interaction."""
 
 from enum import Enum
-from typing import Optional
 
 
 class Section(Enum):
@@ -115,8 +114,7 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
 }
 
 
-def create_prompt(feature: Section, prompt_key: Key, workflow: str = 'common',
-                  filter_type: Optional[str] = None, **kwargs: object) -> str:
+def create_prompt(feature: Section, prompt_key: Key, workflow: str = 'common', **kwargs: object) -> str:
     """
     Retrieve a formatted CLI prompt string with optional filter-type context.
 
@@ -136,15 +134,5 @@ def create_prompt(feature: Section, prompt_key: Key, workflow: str = 'common',
     str
         Formatted prompt string ready for display or input()
     """
-    # Try filter-specific prompt first if we're in SET_CONFIG
-    if filter_type and feature == Section.SET_CONFIG:
-        filter_specific_key_name = f"{prompt_key.value}_{filter_type.lower()}"
-        # Check if filter-specific key exists
-        for key in Key:
-            if key.value == filter_specific_key_name and key in prompts[workflow][feature]:
-                text = prompts[workflow][feature][key]
-                return text.format(**kwargs) if kwargs else text
-
-    # Fall back to default prompt
     text = prompts[workflow][feature][prompt_key]
     return text.format(**kwargs) if kwargs else text

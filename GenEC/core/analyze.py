@@ -1,14 +1,13 @@
 """Module for extracting and comparing output data from raw input data."""
 
-from typing import Optional, Union, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from GenEC import utils
 from GenEC.core import extraction_filters, FileID, ConfigOptions, TextFilterTypes
-from GenEC.core.types.preset_config import Finalized
 from GenEC.core.types.output import DataCompare
 
 if TYPE_CHECKING:
-    from GenEC.core.configuration import ConfigurationType
+    from GenEC.core.configuration import BaseConfiguration
 
 
 class Extractor:
@@ -19,14 +18,14 @@ class Extractor:
     applies text filtering as specified in the provided configuration.
     """
 
-    def extract_from_data(self, config: Union[Finalized, 'ConfigurationType'], data: str, file: int) -> list[str]:
+    def extract_from_data(self, config: 'BaseConfiguration', data: str, file: int) -> list[str]:
         """
         Extract processed results from raw data using the provided configuration.
 
         Parameters
         ----------
-        config : Union[Finalized, ConfigurationType]
-            The finalized configuration object containing extraction and filtering options.
+        config : BaseConfiguration
+            The configuration object containing extraction and filtering options.
         data : str
             The raw text data to extract output data from.
         file : int
@@ -57,7 +56,7 @@ class Extractor:
         extractor = extraction_filters.get_extractor(filter_type, config)
         return extractor.extract(clusters)
 
-    def get_clusters(self, config: Union[Finalized, 'ConfigurationType'], data: str, file: int) -> list[str]:
+    def get_clusters(self, config: 'BaseConfiguration', data: str, file: int) -> list[str]:
         """
         Split raw text data into clusters according to the configuration.
 
@@ -65,7 +64,8 @@ class Extractor:
 
         Parameters
         ----------
-        config : Union[Finalized, ConfigurationType]
+        config : BaseConfiguration
+            The configuration object containing extraction and filtering options.
             Configuration containing cluster filters and slicing options.
         data : str
             Raw text data to split into clusters.
@@ -78,27 +78,15 @@ class Extractor:
         list[str]
             A list of text clusters, optionally sliced based on keywords.
         """
-        # Handle both legacy dict and new dataclass configurations
-        if hasattr(config, 'get'):
-            # Legacy Finalized dict format
-            cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
-            should_slice = config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value)
-            if file == FileID.SOURCE:
-                start_keyword = config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value)
-                end_keyword = config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value)
-            else:
-                start_keyword = config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value)
-                end_keyword = config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
+        # New BaseConfiguration dataclass format
+        cluster_filter = config.cluster_filter
+        should_slice = config.should_slice_clusters
+        if file == FileID.SOURCE:
+            start_keyword = config.src_start_cluster_text
+            end_keyword = config.src_end_cluster_text
         else:
-            # New ConfigurationType dataclass format
-            cluster_filter = config.cluster_filter
-            should_slice = config.should_slice_clusters
-            if file == FileID.SOURCE:
-                start_keyword = config.src_start_cluster_text
-                end_keyword = config.src_end_cluster_text
-            else:
-                start_keyword = config.ref_start_cluster_text
-                end_keyword = config.ref_end_cluster_text
+            start_keyword = config.ref_start_cluster_text
+            end_keyword = config.ref_end_cluster_text
 
         # Using '' is not a valid argument for split(). So None is used instead
         clusters = data.split(utils.normalize_cluster_filter(cluster_filter) if cluster_filter else None)
