@@ -1,13 +1,13 @@
 """Unit tests for GenEC Extractor class."""
 from __future__ import annotations
 
-from typing import Any, cast
 from unittest.mock import patch, MagicMock, Mock
 import pytest
 
-from GenEC.core import ConfigOptions, FileID, TextFilterTypes
+from GenEC.core import FileID, TextFilterTypes
 from GenEC.core.analyze import Extractor
-from GenEC.core.types.preset_config import Finalized
+from GenEC.core.configuration import RegexConfiguration, RegexListConfiguration, PositionalConfiguration, BaseConfiguration
+from GenEC.core.specs import PositionalFilterType
 
 BASIC_TEXT: str = '''a b c
 d e
@@ -25,17 +25,13 @@ q'''
 
 
 @pytest.fixture
-def config_fixture() -> dict[str, Any]:
-    return {
-        ConfigOptions.CLUSTER_FILTER.value: None,
-        ConfigOptions.TEXT_FILTER_TYPE.value: None,
-        ConfigOptions.TEXT_FILTER.value: None,
-        ConfigOptions.SHOULD_SLICE_CLUSTERS.value: None,
-        ConfigOptions.SRC_START_CLUSTER_TEXT.value: None,
-        ConfigOptions.SRC_END_CLUSTER_TEXT.value: None,
-        ConfigOptions.REF_START_CLUSTER_TEXT.value: None,
-        ConfigOptions.REF_END_CLUSTER_TEXT.value: None
-    }
+def regex_config() -> RegexConfiguration:
+    """Create a RegexConfiguration for testing."""
+    return RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter='test.*'
+    )
 
 
 @pytest.fixture
@@ -47,12 +43,14 @@ def extractor_instance() -> Extractor:
 @pytest.mark.parametrize('data, cluster_filter, expected_result', [
     (BASIC_TEXT, '\n', ['a b c', 'd e', 'f g h i', 'j']),
     (WHITELINES_TEXT, '\n\n', ['a b c\nd e', 'f g h i', 'j\nk l m n o p\nq'])])
-def test_get_clusters(extractor_instance: Extractor, config_fixture: dict[str, Any],
+def test_get_clusters(extractor_instance: Extractor,
                       data: str, cluster_filter: str, expected_result: list[str]) -> None:
-    config: dict[str, Any] = config_fixture.copy()
-    config[ConfigOptions.CLUSTER_FILTER.value] = cluster_filter
-    assert extractor_instance.get_clusters(
-        cast(Finalized, config), data, FileID.SOURCE) == expected_result
+    config = RegexConfiguration(
+        cluster_filter=cluster_filter,
+        should_slice_clusters=False,
+        text_filter='test.*'
+    )
+    assert extractor_instance.get_clusters(config, data, FileID.SOURCE) == expected_result
 
 
 @pytest.mark.unit
@@ -63,15 +61,33 @@ def test_get_clusters(extractor_instance: Extractor, config_fixture: dict[str, A
 ])
 @patch("GenEC.core.extraction_filters.get_extractor")
 def test_extract_from_data(mock_get_extractor: Mock, filter_type: TextFilterTypes,
-                           extractor_instance: Extractor, config_fixture: dict[str, Any]) -> None:
+                           extractor_instance: Extractor) -> None:
     fake_extractor: MagicMock = MagicMock()
     fake_extractor.extract.return_value = ['my_result']
     mock_get_extractor.return_value = fake_extractor
 
-    config: dict[str, Any] = config_fixture.copy()
-    config[ConfigOptions.TEXT_FILTER_TYPE.value] = filter_type.value
-    result: list[str] = extractor_instance.extract_from_data(
-        cast(Finalized, config), "some data", FileID.SOURCE)
+    # Create appropriate config based on filter type
+    config: BaseConfiguration
+    if filter_type == TextFilterTypes.REGEX:
+        config = RegexConfiguration(
+            cluster_filter='\n',
+            should_slice_clusters=False,
+            text_filter='test.*'
+        )
+    elif filter_type == TextFilterTypes.REGEX_LIST:
+        config = RegexListConfiguration(
+            cluster_filter='\n',
+            should_slice_clusters=False,
+            text_filter=['test.*', 'pattern']
+        )
+    else:  # POSITIONAL
+        config = PositionalConfiguration(
+            cluster_filter='\n',
+            should_slice_clusters=False,
+            text_filter=PositionalFilterType(separator=' ', line=1, occurrence=1)
+        )
+
+    result: list[str] = extractor_instance.extract_from_data(config, "some data", FileID.SOURCE)
 
     assert result == ['my_result']
     mock_get_extractor.assert_called_once_with(filter_type.value, config)
@@ -103,34 +119,34 @@ def test_get_sliced_clusters(extractor_instance: Extractor,
 
 
 @pytest.mark.unit
-def test_get_src_clusters_with_slicing(
-        extractor_instance: Extractor, config_fixture: dict[str, Any]) -> None:
+def test_get_src_clusters_with_slicing(extractor_instance: Extractor) -> None:
     data: str = 'This is the first cluster\nThis is the start cluster\nThis is another cluster\nThis is the end cluster\nThis is the last cluster'
     expected_result: list[str] = [
         'This is the start cluster',
         'This is another cluster',
         'This is the end cluster']
-    config: dict[str, Any] = config_fixture.copy()
-    config[ConfigOptions.CLUSTER_FILTER.value] = '\n'
-    config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = True
-    config[ConfigOptions.SRC_START_CLUSTER_TEXT.value] = 'start'
-    config[ConfigOptions.SRC_END_CLUSTER_TEXT.value] = 'end'
-    assert extractor_instance.get_clusters(
-        cast(Finalized, config), data, FileID.SOURCE) == expected_result
+    config = RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=True,
+        text_filter='test.*',
+        src_start_cluster_text='start',
+        src_end_cluster_text='end'
+    )
+    assert extractor_instance.get_clusters(config, data, FileID.SOURCE) == expected_result
 
 
 @pytest.mark.unit
-def test_get_ref_clusters_with_slicing(
-        extractor_instance: Extractor, config_fixture: dict[str, Any]) -> None:
+def test_get_ref_clusters_with_slicing(extractor_instance: Extractor) -> None:
     data: str = 'This is the first cluster\nThis is the start cluster\nThis is another cluster\nThis is the end cluster\nThis is the last cluster'
     expected_result: list[str] = [
         'This is the start cluster',
         'This is another cluster',
         'This is the end cluster']
-    config: dict[str, Any] = config_fixture.copy()
-    config[ConfigOptions.CLUSTER_FILTER.value] = '\n'
-    config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = True
-    config[ConfigOptions.REF_START_CLUSTER_TEXT.value] = 'start'
-    config[ConfigOptions.REF_END_CLUSTER_TEXT.value] = 'end'
-    assert extractor_instance.get_clusters(
-        cast(Finalized, config), data, FileID.REFERENCE) == expected_result
+    config = RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=True,
+        text_filter='test.*',
+        ref_start_cluster_text='start',
+        ref_end_cluster_text='end'
+    )
+    assert extractor_instance.get_clusters(config, data, FileID.REFERENCE) == expected_result

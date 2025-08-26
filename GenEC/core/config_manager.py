@@ -1,52 +1,24 @@
 """Module for managing configurations in GenEC."""
 
 from collections import defaultdict
-from dataclasses import dataclass, is_dataclass, asdict
+from dataclasses import is_dataclass, asdict
 from pathlib import Path
+from typing import Optional, TypeVar, cast, Any
 import sys
-from typing import Optional, Union, TypeVar, Callable, cast, Any
 
 from rich.console import Console
 
 from GenEC import utils
-from GenEC.core import ConfigOptions, PositionalFilterType, TextFilterTypes
 from GenEC.core.prompts import Section, Key, create_prompt
-from GenEC.core.types.preset_config import Finalized, Initialized
-from GenEC.core.input_strategies import get_input_strategy
-from GenEC.core.configuration import ConfigurationType
-from GenEC.core.configuration_factory import BasicConfigurationFactory, PresetConfigurationFactory
+from GenEC.core.configuration import BaseConfiguration
+from GenEC.core.configuration_factory import WorkflowConfigurationFactory
 
+DEFAULT_CLUSTER_FILTER = r'\n'
 
 console = Console()
 YES_INPUT = ['yes', 'y']
 
 T = TypeVar('T')
-
-
-@dataclass
-class LegacyConfiguration:
-    """
-    Legacy configuration container for migration purposes.
-
-    Each Configuration object stores the finalized settings
-    derived from a preset, along with the preset name, target file, and optional group.
-
-    Attributes
-    ----------
-    config : Union[Finalized, ConfigurationType]
-        The configuration object (legacy Finalized or new ConfigurationType).
-    preset : str
-        The name of the preset used to generate this configuration.
-    target_file : str
-        The target file associated with this configuration.
-    group : str, optional
-        The group name of the preset, by default ''.
-    """
-
-    config: Union[Finalized, ConfigurationType]
-    preset: str
-    target_file: str
-    group: str = ''
 
 
 class ConfigManager:
@@ -87,8 +59,7 @@ class ConfigManager:
             self.presets_directory = Path(presets_directory)
         else:
             self.presets_directory = Path(__file__).parent.parent / 'presets'
-        self.configurations: list[LegacyConfiguration] = []
-        self.initialized_config: Optional[Initialized] = None
+        self.configurations: list[BaseConfiguration] = []
 
         if auto_configure:
             if preset_param:
@@ -102,28 +73,6 @@ class ConfigManager:
                 self.set_config()
 
     # User Interaction Methods
-    def _resolve_config_value(self, config: Initialized, key: ConfigOptions, prompt_func: Callable[[], T]) -> T:
-        """
-        Resolve configuration value with fallback to user prompt.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing preset values.
-        key : ConfigOptions
-            The configuration key to check.
-        prompt_func : Callable[[], T]
-            Function to prompt user for value if not in config.
-
-        Returns
-        -------
-        T
-            The resolved configuration value.
-        """
-        if value := config.get(key.value):
-            return cast(T, value)
-        return prompt_func()
-
     def ask_open_question(self, prompt: str) -> str:
         """
         Prompt the user with an open-ended question.
@@ -185,373 +134,114 @@ class ConfigManager:
         """
         while True:
             try:
-                console.print(create_prompt(Section.USER_CHOICE, Key.CHOICE, max_index=max_choice), end='')
-                choice = int(input())
-                if not 0 <= choice <= max_choice:
-                    raise ValueError
-                return choice
+                choice = int(input(create_prompt(Section.USER_CHOICE, Key.CHOICE)))
+                if 0 <= choice <= max_choice:
+                    return choice
+                console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
             except ValueError:
                 console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
 
-    # Configuration Collection Methods
-    def _collect_cluster_filter(self, config: Initialized, filter_type: Optional[str] = None) -> str:
+    def load_presets(self, presets_list_target: str,
+                     target_variables: Optional[dict[str, str]] = None) -> list[BaseConfiguration]:
         """
-        Get or request the cluster splitting character(s) from the user.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing preset values.
-        filter_type : Optional[str], optional
-            The filter type for context-aware prompts, by default None
-
-        Returns
-        -------
-        str
-            The character(s) used to split text clusters.
-        """
-        def get_cluster_filter() -> str:
-            user_input = self.ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER, filter_type=filter_type))
-            if not user_input:
-                return '\\n\\n' if filter_type == TextFilterTypes.POSITIONAL.value else '\\n'
-            return user_input
-
-        result = self._resolve_config_value(config, ConfigOptions.CLUSTER_FILTER, get_cluster_filter)
-        return result
-
-    def _collect_text_filter_type(self, config: Initialized) -> str:
-        """
-        Get or request the text filter type from the user.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing preset values.
-
-        Returns
-        -------
-        str
-            The selected text filter type, e.g., 'regex', 'positional', or 'regex-list'.
-        """
-        return self._resolve_config_value(
-            config, ConfigOptions.TEXT_FILTER_TYPE,
-            lambda: self.ask_mpc_question(
-                create_prompt(Section.SET_CONFIG, Key.TEXT_FILTER_TYPE),
-                [t.value for t in TextFilterTypes]))
-
-    def _collect_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str], dict[str, Any]]:
-        """
-        Get or request the actual text filter based on the selected filter type.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing preset values.
-
-        Returns
-        -------
-        Union[str, PositionalFilterType, list[str], dict[str, Any]]
-            The configured text filter, which can be a regex string, a positional filter object,
-            a dict (for positional filters in initialized config), or a list of regex strings.
-        """
-        return self._resolve_config_value(
-            config, ConfigOptions.TEXT_FILTER, lambda: self._request_text_filter(config))
-
-    def _collect_should_slice_clusters(self, config: Initialized) -> bool:
-        """
-        Determine if only a subsection of clusters should be compared.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing preset values.
-
-        Returns
-        -------
-        bool
-            True if a subsection of clusters should be compared, False otherwise.
-        """
-        # Special handling for boolean since False is a valid value
-        if (value := config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value)) is not None:
-            return value
-
-        response = self.ask_open_question(create_prompt(Section.SET_CONFIG, Key.SHOULD_SLICE_CLUSTERS)).lower()
-        return response in YES_INPUT
-
-    def _collect_cluster_text(self, config: Initialized, config_option: str, position: str, src_or_ref: str) -> str:
-        """
-        Get or request the text within a cluster for a specific subsection.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing preset values.
-        config_option : str
-            The configuration key to check for existing value.
-        position : str
-            Indicates where the subsection should be within the cluster (e.g., 'start' or 'end').
-        src_or_ref : str
-            Indicates whether this is source or reference cluster.
-
-        Returns
-        -------
-        str
-            The text input for the cluster subsection.
-        """
-        if value := config.get(config_option):
-            return cast(str, value)
-        return self.ask_open_question(create_prompt(Section.SET_CONFIG, Key.CLUSTER_TEXT, cluster=src_or_ref.lower(), position=position))
-
-    def _request_text_filter(self, config: Initialized) -> Union[str, PositionalFilterType, list[str], dict[str, Any]]:
-        """
-        Request a text filter from the user according to the selected filter type.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object containing the filter type.
-
-        Returns
-        -------
-        Union[str, PositionalFilterType, list[str], dict[str, Any]]
-            The configured text filter, which can be a regex string, a positional filter object,
-            a dict (for positional filters in initialized config), or a list of regex strings.
-
-        Raises
-        ------
-        ValueError
-            If the selected text filter type is not supported.
-        """
-        filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
-        if not filter_type:
-            raise ValueError("Text filter type must be set before requesting text filter")
-
-        strategy = get_input_strategy(filter_type, self.ask_open_question)
-        return strategy.collect_input(config)
-
-    @staticmethod
-    def parse_preset_param(preset_param: str) -> tuple[str, Optional[str]]:
-        """
-        Parse a preset string into file and preset components.
-
-        Parameters
-        ----------
-        preset_param : str
-            The preset string, optionally in the format 'file/preset'.
-
-        Returns
-        -------
-        tuple[str, Optional[str]]
-            Tuple containing file name and preset name (or None if not provided).
-        """
-        if '/' not in preset_param:
-            return preset_param, None
-
-        file_name, preset_name = preset_param.split('/', 1)
-        return file_name, preset_name
-
-    def load_presets(self, presets_list_target: str,  # pylint: disable=R0914
-                     target_variables: Optional[dict[str, str]] = None) -> list[LegacyConfiguration]:  # pragma: no cover
-        """
-        Load multiple presets from a YAML file and process them into configurations.
+        Load multiple presets from a presets list configuration.
 
         Parameters
         ----------
         presets_list_target : str
             The name of the presets list YAML file (without extension).
         target_variables : Optional[dict[str, str]], optional
-            Variables used to replace placeholders in target file paths, by default None.
+            Variables used to replace placeholders in target file paths.
 
         Returns
         -------
-        list[Configuration]
-            A list of processed Configuration objects.
+        list[BaseConfiguration]
+            List of loaded and configured preset configurations.
         """
-        presets_list_file_path = self.presets_directory / f'{presets_list_target}.yaml'
-        presets_list = utils.read_yaml_file(presets_list_file_path)
-        presets_per_file = self._group_presets_by_file(presets_list, target_variables)
+        return WorkflowConfigurationFactory.create_preset_list_configs(
+            self, presets_list_target, target_variables
+        )
 
-        # Build configurations using the factory pattern
-        legacy_configs = []
-        for target_file, preset_entries in presets_per_file.items():
-            for entry in preset_entries:
-                file_name = entry['preset_file']
-                preset_name = entry['preset_name']
-                group = entry.get('preset_group', '')
-
-                try:
-                    preset_target = f'{file_name}/{preset_name}'
-                    new_config = PresetConfigurationFactory.build_from_preset(self, preset_target)
-
-                    legacy_configs.append(LegacyConfiguration(
-                        config=new_config,
-                        preset=preset_target,
-                        target_file=target_file,
-                        group=group
-                    ))
-                # Catching all exceptions is valid here
-                except Exception as e:  # pylint: disable=W0718
-                    console.print(f'[yellow]Skipping preset {preset_name} from {file_name}: {e}[/yellow]')
-                    continue
-
-        if not legacy_configs:
-            raise ValueError('None of the provided presets were found.')
-        return legacy_configs
-
-    def _group_presets_by_file(self,
-                               presets_list: dict[str, list[dict[str, str]]],
-                               target_variables: Optional[dict[str, str]] = None
-                               ) -> dict[str, list[dict[str, str]]]:
+    def group_presets_by_file(self,
+                              presets_list: dict[str, list[dict[str, str]]],
+                              target_variables: Optional[dict[str, str]] = None
+                              ) -> dict[str, list[dict[str, str]]]:
         """
-        Group presets by target file and apply variable substitutions.
+        Group preset entries by their target file after variable substitution.
 
         Parameters
         ----------
         presets_list : dict[str, list[dict[str, str]]]
-            Dictionary mapping preset groups to lists of preset entries.
+            Dictionary containing preset groups and their entries.
         target_variables : Optional[dict[str, str]], optional
-            Variables to replace placeholders in target file paths, by default None.
+            Variables for template substitution in target file paths.
 
         Returns
         -------
         dict[str, list[dict[str, str]]]
             Dictionary mapping target files to their preset entries.
         """
-        presets_per_target: dict[str, list[dict[str, str]]] = defaultdict(list)
-        for group, presets in presets_list.items():
-            for entry in presets:
-                target_file = entry.get('target', '')
+        grouped_presets: dict[str, list[dict[str, str]]] = defaultdict(list)
+
+        for group_name, preset_entries in presets_list.items():
+            for preset_entry in preset_entries:
+                target_file = preset_entry['target']
+
+                # Apply variable substitution if provided
                 if target_variables:
-                    try:
-                        target_file = target_file.format(**target_variables)
-                    except KeyError as e:
-                        console.print(f'Missing target variable for placeholder {e} in target [{target_file}]')
-                        continue
-                preset = entry.get('preset', '')
-                if not preset:
-                    console.print(f'Preset missing in entry: {entry}')
-                    continue
-                file_name, preset_name = self.parse_preset_param(preset)
-                if not preset_name:
-                    console.print(f'Preset name missing in entry: {entry}')
-                    continue
-                presets_per_target[target_file].append({
-                    'preset_file': file_name,
-                    'preset_name': preset_name,
-                    'target_file': target_file,
-                    'preset_group': group
-                })
-        return presets_per_target
+                    for var_name, var_value in target_variables.items():
+                        target_file = target_file.replace(f'{{{var_name}}}', var_value)
 
-    def _collect_presets(self, presets_per_target: dict[str, list[dict[str, str]]]) -> list[LegacyConfiguration]:
+                # Add group information to preset entry
+                preset_entry_with_group = preset_entry.copy()
+                preset_entry_with_group['group'] = group_name
+                preset_entry_with_group['target'] = target_file
+
+                grouped_presets[target_file].append(preset_entry_with_group)
+
+        return dict(grouped_presets)
+
+    def load_preset(self, preset_target: str) -> dict[str, Any]:
         """
-        Process grouped presets into Configuration objects.
-
-        Parameters
-        ----------
-        presets_per_target : dict[str, list[dict[str, str]]]
-            Dictionary mapping target files to preset entries.
-
-        Returns
-        -------
-        list[Configuration]
-            List of Configuration objects.
-
-        Raises
-        ------
-        ValueError
-            If no valid configurations could be created.
-        """
-        configurations: list[LegacyConfiguration] = []
-        for target_file, preset_entries in presets_per_target.items():
-            for entry in preset_entries:
-                result = self._process_preset_entry(entry, target_file)
-                if result:
-                    configurations.append(result)
-
-        if not configurations:
-            raise ValueError('None of the provided presets were found.')
-        return configurations
-
-    def _process_preset_entry(self, entry: dict[str, str], target_file: str) -> Optional[LegacyConfiguration]:
-        """
-        Finalize a single preset entry into a Configuration.
-
-        Parameters
-        ----------
-        entry : dict[str, str]
-            Preset entry containing file, name, target file, and group.
-        target_file : str
-            The target file associated with this preset.
-
-        Returns
-        -------
-        Optional[Configuration]
-            Finalized Configuration, or None if the preset does not exist.
-        """
-        file_name = entry['preset_file']
-        preset_name = entry['preset_name']
-
-        try:
-            loaded_presets = self.load_preset_file(file_name)
-        except (FileNotFoundError, UnicodeDecodeError, ValueError) as e:
-            console.print(create_prompt(Section.ERROR_HANDLING, Key.PRESET_LOAD_ERROR,
-                                        preset=f'{file_name}/{preset_name}', error=str(e)))
-            console.print(f'[yellow]Skipping preset {preset_name} from {file_name}[/yellow]')
-            return None
-
-        if preset_name not in loaded_presets:
-            console.print(create_prompt(Section.ERROR_HANDLING, Key.PRESET_VALIDATION_ERROR,
-                                        preset=f'{file_name}/{preset_name}',
-                                        error=f'Preset "{preset_name}" not found in file'))
-            console.print(f'[yellow]Skipping preset {preset_name} from {file_name}[/yellow]')
-            return None
-
-        config = loaded_presets[preset_name]
-        finalized_config = self._finalize_config(config)
-        return LegacyConfiguration(
-            config=finalized_config,
-            preset=f'{file_name}/{preset_name}',
-            target_file=target_file,
-            group=entry.get('preset_group', ''))
-
-    def load_preset(self, preset_target: str) -> Initialized:
-        """
-        Load a single preset, optionally prompting the user if multiple presets exist.
+        Load a single preset configuration from YAML files.
 
         Parameters
         ----------
         preset_target : str
-            The preset string in the format 'file/preset' or just 'file'.
+            Preset identifier in format 'filename/preset_name' or just 'preset_name'.
 
         Returns
         -------
-        Initialized
-            The loaded and initialized preset configuration.
-
-        Raises
-        ------
-        ValueError
-            If the specified preset does not exist in the file.
+        dict[str, Any]
+            The loaded preset configuration as a dictionary.
         """
-        preset_file, preset_name = self.parse_preset_param(preset_target)
+        if '/' in preset_target:
+            preset_file, preset_name = preset_target.split('/', 1)
+        else:
+            preset_file = preset_target
+            preset_name = None
+
         presets = self.load_preset_file(preset_file)
-        if not preset_name:
-            if len(presets) == 1:
-                preset_name = next(iter(presets))
-            else:
-                preset_name = self.ask_mpc_question(
-                    'Please choose a preset:\n', list(presets.keys()))
 
-        if preset_name not in presets:
-            raise ValueError(
-                f'preset {preset_name} not found in {preset_file}')
+        if preset_name:
+            if preset_name not in presets:
+                available_presets = list(presets.keys())
+                raise ValueError(f"Preset '{preset_name}' not found in file '{preset_file}'. Available presets: {available_presets}")
+            return presets[preset_name]
 
-        return presets[preset_name]
+        if len(presets) == 1:
+            return next(iter(presets.values()))
 
-    def load_preset_file(self, preset_file: str) -> dict[str, Initialized]:
+        preset_options = list(presets.keys())
+        chosen_preset = self.ask_mpc_question(
+            f'Multiple presets found in {preset_file}. Choose one:',
+            preset_options
+        )
+        return presets[chosen_preset]
+
+    def load_preset_file(self, preset_file: str) -> dict[str, dict[str, Any]]:
         """
-        Load all presets from a YAML file.
+        Load all presets from a single YAML file.
 
         Parameters
         ----------
@@ -560,153 +250,44 @@ class ConfigManager:
 
         Returns
         -------
-        dict[str, Initialized]
-            A dictionary mapping preset names to their Initialized configurations.
-
-        Raises
-        ------
-        ValueError
-            If the file does not contain any presets.
+        dict[str, dict[str, Any]]
+            Dictionary mapping preset names to their configurations.
         """
-        presets_file_path = self.presets_directory / f'{preset_file}.yaml'
+        preset_file_path = self.presets_directory / f'{preset_file}.yaml'
 
-        try:
-            presets_data = utils.read_yaml_file(presets_file_path)
-            presets: dict[str, Initialized] = cast(dict[str, Initialized], presets_data)
+        if not preset_file_path.exists():
+            raise FileNotFoundError(f'Preset file not found: {preset_file_path}')
 
-            if not presets or len(presets) == 0:
-                raise ValueError(f'Preset file {presets_file_path} contains no presets')
+        presets_data = utils.read_yaml_file(preset_file_path)
 
-            # Convert positional filter dictionaries to PositionalFilterType objects
-            for preset_name, preset_config in presets.items():
-                text_filter = preset_config.get('text_filter')
-                if isinstance(text_filter, dict):
-                    presets[preset_name]['text_filter'] = PositionalFilterType(**text_filter)
+        if not isinstance(presets_data, dict):
+            raise ValueError(f'Invalid preset file format in {preset_file_path}')
 
-            return presets
-
-        except FileNotFoundError:
-            console.print(create_prompt(Section.ERROR_HANDLING, Key.FILE_READ_ERROR,
-                                        file_path=presets_file_path, error="File not found"))
-            raise
-        except UnicodeDecodeError as e:
-            console.print(create_prompt(Section.ERROR_HANDLING, Key.FILE_READ_ERROR,
-                                        file_path=presets_file_path, error=f"File encoding error: {e.reason}"))
-            raise
-        except Exception as e:
-            console.print(create_prompt(Section.ERROR_HANDLING, Key.PRESET_LOAD_ERROR,
-                                        preset=preset_file, error=str(e)))
-            raise
-
-    def _set_simple_options(self, config: Initialized) -> None:
-        """
-        Set basic configuration options interactively.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object to modify.
-        """
-        config[ConfigOptions.TEXT_FILTER_TYPE.value] = self._collect_text_filter_type(
-            config)
-        config[ConfigOptions.CLUSTER_FILTER.value] = self._collect_cluster_filter(
-            config, filter_type=config.get(ConfigOptions.TEXT_FILTER_TYPE.value))
-        config[ConfigOptions.TEXT_FILTER.value] = self._collect_text_filter(
-            config)
-        config[ConfigOptions.SHOULD_SLICE_CLUSTERS.value] = self._collect_should_slice_clusters(
-            config)
-
-    def _set_cluster_text_options(self, config: Initialized) -> None:
-        """
-        Set cluster text options interactively if slicing clusters is enabled.
-
-        Parameters
-        ----------
-        config : Initialized
-            The configuration object to modify.
-        """
-        cluster_text_options = [
-            (ConfigOptions.SRC_START_CLUSTER_TEXT.value, 'start', 'SRC'),
-            (ConfigOptions.SRC_END_CLUSTER_TEXT.value, 'end', 'SRC'),
-            (ConfigOptions.REF_START_CLUSTER_TEXT.value, 'start', 'REF'),
-            (ConfigOptions.REF_END_CLUSTER_TEXT.value, 'end', 'REF'),
-        ]
-        for option_key, position, src_or_ref in cluster_text_options:
-            if not config.get(option_key):
-                # Cast to dict to bypass TypedDict literal key requirement
-                config_dict = cast(dict[str, Union[str, None]], config)
-                config_dict[option_key] = self._collect_cluster_text(
-                    config, option_key, position, src_or_ref)
+        # Convert to ensure proper typing
+        presets: dict[str, dict[str, Any]] = cast(dict[str, dict[str, Any]], presets_data)
+        return presets
 
     def set_config(self, preset: str = '', target_file: str = '') -> None:
         """
-        Set a configuration using a preset or interactively.
+        Set up configuration either from preset or interactively.
 
         Parameters
         ----------
         preset : str, optional
-            Preset string in 'file/preset' format. If empty, interactive setup is used.
+            Preset identifier to load, by default ''
         target_file : str, optional
-            Associated target file name, by default ''.
+            Target file name for workflow metadata, by default ''
         """
         if preset:
-            new_config = PresetConfigurationFactory.build_from_preset(self, preset)
+            config = WorkflowConfigurationFactory.create_preset_config(self, preset, target_file)
         else:
-            new_config = BasicConfigurationFactory.build_interactive(self)
+            config = WorkflowConfigurationFactory.create_basic_config(self)
 
-        # Store the new configuration directly
-        self.configurations.append(LegacyConfiguration(new_config, preset, target_file))
-
-    def _finalize_config(self, config: Initialized) -> Finalized:
-        """
-        Convert an Initialized configuration into a finalized configuration.
-
-        Parameters
-        ----------
-        config : Initialized
-            The initialized configuration object.
-
-        Returns
-        -------
-        Finalized
-            The finalized configuration ready for use.
-        """
-        cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
-        text_filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
-        text_filter = config.get(ConfigOptions.TEXT_FILTER.value)
-        should_slice_clusters = config.get(
-            ConfigOptions.SHOULD_SLICE_CLUSTERS.value)
-
-        assert isinstance(cluster_filter, str)
-        assert isinstance(text_filter_type, str)
-        assert isinstance(text_filter, (str, list, PositionalFilterType, dict))
-        assert isinstance(should_slice_clusters, bool)
-
-        # Convert dict positional filter to PositionalFilterType for processing
-        final_text_filter: Union[str, list[str], PositionalFilterType]
-        if isinstance(text_filter, dict) and text_filter_type == TextFilterTypes.POSITIONAL.value:
-            final_text_filter = PositionalFilterType(**text_filter)
-        else:
-            # text_filter must be str, list, or PositionalFilterType at this point
-            final_text_filter = cast(Union[str, list[str], PositionalFilterType], text_filter)
-
-        return Finalized(
-            cluster_filter=cluster_filter,
-            text_filter_type=text_filter_type,
-            text_filter=final_text_filter,
-            should_slice_clusters=should_slice_clusters,
-            src_start_cluster_text=config.get(
-                ConfigOptions.SRC_START_CLUSTER_TEXT.value),
-            src_end_cluster_text=config.get(
-                ConfigOptions.SRC_END_CLUSTER_TEXT.value),
-            ref_start_cluster_text=config.get(
-                ConfigOptions.REF_START_CLUSTER_TEXT.value),
-            ref_end_cluster_text=config.get(
-                ConfigOptions.REF_END_CLUSTER_TEXT.value))
+        self.configurations.append(config)
 
     def should_store_configuration(self) -> bool:
         """
-        Prompt the user to decide whether the current configuration should be saved.
+        Ask user if they want to store the current configuration as a preset.
 
         Returns
         -------
@@ -731,12 +312,7 @@ class ConfigManager:
             return {}
 
         # Get the latest configuration
-        latest_config = self.configurations[-1].config
-
-        # Handle both new ConfigurationType and legacy formats
-        if isinstance(latest_config, dict):
-            # Legacy format - already a dict
-            return {k: v for k, v in latest_config.items() if v is not None}
+        latest_config = self.configurations[-1]
 
         # New dataclass config format
         config_dict = latest_config.to_dict()
@@ -762,26 +338,21 @@ class ConfigManager:
             preset_name = self.ask_open_question(create_prompt(
                 Section.WRITE_CONFIG, Key.NEW_PRESET_NAME)).strip()
             if not preset_name:
-                console.print(
-                    create_prompt(
-                        Section.WRITE_CONFIG,
-                        Key.INVALID_PRESET_NAME))
-                continue
+                console.print(create_prompt(Section.WRITE_CONFIG, Key.INVALID_PRESET_NAME))
 
-        file_name = self.ask_open_question(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME, presets_directory=self.presets_directory))
+        file_name = self.ask_open_question(create_prompt(
+            Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME))
 
-        file_path = Path(file_name).with_suffix('.yaml')
-        if not file_path.is_absolute():
-            file_path = self.presets_directory / file_path
-
-        # Get clean preset data (only non-None values)
+        preset_file_path = self.presets_directory / f'{file_name}.yaml'
         preset_data = self._get_preset_data()
-        new_preset = {preset_name: preset_data}
 
-        if file_path.exists():
-            console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND, file_path=file_path))
-            yaml_data = utils.convert_to_yaml(new_preset)
-            utils.append_to_file('\n' + yaml_data, file_path)
+        if not preset_file_path.exists():
+            console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NOT_FOUND,
+                                        file_path=preset_file_path))
+            utils.write_yaml({preset_name: preset_data}, preset_file_path)
         else:
-            console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_NOT_FOUND, file_path=file_path))
-            utils.write_yaml(new_preset, file_path)
+            console.print(create_prompt(Section.WRITE_CONFIG, Key.DESTINATION_FILE_FOUND,
+                                        file_path=preset_file_path))
+            utils.append_to_file(f'\n{preset_name}:\n', preset_file_path)
+            preset_yaml_data = utils.convert_to_yaml(preset_data)
+            utils.append_to_file(preset_yaml_data, preset_file_path)

@@ -1,41 +1,37 @@
 """Module defining text extraction strategies for GenEC."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import re
-from typing import Callable, Dict, Type, TypeVar, Union, TYPE_CHECKING, cast
+from typing import Callable, Type, TypeVar, Generic, TYPE_CHECKING
 
 from rich.console import Console
 
-from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
-from GenEC.core.types.preset_config import Finalized
+from GenEC.core import PositionalFilterType, TextFilterTypes
 from GenEC.core.prompts import create_prompt, Section, Key
 
 # Import at module level to avoid import-outside-toplevel issue
 import GenEC.core.configuration as config_module
 
 if TYPE_CHECKING:
-    from GenEC.core.configuration import ConfigurationType
+    from GenEC.core.configuration import BaseConfiguration
+
+T = TypeVar('T')
 
 console = Console()
 
 
-class BaseExtractor(ABC):
+class BaseExtractor(Generic[T]):
     """
     Abstract base class for all text extractors.
 
-    Parameters
-    ----------
-    config : Union[Finalized, ConfigurationType]
-        Configuration object containing extraction parameters.
+    Type-safe extractor that works with specific configuration types.
     """
 
-    def __init__(self, config: Union[Finalized, 'ConfigurationType']):
+    def __init__(self, config: 'BaseConfiguration[T]'):
         self.config = config
 
-    def get_text_filter(self) -> Union[str, list[str], PositionalFilterType, None]:
-        """Get text filter from config regardless of format."""
-        if hasattr(self.config, 'get'):
-            return self.config.get(ConfigOptions.TEXT_FILTER.value)
+    def get_text_filter(self) -> T:
+        """Get text filter from config with proper typing."""
         return self.config.text_filter
 
     @abstractmethod
@@ -56,7 +52,7 @@ class BaseExtractor(ABC):
 
 
 E = TypeVar('E', bound=BaseExtractor)
-_extractor_registry: Dict[str, Type[BaseExtractor]] = {}
+_extractor_registry: dict[str, Type[BaseExtractor]] = {}
 
 
 def register_extractor(name: str) -> Callable[[Type[E]], Type[E]]:
@@ -94,7 +90,7 @@ def register_extractor(name: str) -> Callable[[Type[E]], Type[E]]:
     return decorator
 
 
-def get_extractor(name: str, config: Union[Finalized, 'ConfigurationType']) -> BaseExtractor:
+def get_extractor(name: str, config: 'BaseConfiguration') -> BaseExtractor:
     """
     Retrieve a registered extractor instance by name.
 
@@ -122,14 +118,11 @@ def get_extractor(name: str, config: Union[Finalized, 'ConfigurationType']) -> B
 
 
 @register_extractor(TextFilterTypes.REGEX.value)
-class RegexExtractor(BaseExtractor):
+class RegexExtractor(BaseExtractor[str]):
     """
     Extracts text using a single regular expression pattern.
 
-    Parameters
-    ----------
-    config : Finalized
-        Configuration containing the regex pattern under TEXT_FILTER.
+    Type-safe extractor that expects str text_filter.
     """
 
     def extract(self, clusters: list[str]) -> list[str]:
@@ -178,14 +171,11 @@ class RegexExtractor(BaseExtractor):
 
 
 @register_extractor(TextFilterTypes.POSITIONAL.value)
-class PositionalExtractor(BaseExtractor):
+class PositionalExtractor(BaseExtractor[PositionalFilterType]):
     """
     Extracts text based on line number, separator, and occurrence.
 
-    Parameters
-    ----------
-    config : Finalized
-        Configuration containing a PositionalFilterType object under TEXT_FILTER.
+    Type-safe extractor that expects PositionalFilterType text_filter.
     """
 
     def extract(self, clusters: list[str]) -> list[str]:
@@ -224,14 +214,11 @@ class PositionalExtractor(BaseExtractor):
 
 
 @register_extractor(TextFilterTypes.REGEX_LIST.value)
-class RegexListExtractor(BaseExtractor):
+class RegexListExtractor(BaseExtractor[list[str]]):
     """
     Extracts text using a sequence of regular expressions applied in order.
 
-    Parameters
-    ----------
-    config : Finalized
-        Configuration containing a list of regex patterns under TEXT_FILTER.
+    Type-safe extractor that expects list[str] text_filter.
     """
 
     def extract(self, clusters: list[str]) -> list[str]:
@@ -262,16 +249,7 @@ class RegexListExtractor(BaseExtractor):
             pattern = re.compile(text_filter)
             clusters = [cluster for cluster in clusters if pattern.search(cluster)]
 
-        # Copy the config for safe modification
-        if hasattr(self.config, 'get'):
-            # Legacy config format - safely copy the TypedDict
-            legacy_config = cast(Finalized, self.config)
-            new_config = dict(legacy_config)
-            new_config[ConfigOptions.TEXT_FILTER_TYPE.value] = TextFilterTypes.REGEX.value
-            new_config[ConfigOptions.TEXT_FILTER.value] = text_filters[-1]
-            return RegexExtractor(cast(Finalized, new_config)).extract(clusters)
-
-        # New dataclass config format - create a temporary RegexConfiguration
+        # Create a temporary RegexConfiguration for final extraction
         dataclass_config = config_module.RegexConfiguration(
             cluster_filter=self.config.cluster_filter,
             should_slice_clusters=self.config.should_slice_clusters,

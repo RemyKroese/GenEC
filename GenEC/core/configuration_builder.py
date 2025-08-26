@@ -1,10 +1,10 @@
 """Builder for immutable configuration objects."""
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Optional, cast
 
 from GenEC.core.specs import PositionalFilterType, TextFilterTypes
 from GenEC.core.configuration import (
-    ConfigurationType, RegexConfiguration, RegexListConfiguration, PositionalConfiguration
+    BaseConfiguration, RegexConfiguration, RegexListConfiguration, PositionalConfiguration
 )
 
 
@@ -13,7 +13,7 @@ class ConfigurationBuilder:
 
     def __init__(self) -> None:
         """Initialize an empty builder."""
-        self._fields: Dict[str, Any] = {}
+        self._fields: dict[str, Any] = {}
 
     def with_cluster_filter(self, value: str) -> 'ConfigurationBuilder':
         """
@@ -150,13 +150,64 @@ class ConfigurationBuilder:
         self._fields['text_filter'] = value
         return self
 
-    def build(self) -> ConfigurationType:  # pylint: disable=R0912
+    def with_preset(self, value: str) -> 'ConfigurationBuilder':
+        """
+        Set the preset name.
+
+        Parameters
+        ----------
+        value : str
+            The preset name
+
+        Returns
+        -------
+        ConfigurationBuilder
+            Builder instance for method chaining
+        """
+        self._fields['preset'] = value
+        return self
+
+    def with_target_file(self, value: str) -> 'ConfigurationBuilder':
+        """
+        Set the target file.
+
+        Parameters
+        ----------
+        value : str
+            The target file name
+
+        Returns
+        -------
+        ConfigurationBuilder
+            Builder instance for method chaining
+        """
+        self._fields['target_file'] = value
+        return self
+
+    def with_group(self, value: str) -> 'ConfigurationBuilder':
+        """
+        Set the group name.
+
+        Parameters
+        ----------
+        value : str
+            The group name
+
+        Returns
+        -------
+        ConfigurationBuilder
+            Builder instance for method chaining
+        """
+        self._fields['group'] = value
+        return self
+
+    def build(self) -> BaseConfiguration:  # pylint: disable=R0912
         """
         Build the configuration object based on collected values.
 
         Returns
         -------
-        ConfigurationType
+        BaseConfiguration
             The built configuration object of the appropriate subtype
 
         Raises
@@ -185,6 +236,11 @@ class ConfigurationBuilder:
             if field_name in self._fields:
                 base_args[field_name] = self._fields[field_name]
 
+        # Add metadata fields with defaults
+        base_args['preset'] = self._fields.get('preset', '')
+        base_args['target_file'] = self._fields.get('target_file', '')
+        base_args['group'] = self._fields.get('group', '')
+
         # Create the appropriate configuration type based on filter_type
         if filter_type == TextFilterTypes.REGEX.value:
             if not isinstance(text_filter, str):
@@ -198,14 +254,14 @@ class ConfigurationBuilder:
             for i, item in enumerate(text_filter):
                 if not isinstance(item, str):
                     raise ValueError(f"Item {i} in text_filter must be string, got {type(item)}")
-            validated_list = cast(List[str], text_filter)
+            validated_list = cast(list[str], text_filter)
             return RegexListConfiguration(text_filter=validated_list, **base_args)
 
         if filter_type == TextFilterTypes.POSITIONAL.value:
             # Handle dictionary conversion for positional filter
             if isinstance(text_filter, dict):
                 try:
-                    text_filter_dict = cast(Dict[str, Any], text_filter)
+                    text_filter_dict = cast(dict[str, Any], text_filter)
                     text_filter = PositionalFilterType(**text_filter_dict)
                 except (TypeError, ValueError) as e:
                     raise ValueError(f"Invalid positional filter configuration: {e}") from e

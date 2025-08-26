@@ -1,15 +1,11 @@
-"""Integration tests for GenEC ConfigManager workflows."""
-
-from __future__ import annotations
+"""Clean integration tests for GenEC ConfigManager workflows."""
 
 from typing import Any
-from pathlib import Path
+from unittest.mock import patch, Mock
 import pytest
-from unittest.mock import patch, MagicMock, Mock
 
-from GenEC.core.config_manager import ConfigManager, LegacyConfiguration
-from GenEC.core.types.preset_config import Initialized, Finalized
-import GenEC.utils as utils
+from GenEC.core.config_manager import ConfigManager
+from GenEC.core.configuration import RegexConfiguration
 
 
 def create_test_preset_data() -> dict[str, dict[str, Any]]:
@@ -56,291 +52,112 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
     return base_data
 
 
-def create_mock_finalized_config() -> Finalized:
-    """Helper function to create mock finalized configuration."""
-    return {
-        'cluster_filter': '\n',
-        'text_filter_type': 'Regex',
-        'text_filter': 'test.*',
-        'should_slice_clusters': False,
-        'src_start_cluster_text': '',
-        'src_end_cluster_text': '',
-        'ref_start_cluster_text': '',
-        'ref_end_cluster_text': ''
-    }
-
-
-def make_preset_entry(file_name: str, preset_name: str, target_file: str) -> dict[str, str]:
-    """Create a test preset entry dictionary."""
-    return {'preset_file': file_name, 'preset_name': preset_name, 'target_file': target_file}
-
-
-@pytest.fixture  # noqa: E261
-def c_instance() -> ConfigManager:  # pylint: disable=all
+@pytest.fixture
+def c_instance() -> ConfigManager:
     """Create ConfigManager instance for testing."""
-    real_set_config = ConfigManager.set_config  # store the real method
-    with patch.object(ConfigManager, 'set_config', autospec=True):
-        instance: ConfigManager = ConfigManager()
-    # Restore the real method on the instance using proper assignment
-    setattr(instance, 'set_config', real_set_config.__get__(instance, ConfigManager))
-    return instance
+    return ConfigManager(auto_configure=False)
 
 
-# =============================================================================
-# ConfigManager Initialization Integration Tests
-# =============================================================================
+class TestConfigManagerWorkflows:
+    """Test ConfigManager integration workflows."""
 
-@pytest.mark.integration
-@patch.object(ConfigManager, 'load_preset', return_value={'key': 'value'})
-@patch.object(ConfigManager, 'set_config')
-def test_init_with_preset_type(mock_load_preset: Mock, mock_set_config: Mock) -> None:
-    """Test ConfigManager initialization with preset type."""
-    config_manager = ConfigManager({'type': 'preset', 'value': 'file.yaml/presetA'})
-    assert config_manager.configurations == []
+    @pytest.mark.integration
+    @patch.object(ConfigManager, 'load_preset_file')
+    def test_init_with_preset_type(self, mock_load_preset_file: Mock) -> None:
+        """Test initialization with preset type."""
+        mock_load_preset_file.return_value = create_test_preset_data()
 
+        preset_param = {'type': 'preset', 'value': 'test_preset'}
+        config_manager = ConfigManager(preset_param=preset_param)
 
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "mock_presets, expected_count",
-    [
-        ([LegacyConfiguration(create_mock_finalized_config(), 'file1/presetA', 'file1')], 1),
-        ([LegacyConfiguration(create_mock_finalized_config(), 'file1/presetA', 'file1'),
-          LegacyConfiguration(create_mock_finalized_config(), 'file2/presetB', 'file2')], 2),
-    ]
-)
-@patch.object(ConfigManager, 'load_presets')
-def test_init_with_preset_list_type(mock_load_presets: Mock, mock_presets: list[LegacyConfiguration], expected_count: int) -> None:
-    """Test ConfigManager initialization with preset list type."""
-    mock_load_presets.return_value = mock_presets
-    config_manager = ConfigManager({'type': 'preset-list', 'value': 'fake_list'})
-    assert isinstance(config_manager.configurations, list)
-    assert len(config_manager.configurations) == expected_count
-    for i, preset_entry in enumerate(mock_presets):
-        assert config_manager.configurations[i].preset == preset_entry.preset
-        assert config_manager.configurations[i].config == preset_entry.config
-        assert config_manager.configurations[i].target_file == preset_entry.target_file
+        assert len(config_manager.configurations) == 1
 
+    @pytest.mark.integration
+    @patch('GenEC.core.configuration_factory.WorkflowConfigurationFactory.create_preset_list_configs')
+    @pytest.mark.parametrize('mock_configs, expected_count', [
+        ([RegexConfiguration(cluster_filter='\\n', should_slice_clusters=False, text_filter='test1')], 1),
+        ([RegexConfiguration(cluster_filter='\\n', should_slice_clusters=False, text_filter='test1'),
+          RegexConfiguration(cluster_filter='\\n', should_slice_clusters=False, text_filter='test2')], 2)
+    ])
+    def test_init_with_preset_list_type(self, mock_create_configs: Mock, mock_configs: list, expected_count: int) -> None:
+        """Test initialization with preset-list type."""
+        mock_create_configs.return_value = mock_configs
 
-@pytest.mark.integration
-def test_init_with_invalid_type() -> None:
-    """Test ConfigManager initialization with invalid type raises ValueError."""
-    with pytest.raises(ValueError, match='not a valid preset parameter type'):
-        ConfigManager({'type': 'invalid', 'value': 'something'})
+        preset_param = {'type': 'preset-list', 'value': 'test_list'}
+        config_manager = ConfigManager(preset_param=preset_param)
 
+        assert len(config_manager.configurations) == expected_count
 
-# =============================================================================
-# Preset Loading Integration Tests
-# =============================================================================
+    @pytest.mark.integration
+    def test_init_with_invalid_type(self) -> None:
+        """Test initialization with invalid preset type."""
+        preset_param = {'type': 'invalid_type', 'value': 'test'}
 
-@pytest.mark.integration
-@patch.object(ConfigManager, 'load_preset_file')
-@patch.object(ConfigManager, 'ask_mpc_question')
-def test_load_preset_no_preset_name(mockask_mpc_question: Mock, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
-    """Test loading preset when no preset name is provided."""
-    multiple_presets = create_multiple_presets_data()
-    mock_load_preset_file.return_value = multiple_presets
-    mockask_mpc_question.return_value = preset_name = 'main_preset'
-    result = c_instance.load_preset(preset_target='')
-    assert result == multiple_presets[preset_name]
+        with pytest.raises(ValueError, match='is not a valid preset parameter type'):
+            ConfigManager(preset_param=preset_param)
 
+    @pytest.mark.integration
+    @patch.object(ConfigManager, 'load_preset_file')
+    @patch.object(ConfigManager, 'ask_mpc_question')
+    def test_load_preset_no_preset_name(self, mockask_mpc_question: Mock, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+        """Test loading preset when no preset name is provided."""
+        multiple_presets = create_multiple_presets_data()
+        mock_load_preset_file.return_value = multiple_presets
+        mockask_mpc_question.return_value = preset_name = 'main_preset'
+        result = c_instance.load_preset(preset_target='')
 
-@pytest.mark.integration
-@patch.object(ConfigManager, 'load_preset_file')
-def test_load_preset_invalid_preset_name(mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
-    """Test loading preset with invalid preset name raises ValueError."""
-    mock_load_preset_file.return_value = create_multiple_presets_data()
-    with pytest.raises(ValueError):
-        c_instance.load_preset(preset_target='preset/presetX')
+        mockask_mpc_question.assert_called_once_with(
+            'Multiple presets found in . Choose one:',
+            ['main_preset', 'sub_preset_A', 'sub_preset_B']
+        )
+        assert result == multiple_presets[preset_name]
 
+    @pytest.mark.integration
+    @patch.object(ConfigManager, 'load_preset_file')
+    def test_load_preset_invalid_preset_name(self, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+        """Test loading preset with invalid preset name."""
+        test_presets = create_test_preset_data()
+        mock_load_preset_file.return_value = test_presets
 
-@pytest.mark.integration
-@patch.object(ConfigManager, 'load_preset_file')
-def test_load_from_single_preset(mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
-    """Test loading from a single preset file."""
-    single_preset = create_test_preset_data()
-    mock_load_preset_file.return_value = single_preset
-    result = c_instance.load_preset(preset_target='preset/main_preset')
-    assert result == single_preset['main_preset']
+        with pytest.raises(ValueError, match="Preset 'invalid_preset' not found"):
+            c_instance.load_preset('test_file/invalid_preset')
 
+    @pytest.mark.integration
+    @patch.object(ConfigManager, 'load_preset_file')
+    def test_load_from_single_preset(self, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+        """Test loading from file with single preset."""
+        test_presets = create_test_preset_data()
+        mock_load_preset_file.return_value = test_presets
 
-@pytest.mark.integration
-@pytest.mark.parametrize('preset_name', [
-    ('main_preset'),
-    ('sub_preset_A')
-])
-@patch.object(ConfigManager, 'load_preset_file')
-def test_load_from_multiple_presets_existing_preset_name(mock_load_preset_file: Mock, c_instance: ConfigManager, preset_name: str) -> None:
-    """Test loading from multiple presets with existing preset name."""
-    multiple_presets = create_multiple_presets_data()
-    mock_load_preset_file.return_value = multiple_presets
-    result = c_instance.load_preset(preset_target=f'preset/{preset_name}')
-    assert result == multiple_presets[preset_name]
+        result = c_instance.load_preset('test_file')
 
+        assert result == test_presets['main_preset']
 
-# =============================================================================
-# Configuration Setting Integration Tests
-# =============================================================================
+    @pytest.mark.integration
+    @patch.object(ConfigManager, 'load_preset_file')
+    @pytest.mark.parametrize('preset_name', ['main_preset', 'sub_preset_A'])
+    def test_load_from_multiple_presets_existing_preset_name(self, mock_load_preset_file: Mock, preset_name: str, c_instance: ConfigManager) -> None:
+        """Test loading specific preset from multiple presets."""
+        multiple_presets = create_multiple_presets_data()
+        mock_load_preset_file.return_value = multiple_presets
 
-@pytest.mark.integration
-@patch.object(ConfigManager, '_set_cluster_text_options')
-@patch('GenEC.utils.read_yaml_file')
-def test_set_config(mock_read_yaml_file: Mock, mock__set_cluster_text_options: Mock, c_instance: ConfigManager) -> None:
-    """Test setting configuration with preset."""
-    test_preset_data = create_test_preset_data()
-    mock_read_yaml_file.return_value = test_preset_data
-    c_instance.set_config(preset='main_preset', target_file='targetA.txt')
-    c = c_instance.configurations[-1]
-    assert c.preset == 'main_preset'
-    assert c.target_file == 'targetA.txt'
+        result = c_instance.load_preset(f'test_file/{preset_name}')
 
-    # Compare against the new configuration format (dataclass)
-    expected_data = test_preset_data['main_preset']
-    # Handle both legacy and new config formats
-    if isinstance(c.config, dict):
-        assert c.config['cluster_filter'] == expected_data['cluster_filter']
-        assert c.config['text_filter_type'] == expected_data['text_filter_type']
-        assert c.config['text_filter'] == expected_data['text_filter']
-        assert c.config['should_slice_clusters'] == expected_data['should_slice_clusters']
-    else:
-        assert c.config.cluster_filter == expected_data['cluster_filter']
-        assert c.config.filter_type == expected_data['text_filter_type']
-        assert c.config.text_filter == expected_data['text_filter']
-        assert c.config.should_slice_clusters == expected_data['should_slice_clusters']
+        assert result == multiple_presets[preset_name]
 
+    @pytest.mark.integration
+    @patch('GenEC.core.configuration_factory.BasicConfigurationFactory.build_interactive')
+    def test_set_config_no_preset(self, mock_build: Mock, c_instance: ConfigManager) -> None:
+        """Test set_config without preset (interactive mode)."""
+        mock_config = RegexConfiguration(
+            cluster_filter='\\n',
+            should_slice_clusters=False,
+            text_filter='test.*'
+        )
+        mock_build.return_value = mock_config
 
-@pytest.mark.integration
-@patch.object(ConfigManager, 'ask_open_question')
-@patch.object(ConfigManager, 'ask_mpc_question')
-def test_set_config_no_preset(mock_ask_mpc: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
-    """Test setting configuration without preset using interactive collection."""
-    # Mock the interactive prompts to simulate user input
-    mock_ask_mpc.return_value = 'Regex'  # Filter type selection
-    mock_ask_open.side_effect = [
-        '\\n',  # cluster_filter
-        'test.*',  # text_filter (regex pattern)
-        'n'  # should_slice_clusters (no)
-    ]
+        c_instance.set_config()
 
-    c_instance.set_config()
-    c = c_instance.configurations[-1]
-    assert c.preset == ''
-    assert c.target_file == ''
-    # Verify that the configuration was created with correct values
-    # Handle both legacy and new config formats
-    if isinstance(c.config, dict):
-        assert c.config['text_filter_type'] == 'Regex'
-    else:
-        assert hasattr(c.config, 'filter_type')
-        assert c.config.filter_type == 'Regex'
-
-# =============================================================================
-# Preset Creation Integration Tests
-# =============================================================================
-
-@pytest.mark.integration
-@patch.object(ConfigManager, 'ask_open_question')
-@patch.object(Path, 'exists', return_value=False)
-@patch.object(utils, 'write_yaml')
-@patch.object(utils, 'write_txt')
-def test_create_new_preset_creates_new_file(mock_write_txt: Mock, mock_write_yaml: Mock, mock_exists: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
-    """Test creating new preset when file doesn't exist."""
-    mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
-
-    c_instance.configurations = [MagicMock(config={'cluster_filter': '\\n'})]
-    c_instance.presets_directory = Path('/fake_dir')
-
-    c_instance.initialized_config = Initialized(
-        cluster_filter='\\n',
-        text_filter_type=None,
-        text_filter=None,
-        should_slice_clusters=None,
-        src_start_cluster_text=None,
-        src_end_cluster_text=None,
-        ref_start_cluster_text=None,
-        ref_end_cluster_text=None
-    )
-
-    c_instance.create_new_preset()
-
-    mock_write_yaml.assert_called_once()
-    mock_write_txt.assert_not_called()
-
-    written_data = mock_write_yaml.call_args[0][0]
-    assert 'my_preset' in written_data
-
-    expected_config: dict[str, Any] = {
-        'cluster_filter': '\\n'
-    }
-    assert written_data['my_preset'] == expected_config
-
-
-@pytest.mark.integration
-@patch.object(ConfigManager, 'ask_open_question')
-@patch.object(Path, 'exists', return_value=True)
-@patch.object(utils, 'write_yaml')
-@patch.object(utils, 'append_to_file')
-def test_create_new_preset_appends_to_existing_file(mock_append_to_file: Mock, mock_write_yaml: Mock, mock_exists: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
-    """Test appending new preset to existing file."""
-    mock_ask_open.side_effect = ['my_preset', 'my_preset_file']
-
-    c_instance.configurations = [MagicMock(config={'cluster_filter': '\\n'})]
-    c_instance.presets_directory = Path('/fake_dir')
-
-    c_instance.initialized_config = Initialized(
-        cluster_filter='\\n',
-        text_filter_type=None,
-        text_filter=None,
-        should_slice_clusters=None,
-        src_start_cluster_text=None,
-        src_end_cluster_text=None,
-        ref_start_cluster_text=None,
-        ref_end_cluster_text=None
-    )
-
-    c_instance.create_new_preset()
-
-    mock_append_to_file.assert_called_once()
-    mock_write_yaml.assert_not_called()
-
-
-@pytest.mark.integration
-@patch.object(ConfigManager, 'ask_open_question')
-@patch.object(Path, 'exists', return_value=False)
-@patch.object(utils, 'write_yaml')
-@patch.object(utils, 'write_txt')
-def test_create_new_preset_retries_on_empty_name(mock_write_txt: Mock, mock_write_yaml: Mock, mock_exists: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
-    """Test preset creation retries when empty name is provided."""
-    # Simulate empty input first, then a valid preset name
-    mock_ask_open.side_effect = ['', '  ', 'final_preset', 'my_preset_file']
-
-    c_instance.configurations = [MagicMock(config={'cluster_filter': '\\n'})]
-    c_instance.presets_directory = Path('/fake_dir')
-
-    c_instance.initialized_config = Initialized(
-        cluster_filter='\\n',
-        text_filter_type=None,
-        text_filter=None,
-        should_slice_clusters=None,
-        src_start_cluster_text=None,
-        src_end_cluster_text=None,
-        ref_start_cluster_text=None,
-        ref_end_cluster_text=None
-    )
-
-    c_instance.create_new_preset()
-
-    # Verify that write_yaml is eventually called once
-    mock_write_yaml.assert_called_once()
-    mock_write_txt.assert_not_called()
-
-    # Verify the preset data passed to write_yaml
-    written_data = mock_write_yaml.call_args[0][0]
-    assert 'final_preset' in written_data
-
-    expected_config: dict[str, Any] = {
-        'cluster_filter': '\\n'
-    }
-    assert written_data['final_preset'] == expected_config
-
-    # Verify ask_open_question was called multiple times due to retries
-    assert mock_ask_open.call_count >= 3
+        mock_build.assert_called_once_with(c_instance)
+        assert len(c_instance.configurations) == 1
+        assert c_instance.configurations[0] == mock_config

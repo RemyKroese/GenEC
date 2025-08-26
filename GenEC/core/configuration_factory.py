@@ -1,22 +1,24 @@
 """Factories for creating configuration objects."""
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Any
 
+from rich.console import Console
+
+from GenEC import utils
 from GenEC.core.configuration_builder import ConfigurationBuilder
-from GenEC.core.configuration import ConfigurationType
+from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.specs import PositionalFilterType, TextFilterTypes
 
 if TYPE_CHECKING:
     from GenEC.core.config_manager import ConfigManager
-    from GenEC.core.types.preset_config import Initialized
 
 
 class BasicConfigurationFactory:
     """Factory for creating configurations interactively."""
 
     @staticmethod
-    def build_interactive(config_manager: 'ConfigManager') -> ConfigurationType:  # pylint: disable=R0914
+    def build_interactive(config_manager: 'ConfigManager') -> BaseConfiguration:  # pylint: disable=R0914
         """
         Build a configuration by prompting the user for all values using existing prompt methods.
 
@@ -27,7 +29,7 @@ class BasicConfigurationFactory:
 
         Returns
         -------
-        ConfigurationType
+        BaseConfiguration
             The built configuration
         """
         builder = ConfigurationBuilder()
@@ -56,7 +58,7 @@ class BasicConfigurationFactory:
             builder.with_text_filter(regex_pattern)
 
         elif filter_type == TextFilterTypes.REGEX_LIST.value:
-            patterns: List[str] = []
+            patterns: list[str] = []
             search_count = 1
             while True:
                 pattern = config_manager.ask_open_question(
@@ -127,19 +129,145 @@ class BasicConfigurationFactory:
         return builder.build()
 
 
+class WorkflowConfigurationFactory:
+    """Factory for creating workflow-specific configurations."""
+
+    @staticmethod
+    def create_basic_config(config_manager: 'ConfigManager') -> BaseConfiguration:
+        """
+        Create a basic workflow configuration.
+
+        Parameters
+        ----------
+        config_manager : ConfigManager
+            ConfigManager instance with access to prompt methods
+
+        Returns
+        -------
+        BaseConfiguration
+            Configuration for basic workflow (no metadata)
+        """
+        return BasicConfigurationFactory.build_interactive(config_manager)
+
+    @staticmethod
+    def create_preset_config(
+            config_manager: 'ConfigManager',
+            preset: str,
+            target_file: str = '') -> BaseConfiguration:
+        """
+        Create a preset workflow configuration.
+
+        Parameters
+        ----------
+        config_manager : ConfigManager
+            ConfigManager instance for loading presets
+        preset : str
+            Preset string in 'file/preset' format
+        target_file : str, optional
+            Associated target file name, by default ''
+
+        Returns
+        -------
+        BaseConfiguration
+            Configuration for preset workflow with metadata
+        """
+        extraction_config = PresetConfigurationFactory.build_from_preset(config_manager, preset)
+
+        # Create a new config with metadata by rebuilding through the builder
+        builder = ConfigurationBuilder()
+        builder._fields.update({
+            'cluster_filter': extraction_config.cluster_filter,
+            'should_slice_clusters': extraction_config.should_slice_clusters,
+            'filter_type': extraction_config.filter_type,
+            'text_filter': extraction_config.text_filter,
+            'src_start_cluster_text': extraction_config.src_start_cluster_text,
+            'src_end_cluster_text': extraction_config.src_end_cluster_text,
+            'ref_start_cluster_text': extraction_config.ref_start_cluster_text,
+            'ref_end_cluster_text': extraction_config.ref_end_cluster_text,
+            'preset': preset,
+            'target_file': target_file,
+            'group': ''
+        })
+        return builder.build()
+
+    @staticmethod
+    def create_preset_list_configs(
+            config_manager: 'ConfigManager',
+            presets_list_target: str,
+            target_variables: Optional[dict[str, str]] = None) -> list[BaseConfiguration]:
+        """
+        Create preset-list workflow configurations.
+
+        Parameters
+        ----------
+        config_manager : ConfigManager
+            ConfigManager instance for loading presets
+        presets_list_target : str
+            The name of the presets list YAML file (without extension)
+        target_variables : Optional[dict[str, str]], optional
+            Variables used to replace placeholders in target file paths
+
+        Returns
+        -------
+        list[BaseConfiguration]
+            List of configurations for preset-list workflow with full metadata
+        """
+        console = Console()
+
+        presets_list = utils.read_yaml_file(config_manager.presets_directory / f'{presets_list_target}.yaml')
+        presets_per_file = config_manager.group_presets_by_file(presets_list, target_variables)
+
+        configs = []
+        for target_file, preset_entries in presets_per_file.items():
+            for entry in preset_entries:
+                preset_target = entry['preset']
+                group = entry.get('group', '')
+
+                try:
+                    # preset_target is already in the format 'file/preset_name'
+                    extraction_config = PresetConfigurationFactory.build_from_preset(
+                        config_manager, preset_target)
+
+                    # Create config with full metadata
+                    builder = ConfigurationBuilder()
+                    builder._fields.update({
+                        'cluster_filter': extraction_config.cluster_filter,
+                        'should_slice_clusters': extraction_config.should_slice_clusters,
+                        'filter_type': extraction_config.filter_type,
+                        'text_filter': extraction_config.text_filter,
+                        'src_start_cluster_text': extraction_config.src_start_cluster_text,
+                        'src_end_cluster_text': extraction_config.src_end_cluster_text,
+                        'ref_start_cluster_text': extraction_config.ref_start_cluster_text,
+                        'ref_end_cluster_text': extraction_config.ref_end_cluster_text,
+                        'preset': preset_target,
+                        'target_file': target_file,
+                        'group': group
+                    })
+                    configs.append(builder.build())
+
+                # Catching all exceptions is valid here
+                except Exception as e:  # pylint: disable=W0718
+                    console.print(f'[yellow]Skipping preset {preset_target}: {e}[/yellow]')
+                    continue
+
+        if not configs:
+            raise ValueError('None of the provided presets were found.')
+        return configs
+
+
 class PresetConfigurationFactory:
     """Factory for creating configurations from presets."""
 
     @staticmethod
     def build_from_preset(  # pylint: disable=R0914
-            config_manager: 'ConfigManager', preset_target: str) -> ConfigurationType:
+            config_manager: 'ConfigManager', preset_target: str) -> BaseConfiguration:
         """Build configuration from a preset."""
         initialized_config = config_manager.load_preset(preset_target)
         return PresetConfigurationFactory._convert_initialized_to_new_config(initialized_config)
 
     @staticmethod
-    def _convert_initialized_to_new_config(initialized: 'Initialized') -> ConfigurationType:
-        """Convert Initialized config to new configuration format."""
+    def _convert_initialized_to_new_config(initialized: dict[str, Any]) -> BaseConfiguration:
+        """Convert initialized config dict to new configuration format."""
         builder = ConfigurationBuilder()
 
         # Map required fields - handle None values safely

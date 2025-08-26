@@ -1,26 +1,42 @@
 """Unit tests for GenEC extraction filters module."""
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 from unittest.mock import patch, MagicMock, Mock
 import pytest
 
-from GenEC.core import ConfigOptions, extraction_filters, PositionalFilterType
-from GenEC.core.types.preset_config import Finalized
+from GenEC.core import extraction_filters, PositionalFilterType
+from GenEC.core.configuration import RegexConfiguration, RegexListConfiguration, PositionalConfiguration
 
 
 @pytest.fixture
-def tst_config() -> dict[str, Any]:
-    return {
-        ConfigOptions.CLUSTER_FILTER.value: None,
-        ConfigOptions.TEXT_FILTER_TYPE.value: None,
-        ConfigOptions.TEXT_FILTER.value: None,
-        ConfigOptions.SHOULD_SLICE_CLUSTERS.value: None,
-        ConfigOptions.SRC_START_CLUSTER_TEXT.value: None,
-        ConfigOptions.SRC_END_CLUSTER_TEXT.value: None,
-        ConfigOptions.REF_START_CLUSTER_TEXT.value: None,
-        ConfigOptions.REF_END_CLUSTER_TEXT.value: None
-    }
+def regex_config() -> RegexConfiguration:
+    """Create a RegexConfiguration for testing."""
+    return RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter='test.*'
+    )
+
+
+@pytest.fixture
+def regex_list_config() -> RegexListConfiguration:
+    """Create a RegexListConfiguration for testing."""
+    return RegexListConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter=['filter1', 'filter2']
+    )
+
+
+@pytest.fixture
+def positional_config() -> PositionalConfiguration:
+    """Create a PositionalConfiguration for testing."""
+    return PositionalConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter=PositionalFilterType(separator=' ', line=1, occurrence=2)
+    )
 
 
 class DummyExtractor(extraction_filters.BaseExtractor):
@@ -32,23 +48,23 @@ class DummyExtractor(extraction_filters.BaseExtractor):
 
 @pytest.mark.unit
 def test_get_extractor_returns_registered_extractor(
-        monkeypatch: Any, tst_config: dict[str, Any]) -> None:
+        monkeypatch: Any, regex_config: RegexConfiguration) -> None:
     monkeypatch.setitem(
         extraction_filters._extractor_registry,
         'dummy',
         DummyExtractor)
     extractor: extraction_filters.BaseExtractor = extraction_filters.get_extractor(
-        'dummy', cast(Finalized, tst_config))
+        'dummy', regex_config)
     assert isinstance(extractor, DummyExtractor)
-    assert extractor.config == tst_config
+    assert extractor.config == regex_config
 
 
 @pytest.mark.unit
 def test_get_extractor_raises_for_unregistered_name(
-        tst_config: dict[str, Any]) -> None:
+        regex_config: RegexConfiguration) -> None:
     with pytest.raises(ValueError) as exc_info:
         extraction_filters.get_extractor(
-            'nonexistent', cast(Finalized, tst_config))
+            'nonexistent', regex_config)
     assert 'Extractor type "nonexistent" is not registered.' in str(
         exc_info.value)
 
@@ -66,27 +82,31 @@ def test_get_extractor_raises_for_unregistered_name(
     ]
 )
 def test_extract_text_from_clusters_by_regex(
-        tst_config: dict[str, Any], regex_pattern: str, expected: list[str]) -> None:
+        regex_pattern: str, expected: list[str]) -> None:
     clusters: list[str] = ['text48291more_384even11more', 'single_number7_test2', 'random345text19again8',
                            'prefix98middle771end', 'data1204with66extra99', 'noise550letters43final7']
-    # Create a mutable config for testing
-    test_config = cast(Finalized, tst_config.copy())
-    test_config[ConfigOptions.TEXT_FILTER.value] = regex_pattern
+    # Create a config for testing
+    test_config = RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter=regex_pattern
+    )
     extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(test_config)
     assert extractor.extract(clusters) == expected
 
 
 @pytest.mark.unit
-def test_extract_text_from_clusters_by_position(
-        tst_config: dict[str, Any]) -> None:
+def test_extract_text_from_clusters_by_position() -> None:
     clusters: list[str] = [
         'line_1\nline_2 word_1 word_2',
         'line_3\nline_4 word_3 word_4',
         'line_5']
-    # Create a mutable config for testing
-    test_config = cast(Finalized, tst_config.copy())
-    test_config[ConfigOptions.TEXT_FILTER.value] = PositionalFilterType(
-        separator=' ', line=2, occurrence=3)
+    # Create a config for testing
+    test_config = PositionalConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter=PositionalFilterType(separator=' ', line=2, occurrence=3)
+    )
     extractor: extraction_filters.PositionalExtractor = extraction_filters.PositionalExtractor(test_config)
     assert extractor.extract(clusters) == ['word_2', 'word_4']
 
@@ -104,42 +124,50 @@ def test_extract_text_from_clusters_by_position(
     ]
 )
 @patch('GenEC.core.extraction_filters.RegexExtractor')
-def test_extract_text_from_clusters_by_regex_list(mock_regex_extractor: Mock, tst_config: dict[str, Any],
+def test_extract_text_from_clusters_by_regex_list(mock_regex_extractor: Mock,
                                                   clusters: list[str], regex_filters: list[str],
                                                   expected_filtered_clusters: list[str]) -> None:
     mock_regex_instance: MagicMock = MagicMock()
     mock_regex_extractor.return_value = mock_regex_instance
-    # Create a mutable config for testing
-    test_config = cast(Finalized, tst_config.copy())
-    test_config[ConfigOptions.TEXT_FILTER.value] = regex_filters
+    # Create a config for testing
+    test_config = RegexListConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter=regex_filters
+    )
     extractor: extraction_filters.RegexListExtractor = extraction_filters.RegexListExtractor(test_config)
 
     extractor.extract(clusters)
 
-    called_config: dict[str, Any] = mock_regex_extractor.call_args[0][0]
-    assert called_config[ConfigOptions.TEXT_FILTER.value] == regex_filters[-1]
+    called_config = mock_regex_extractor.call_args[0][0]
+    assert called_config.text_filter == regex_filters[-1]
     mock_regex_instance.extract.assert_called_once_with(
         expected_filtered_clusters)
 
 
 @pytest.mark.unit
-def test_regex_extractor_invalid_pattern(tst_config: dict[str, Any]) -> None:
+def test_regex_extractor_invalid_pattern() -> None:
     """Test that RegexExtractor handles invalid regex patterns correctly."""
-    tst_config[ConfigOptions.TEXT_FILTER.value] = '[unclosed'  # Invalid regex
-    extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(
-        cast(Finalized, tst_config))
+    test_config = RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter='[unclosed'  # Invalid regex
+    )
+    extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(test_config)
 
     with pytest.raises(ValueError, match="Invalid regex pattern: \\[unclosed"):
         extractor.extract(['test cluster'])
 
 
 @pytest.mark.unit
-def test_regex_extractor_invalid_pattern_console_output(
-        tst_config: dict[str, Any]) -> None:
+def test_regex_extractor_invalid_pattern_console_output() -> None:
     """Test that RegexExtractor prints error message for invalid regex patterns."""
-    tst_config[ConfigOptions.TEXT_FILTER.value] = '[unclosed'  # Invalid regex
-    extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(
-        cast(Finalized, tst_config))
+    test_config = RegexConfiguration(
+        cluster_filter='\n',
+        should_slice_clusters=False,
+        text_filter='[unclosed'  # Invalid regex
+    )
+    extractor: extraction_filters.RegexExtractor = extraction_filters.RegexExtractor(test_config)
 
     with patch('GenEC.core.extraction_filters.console') as mock_console:
         with pytest.raises(ValueError):
