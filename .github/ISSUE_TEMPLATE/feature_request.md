@@ -1,20 +1,40 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an idea for GenEC
 title: ''
-labels: ''
+labels: enhancement
 assignees: ''
 
 ---
 
 **Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+A clear and concise description of the issue or limitation.
 
 **Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+A clear and concise description of the feature, improvement, or change.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Workflows involved**
+<!-- Please select the workflow(s) relevant to your request -->
+- [ ] basic
+- [ ] preset
+- [ ] preset-list
+- [ ] N/A
+
+**Part of the program**
+<!-- Select relevant part(s) -->
+- [ ] input
+- [ ] extraction
+- [ ] data processing
+- [ ] comparing
+- [ ] output
+- [ ] N/A
+
+**Filter type (if applicable)**
+<!-- Select if relevant -->
+- [ ] regex
+- [ ] regex-list
+- [ ] positional
+- [ ] N/A
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+Add any other context, examples, or screenshots about the feature request.

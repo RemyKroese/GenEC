@@ -1,38 +1,53 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a bug to help improve GenEC
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+A clear and concise description of the issue.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Command run:
+2. Input files or data:
+3. Output/error seen:
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Workflows affected**
+<!-- Please select the workflow(s) where the bug occurs -->
+- [ ] basic
+- [ ] preset
+- [ ] preset-list
+- [ ] N/A
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**Part of the program**
+<!-- Select the affected part(s) -->
+- [ ] input
+- [ ] extraction
+- [ ] data processing
+- [ ] comparing
+- [ ] output
+- [ ] N/A
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Filter type used**
+<!-- Select if applicable -->
+- [ ] regex
+- [ ] regex-list
+- [ ] positional
+- [ ] N/A
+
+**Screenshots / Logs**
+If applicable, add error messages, logs, or screenshots.
+
+**Environment**
+- OS and version (e.g. Ubuntu 22.04, Windows 10):
+- GenEC version (Call the tool with the `--version` parameter):
 
 **Additional context**
 Add any other context about the problem here.
