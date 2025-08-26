@@ -8,7 +8,7 @@ from GenEC import utils
 from GenEC.core.configuration_builder import ConfigurationBuilder
 from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.prompts import Section, Key, create_prompt
-from GenEC.core.specs import PositionalFilterType, TextFilterTypes
+from GenEC.core.specs import PositionalFilterType, TextFilterTypes, ConfigOptions
 
 if TYPE_CHECKING:
     from GenEC.core.config_manager import ConfigManager
@@ -176,14 +176,14 @@ class WorkflowConfigurationFactory:
         # Create a new config with metadata by rebuilding through the builder
         builder = ConfigurationBuilder()
         builder._fields.update({
-            'cluster_filter': extraction_config.cluster_filter,
-            'should_slice_clusters': extraction_config.should_slice_clusters,
-            'filter_type': extraction_config.filter_type,
-            'text_filter': extraction_config.text_filter,
-            'src_start_cluster_text': extraction_config.src_start_cluster_text,
-            'src_end_cluster_text': extraction_config.src_end_cluster_text,
-            'ref_start_cluster_text': extraction_config.ref_start_cluster_text,
-            'ref_end_cluster_text': extraction_config.ref_end_cluster_text,
+            ConfigOptions.CLUSTER_FILTER.value: extraction_config.cluster_filter,
+            ConfigOptions.SHOULD_SLICE_CLUSTERS.value: extraction_config.should_slice_clusters,
+            ConfigOptions.TEXT_FILTER_TYPE.value: extraction_config.filter_type,
+            ConfigOptions.TEXT_FILTER.value: extraction_config.text_filter,
+            ConfigOptions.SRC_START_CLUSTER_TEXT.value: extraction_config.src_start_cluster_text,
+            ConfigOptions.SRC_END_CLUSTER_TEXT.value: extraction_config.src_end_cluster_text,
+            ConfigOptions.REF_START_CLUSTER_TEXT.value: extraction_config.ref_start_cluster_text,
+            ConfigOptions.REF_END_CLUSTER_TEXT.value: extraction_config.ref_end_cluster_text,
             'preset': preset,
             'target_file': target_file,
             'group': ''
@@ -231,14 +231,14 @@ class WorkflowConfigurationFactory:
                     # Create config with full metadata
                     builder = ConfigurationBuilder()
                     builder._fields.update({
-                        'cluster_filter': extraction_config.cluster_filter,
-                        'should_slice_clusters': extraction_config.should_slice_clusters,
-                        'filter_type': extraction_config.filter_type,
-                        'text_filter': extraction_config.text_filter,
-                        'src_start_cluster_text': extraction_config.src_start_cluster_text,
-                        'src_end_cluster_text': extraction_config.src_end_cluster_text,
-                        'ref_start_cluster_text': extraction_config.ref_start_cluster_text,
-                        'ref_end_cluster_text': extraction_config.ref_end_cluster_text,
+                        ConfigOptions.CLUSTER_FILTER.value: extraction_config.cluster_filter,
+                        ConfigOptions.SHOULD_SLICE_CLUSTERS.value: extraction_config.should_slice_clusters,
+                        ConfigOptions.TEXT_FILTER_TYPE.value: extraction_config.filter_type,
+                        ConfigOptions.TEXT_FILTER.value: extraction_config.text_filter,
+                        ConfigOptions.SRC_START_CLUSTER_TEXT.value: extraction_config.src_start_cluster_text,
+                        ConfigOptions.SRC_END_CLUSTER_TEXT.value: extraction_config.src_end_cluster_text,
+                        ConfigOptions.REF_START_CLUSTER_TEXT.value: extraction_config.ref_start_cluster_text,
+                        ConfigOptions.REF_END_CLUSTER_TEXT.value: extraction_config.ref_end_cluster_text,
                         'preset': preset_target,
                         'target_file': target_file,
                         'group': group
