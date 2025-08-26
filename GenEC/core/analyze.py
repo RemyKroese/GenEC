@@ -1,11 +1,14 @@
 """Module for extracting and comparing output data from raw input data."""
 
-from typing import Optional
+from typing import Optional, Union, TYPE_CHECKING
 
 from GenEC import utils
 from GenEC.core import extraction_filters, FileID, ConfigOptions, TextFilterTypes
 from GenEC.core.types.preset_config import Finalized
 from GenEC.core.types.output import DataCompare
+
+if TYPE_CHECKING:
+    from GenEC.core.configuration import ConfigurationType
 
 
 class Extractor:
@@ -16,13 +19,13 @@ class Extractor:
     applies text filtering as specified in the provided configuration.
     """
 
-    def extract_from_data(self, config: Finalized, data: str, file: int) -> list[str]:
+    def extract_from_data(self, config: Union[Finalized, 'ConfigurationType'], data: str, file: int) -> list[str]:
         """
         Extract processed results from raw data using the provided configuration.
 
         Parameters
         ----------
-        config : Finalized
+        config : Union[Finalized, ConfigurationType]
             The finalized configuration object containing extraction and filtering options.
         data : str
             The raw text data to extract output data from.
@@ -41,15 +44,20 @@ class Extractor:
             If the configuration specifies an unsupported text filter type.
         """
         clusters = self.get_clusters(config, data, file)
-        filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+
+        # Get filter type from either legacy or new config format
+        if hasattr(config, 'get'):
+            filter_type = config.get(ConfigOptions.TEXT_FILTER_TYPE.value)
+        else:
+            filter_type = config.filter_type
+
         if filter_type not in [t.value for t in TextFilterTypes] or 'UNSUPPORTED' in filter_type:
-            raise ValueError(
-                f"Unsupported filter type: {config.get(ConfigOptions.TEXT_FILTER_TYPE.value)}"
-            )
+            raise ValueError(f"Unsupported filter type: {filter_type}")
+
         extractor = extraction_filters.get_extractor(filter_type, config)
         return extractor.extract(clusters)
 
-    def get_clusters(self, config: Finalized, data: str, file: int) -> list[str]:
+    def get_clusters(self, config: Union[Finalized, 'ConfigurationType'], data: str, file: int) -> list[str]:
         """
         Split raw text data into clusters according to the configuration.
 
@@ -57,7 +65,7 @@ class Extractor:
 
         Parameters
         ----------
-        config : Finalized
+        config : Union[Finalized, ConfigurationType]
             Configuration containing cluster filters and slicing options.
         data : str
             Raw text data to split into clusters.
@@ -70,16 +78,31 @@ class Extractor:
         list[str]
             A list of text clusters, optionally sliced based on keywords.
         """
-        cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
-        # Using '' is not a valid argument for split(). So None is used instead
-        clusters = data.split(utils.normalize_cluster_filter(cluster_filter) if cluster_filter else None)
-        if config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value):
+        # Handle both legacy dict and new dataclass configurations
+        if hasattr(config, 'get'):
+            # Legacy Finalized dict format
+            cluster_filter = config.get(ConfigOptions.CLUSTER_FILTER.value)
+            should_slice = config.get(ConfigOptions.SHOULD_SLICE_CLUSTERS.value)
             if file == FileID.SOURCE:
                 start_keyword = config.get(ConfigOptions.SRC_START_CLUSTER_TEXT.value)
                 end_keyword = config.get(ConfigOptions.SRC_END_CLUSTER_TEXT.value)
             else:
                 start_keyword = config.get(ConfigOptions.REF_START_CLUSTER_TEXT.value)
                 end_keyword = config.get(ConfigOptions.REF_END_CLUSTER_TEXT.value)
+        else:
+            # New ConfigurationType dataclass format
+            cluster_filter = config.cluster_filter
+            should_slice = config.should_slice_clusters
+            if file == FileID.SOURCE:
+                start_keyword = config.src_start_cluster_text
+                end_keyword = config.src_end_cluster_text
+            else:
+                start_keyword = config.ref_start_cluster_text
+                end_keyword = config.ref_end_cluster_text
+
+        # Using '' is not a valid argument for split(). So None is used instead
+        clusters = data.split(utils.normalize_cluster_filter(cluster_filter) if cluster_filter else None)
+        if should_slice:
             return self.get_sliced_clusters(clusters, start_keyword, end_keyword)
         return clusters
 

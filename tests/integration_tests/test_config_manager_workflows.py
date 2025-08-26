@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch, MagicMock, Mock
 
-from GenEC.core.config_manager import ConfigManager, Configuration
+from GenEC.core.config_manager import ConfigManager, LegacyConfiguration
 from GenEC.core.types.preset_config import Initialized, Finalized
 import GenEC.utils as utils
 
@@ -17,7 +17,7 @@ def create_test_preset_data() -> dict[str, dict[str, Any]]:
     return {
         'main_preset': {
             'cluster_filter': '',
-            'text_filter_type': 'regex',
+            'text_filter_type': 'Regex',
             'text_filter': '',
             'should_slice_clusters': False,
             'src_start_cluster_text': '',
@@ -34,7 +34,7 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
     base_data.update({
         'sub_preset_A': {
             'cluster_filter': '',
-            'text_filter_type': 'regex',
+            'text_filter_type': 'Regex',
             'text_filter': '',
             'should_slice_clusters': True,
             'src_start_cluster_text': '',
@@ -44,7 +44,7 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
         },
         'sub_preset_B': {
             'cluster_filter': '\\n',
-            'text_filter_type': 'regex',
+            'text_filter_type': 'Regex',
             'text_filter': '[a-zA-z]{4}',
             'should_slice_clusters': False,
             'src_start_cluster_text': '',
@@ -60,7 +60,7 @@ def create_mock_finalized_config() -> Finalized:
     """Helper function to create mock finalized configuration."""
     return {
         'cluster_filter': '\n',
-        'text_filter_type': 'regex',
+        'text_filter_type': 'Regex',
         'text_filter': 'test.*',
         'should_slice_clusters': False,
         'src_start_cluster_text': '',
@@ -103,13 +103,13 @@ def test_init_with_preset_type(mock_load_preset: Mock, mock_set_config: Mock) ->
 @pytest.mark.parametrize(
     "mock_presets, expected_count",
     [
-        ([Configuration(create_mock_finalized_config(), 'file1/presetA', 'file1')], 1),
-        ([Configuration(create_mock_finalized_config(), 'file1/presetA', 'file1'),
-          Configuration(create_mock_finalized_config(), 'file2/presetB', 'file2')], 2),
+        ([LegacyConfiguration(create_mock_finalized_config(), 'file1/presetA', 'file1')], 1),
+        ([LegacyConfiguration(create_mock_finalized_config(), 'file1/presetA', 'file1'),
+          LegacyConfiguration(create_mock_finalized_config(), 'file2/presetB', 'file2')], 2),
     ]
 )
 @patch.object(ConfigManager, 'load_presets')
-def test_init_with_preset_list_type(mock_load_presets: Mock, mock_presets: list[Configuration], expected_count: int) -> None:
+def test_init_with_preset_list_type(mock_load_presets: Mock, mock_presets: list[LegacyConfiguration], expected_count: int) -> None:
     """Test ConfigManager initialization with preset list type."""
     mock_load_presets.return_value = mock_presets
     config_manager = ConfigManager({'type': 'preset-list', 'value': 'fake_list'})
@@ -134,12 +134,12 @@ def test_init_with_invalid_type() -> None:
 
 @pytest.mark.integration
 @patch.object(ConfigManager, 'load_preset_file')
-@patch.object(ConfigManager, '_ask_mpc_question')
-def test_load_preset_no_preset_name(mock_ask_mpc_question: Mock, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+@patch.object(ConfigManager, 'ask_mpc_question')
+def test_load_preset_no_preset_name(mockask_mpc_question: Mock, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
     """Test loading preset when no preset name is provided."""
     multiple_presets = create_multiple_presets_data()
     mock_load_preset_file.return_value = multiple_presets
-    mock_ask_mpc_question.return_value = preset_name = 'main_preset'
+    mockask_mpc_question.return_value = preset_name = 'main_preset'
     result = c_instance.load_preset(preset_target='')
     assert result == multiple_presets[preset_name]
 
@@ -192,44 +192,42 @@ def test_set_config(mock_read_yaml_file: Mock, mock__set_cluster_text_options: M
     c = c_instance.configurations[-1]
     assert c.preset == 'main_preset'
     assert c.target_file == 'targetA.txt'
-    assert c.config == test_preset_data['main_preset']
+
+    # Compare against the new configuration format (dataclass)
+    expected_data = test_preset_data['main_preset']
+    assert c.config.cluster_filter == expected_data['cluster_filter']
+    assert c.config.filter_type == expected_data['text_filter_type']
+    assert c.config.text_filter == expected_data['text_filter']
+    assert c.config.should_slice_clusters == expected_data['should_slice_clusters']
 
 
 @pytest.mark.integration
-@patch.object(ConfigManager, '_collect_cluster_filter', return_value='')
-@patch.object(ConfigManager, '_collect_text_filter_type', return_value='regex')
-@patch.object(ConfigManager, '_collect_text_filter', return_value='')
-@patch.object(ConfigManager, '_collect_should_slice_clusters', return_value=True)
-@patch.object(ConfigManager, '_set_cluster_text_options')
-@patch.object(ConfigManager, '_finalize_config')
-def test_set_config_no_preset(mock_finalize_config: Mock, mock_cluster_text_options: Mock, mock_should_slice_clusters: Mock,
-                              mock_set_text_filter: Mock, mock_set_text_filter_type: Mock, mock_set_cluster_filter: Mock, c_instance: ConfigManager) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+@patch.object(ConfigManager, 'ask_mpc_question')
+def test_set_config_no_preset(mock_ask_mpc: Mock, mock_ask_open: Mock, c_instance: ConfigManager) -> None:
     """Test setting configuration without preset using interactive collection."""
-    test_preset_data = create_test_preset_data()
-    mock_finalize_config.return_value = test_preset_data['main_preset']
+    # Mock the interactive prompts to simulate user input
+    mock_ask_mpc.return_value = 'Regex'  # Filter type selection
+    mock_ask_open.side_effect = [
+        '\\n',  # cluster_filter
+        'test.*',  # text_filter (regex pattern)
+        'n'  # should_slice_clusters (no)
+    ]
+
     c_instance.set_config()
     c = c_instance.configurations[-1]
     assert c.preset == ''
     assert c.target_file == ''
-    mock_cluster_text_options.assert_called()
-
-
-# =============================================================================
-# Preset Entry Processing Integration Tests
-# =============================================================================
-
-
-
-
-
-
+    # Verify that the configuration was created with correct values
+    assert hasattr(c.config, 'filter_type')
+    assert c.config.filter_type == 'Regex'
 
 # =============================================================================
 # Preset Creation Integration Tests
 # =============================================================================
 
 @pytest.mark.integration
-@patch.object(ConfigManager, '_ask_open_question')
+@patch.object(ConfigManager, 'ask_open_question')
 @patch.object(Path, 'exists', return_value=False)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'write_txt')
@@ -266,7 +264,7 @@ def test_create_new_preset_creates_new_file(mock_write_txt: Mock, mock_write_yam
 
 
 @pytest.mark.integration
-@patch.object(ConfigManager, '_ask_open_question')
+@patch.object(ConfigManager, 'ask_open_question')
 @patch.object(Path, 'exists', return_value=True)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'append_to_file')
@@ -295,7 +293,7 @@ def test_create_new_preset_appends_to_existing_file(mock_append_to_file: Mock, m
 
 
 @pytest.mark.integration
-@patch.object(ConfigManager, '_ask_open_question')
+@patch.object(ConfigManager, 'ask_open_question')
 @patch.object(Path, 'exists', return_value=False)
 @patch.object(utils, 'write_yaml')
 @patch.object(utils, 'write_txt')
