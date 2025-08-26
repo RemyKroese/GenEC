@@ -9,7 +9,7 @@ from unittest.mock import patch, mock_open, Mock
 import pytest
 
 from GenEC.core import ConfigOptions, TextFilterTypes
-from GenEC.core.config_manager import ConfigManager, Configuration
+from GenEC.core.config_manager import ConfigManager, LegacyConfiguration
 from GenEC.core.types.preset_config import Initialized, Finalized
 
 
@@ -114,10 +114,10 @@ def test_parse_preset_param(preset_param: str, expected_result: tuple[str, str |
 # =============================================================================
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_cluster_filter_user_input(mock_ask_open_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_cluster_filter_user_input(mockask_open_question: Mock) -> None:
     """Test cluster filter collection with user input."""
-    mock_ask_open_question.return_value = ';'
+    mockask_open_question.return_value = ';'
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     assert config_manager._collect_cluster_filter(config) == ';'
@@ -133,10 +133,10 @@ def test_collect_cluster_filter_from_config() -> None:
 
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_cluster_filter_empty_input_positional_filter(mock_ask_open_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_cluster_filter_empty_input_positional_filter(mockask_open_question: Mock) -> None:
     """Test cluster filter default behavior for positional filter with empty user input."""
-    mock_ask_open_question.return_value = ''
+    mockask_open_question.return_value = ''
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     result = config_manager._collect_cluster_filter(config, filter_type=TextFilterTypes.POSITIONAL.value)
@@ -144,10 +144,10 @@ def test_collect_cluster_filter_empty_input_positional_filter(mock_ask_open_ques
 
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_cluster_filter_empty_input_regex_filter(mock_ask_open_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_cluster_filter_empty_input_regex_filter(mockask_open_question: Mock) -> None:
     """Test cluster filter default behavior for regex filter with empty user input."""
-    mock_ask_open_question.return_value = ''
+    mockask_open_question.return_value = ''
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     result = config_manager._collect_cluster_filter(config, filter_type=TextFilterTypes.REGEX.value)
@@ -155,10 +155,10 @@ def test_collect_cluster_filter_empty_input_regex_filter(mock_ask_open_question:
 
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_cluster_filter_empty_input_regex_list_filter(mock_ask_open_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_cluster_filter_empty_input_regex_list_filter(mockask_open_question: Mock) -> None:
     """Test cluster filter default behavior for regex-list filter with empty user input."""
-    mock_ask_open_question.return_value = ''
+    mockask_open_question.return_value = ''
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     result = config_manager._collect_cluster_filter(config, filter_type=TextFilterTypes.REGEX_LIST.value)
@@ -166,10 +166,10 @@ def test_collect_cluster_filter_empty_input_regex_list_filter(mock_ask_open_ques
 
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_cluster_filter_empty_input_no_filter_type(mock_ask_open_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_cluster_filter_empty_input_no_filter_type(mockask_open_question: Mock) -> None:
     """Test cluster filter default behavior with empty user input and no filter type."""
-    mock_ask_open_question.return_value = ''
+    mockask_open_question.return_value = ''
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     result = config_manager._collect_cluster_filter(config, filter_type=None)
@@ -177,10 +177,10 @@ def test_collect_cluster_filter_empty_input_no_filter_type(mock_ask_open_questio
 
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_mpc_question')
-def test_collect_text_filter_type(mock_ask_mpc_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_mpc_question')
+def test_collect_text_filter_type(mockask_mpc_question: Mock) -> None:
     """Test text filter type collection."""
-    mock_ask_mpc_question.return_value = 'regex'
+    mockask_mpc_question.return_value = 'regex'
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     assert config_manager._collect_text_filter_type(config) == 'regex'
@@ -201,10 +201,10 @@ def test_collect_text_filter(mock_request_text_filter: Mock) -> None:
     ('yes', True),
     ('no', False)
 ])
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_should_slice_clusters(mock_ask_open_question: Mock, user_input: str, expected: bool) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_should_slice_clusters(mockask_open_question: Mock, user_input: str, expected: bool) -> None:
     """Test slice clusters collection with different user inputs."""
-    mock_ask_open_question.return_value = user_input
+    mockask_open_question.return_value = user_input
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     assert config_manager._collect_should_slice_clusters(config) == expected
@@ -217,10 +217,10 @@ def test_collect_should_slice_clusters(mock_ask_open_question: Mock, user_input:
     ('ref_start_cluster_text', 'start', 'REF'),
     ('ref_end_cluster_text', 'end', 'REF'),
 ])
-@patch.object(ConfigManager, '_ask_open_question')
-def test_collect_cluster_text(mock_ask_open_question: Mock, config_option: str, position: str, src_or_ref: str) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_collect_cluster_text(mockask_open_question: Mock, config_option: str, position: str, src_or_ref: str) -> None:
     """Test cluster text collection for different positions and sources."""
-    mock_ask_open_question.return_value = 'cluster_text'
+    mockask_open_question.return_value = 'cluster_text'
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     result = config_manager._collect_cluster_text(config, config_option, position, src_or_ref)
@@ -232,43 +232,43 @@ def test_collect_cluster_text(mock_ask_open_question: Mock, config_option: str, 
 # =============================================================================
 
 @pytest.mark.unit
-def test_ask_open_question() -> None:
+def testask_open_question() -> None:
     """Test open question prompting."""
     config_manager = ConfigManager(auto_configure=False)
     with patch('builtins.input', return_value='user_input'):
-        assert config_manager._ask_open_question('Test prompt: ') == 'user_input'
+        assert config_manager.ask_open_question('Test prompt: ') == 'user_input'
 
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_get_user_choice')
-def test_ask_mpc_question_valid_choice(mock_get_user_choice: Mock) -> None:
+def testask_mpc_question_valid_choice(mock_get_user_choice: Mock) -> None:
     """Test multiple choice question with valid selection."""
     mock_get_user_choice.return_value = 1
     config_manager = ConfigManager(auto_configure=False)
     options = ['option1', 'option2']
-    assert config_manager._ask_mpc_question('Choose:', options) == 'option1'
+    assert config_manager.ask_mpc_question('Choose:', options) == 'option1'
 
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_get_user_choice')
-def test_ask_mpc_question_exit(mock_get_user_choice: Mock) -> None:
+def testask_mpc_question_exit(mock_get_user_choice: Mock) -> None:
     """Test multiple choice question with exit selection."""
     mock_get_user_choice.return_value = 0
     config_manager = ConfigManager(auto_configure=False)
     options = ['option1', 'option2']
     with pytest.raises(SystemExit):
-        config_manager._ask_mpc_question('Choose:', options)
+        config_manager.ask_mpc_question('Choose:', options)
 
 
 @pytest.mark.unit
 @patch.object(ConfigManager, '_get_user_choice')
 @patch('builtins.input', return_value='invalid')
-def test_ask_mpc_question_invalid_choice(mock_input: Mock, mock_get_user_choice: Mock) -> None:
+def testask_mpc_question_invalid_choice(mock_input: Mock, mock_get_user_choice: Mock) -> None:
     """Test multiple choice question handling invalid choice gracefully."""
     mock_get_user_choice.side_effect = [2]
     config_manager = ConfigManager(auto_configure=False)
     options = ['option1', 'option2']
-    assert config_manager._ask_mpc_question('Choose:', options) == 'option2'
+    assert config_manager.ask_mpc_question('Choose:', options) == 'option2'
 
 
 # =============================================================================
@@ -276,10 +276,10 @@ def test_ask_mpc_question_invalid_choice(mock_input: Mock, mock_get_user_choice:
 # =============================================================================
 
 @pytest.mark.unit
-@patch.object(ConfigManager, '_ask_open_question')
-def test_request_regex_filter_type(mock_ask_open_question: Mock) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_request_regex_filter_type(mockask_open_question: Mock) -> None:
     """Test regex filter type request."""
-    mock_ask_open_question.return_value = 'my_filter'
+    mockask_open_question.return_value = 'my_filter'
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     config['text_filter_type'] = TextFilterTypes.REGEX.value
@@ -292,10 +292,10 @@ def test_request_regex_filter_type(mock_ask_open_question: Mock) -> None:
     (['', '3', '8'], {'separator': ' ', 'line': 3, 'occurrence': 8}),
     (['ABC', '4', '2'], {'separator': 'ABC', 'line': 4, 'occurrence': 2})
 ])
-@patch.object(ConfigManager, '_ask_open_question')
-def test_request_positional_filter_type(mock_ask_open_question: Mock, mock_side_effect: list[str], expected_output: dict[str, Any]) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_request_positional_filter_type(mockask_open_question: Mock, mock_side_effect: list[str], expected_output: dict[str, Any]) -> None:
     """Test positional filter type request with different inputs."""
-    mock_ask_open_question.side_effect = mock_side_effect
+    mockask_open_question.side_effect = mock_side_effect
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     config['text_filter_type'] = TextFilterTypes.POSITIONAL.value
@@ -309,10 +309,10 @@ def test_request_positional_filter_type(mock_ask_open_question: Mock, mock_side_
     (['regex_1', 'n'], ['regex_1']),
     (['regex_1', 'Y', 'regex_2', 'YeS', 'regex_3', ''], ['regex_1', 'regex_2', 'regex_3']),
 ])
-@patch.object(ConfigManager, '_ask_open_question')
-def test_request_regex_list_filter_type(mock_ask_open_question: Mock, mock_side_effect: list[str], expected_output: list[str]) -> None:
+@patch.object(ConfigManager, 'ask_open_question')
+def test_request_regex_list_filter_type(mockask_open_question: Mock, mock_side_effect: list[str], expected_output: list[str]) -> None:
     """Test regex list filter type request with different inputs."""
-    mock_ask_open_question.side_effect = mock_side_effect
+    mockask_open_question.side_effect = mock_side_effect
     config_manager = ConfigManager(auto_configure=False)
     config = create_empty_config()
     config['text_filter_type'] = TextFilterTypes.REGEX_LIST.value
@@ -446,7 +446,7 @@ def test_process_preset_entry_found(mock_load_preset_file: Mock, c_instance: Con
     }
     mock_load_preset_file.return_value = {'presetA': mock_config}
     result = c_instance._process_preset_entry(entry, entry['target_file'])
-    assert isinstance(result, Configuration)
+    assert isinstance(result, LegacyConfiguration)
     assert result.preset == 'fileA/presetA'
     assert result.target_file == 'targetA.txt'
     assert result.config['cluster_filter'] == '\n\n'
@@ -522,8 +522,8 @@ def test_collect_presets_all_found(mock_process_entry: Mock, c_instance: ConfigM
     entry1 = make_preset_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_preset_entry('fileB', 'presetB', 'targetB.txt')
     mock_finalized_config = create_mock_finalized_config()
-    mock_ac1 = Configuration(mock_finalized_config, 'fileA/presetA', 'targetA.txt')
-    mock_ac2 = Configuration(mock_finalized_config, 'fileB/presetB', 'targetB.txt')
+    mock_ac1 = LegacyConfiguration(mock_finalized_config, 'fileA/presetA', 'targetA.txt')
+    mock_ac2 = LegacyConfiguration(mock_finalized_config, 'fileB/presetB', 'targetB.txt')
     mock_process_entry.side_effect = [mock_ac1, mock_ac2]
     presets_per_target = {
         'targetA.txt': [entry1],
@@ -544,7 +544,7 @@ def test_collect_presets_some_missing(mock_process_entry: Mock, c_instance: Conf
     entry1 = make_preset_entry('fileA', 'presetA', 'targetA.txt')
     entry2 = make_preset_entry('fileB', 'presetB', 'targetB.txt')
     mock_finalized_config = create_mock_finalized_config()
-    mock_ac1 = Configuration(mock_finalized_config, 'fileA/presetA', 'targetA.txt')
+    mock_ac1 = LegacyConfiguration(mock_finalized_config, 'fileA/presetA', 'targetA.txt')
     mock_process_entry.side_effect = [mock_ac1, None]
     presets_per_target = {
         'targetA.txt': [entry1],

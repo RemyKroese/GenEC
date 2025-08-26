@@ -7,7 +7,7 @@ from typing import Callable, Dict, Optional, Type, TypeVar, TYPE_CHECKING
 from GenEC import utils
 from GenEC.core import FileID, Workflows
 from GenEC.core.analyze import Extractor, Comparer
-from GenEC.core.config_manager import ConfigManager, Configuration
+from GenEC.core.config_manager import ConfigManager, LegacyConfiguration
 from GenEC.core.output_manager import OutputManager
 from GenEC.core.types.output import DataExtract, DataCompare, Entry
 
@@ -44,7 +44,7 @@ class Workflow(ABC):
             Configuration manager instance that provides workflow configurations.
         """
 
-    def _get_data(self, configurations: list[Configuration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
+    def _get_data(self, configurations: list[LegacyConfiguration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
         """
         Read source and reference files based on the workflow configurations.
 
@@ -64,7 +64,7 @@ class Workflow(ABC):
         return source_data, ref_data
 
     def _process_configurations(self,
-                                configurations: list[Configuration],
+                                configurations: list[LegacyConfiguration],
                                 source_data: dict[str, str],
                                 ref_data: Optional[dict[str, str]]
                                 ) -> defaultdict[str, list[Entry]]:

@@ -2,13 +2,16 @@
 
 from abc import ABC, abstractmethod
 import re
-from typing import Callable, Dict, Type, TypeVar
+from typing import Callable, Dict, Type, TypeVar, Union, TYPE_CHECKING
 
 from rich.console import Console
 
 from GenEC.core import PositionalFilterType, ConfigOptions, TextFilterTypes
 from GenEC.core.types.preset_config import Finalized
 from GenEC.core.prompts import create_prompt, Section, Key
+
+if TYPE_CHECKING:
+    from GenEC.core.configuration import ConfigurationType
 
 console = Console()
 
@@ -19,12 +22,19 @@ class BaseExtractor(ABC):
 
     Parameters
     ----------
-    config : Finalized
+    config : Union[Finalized, ConfigurationType]
         Configuration object containing extraction parameters.
     """
 
-    def __init__(self, config: Finalized):
+    def __init__(self, config: Union[Finalized, 'ConfigurationType']):
         self.config = config
+
+    def get_text_filter(self):
+        """Get text filter from config regardless of format."""
+        if hasattr(self.config, 'get'):
+            return self.config.get(ConfigOptions.TEXT_FILTER.value)
+        else:
+            return self.config.text_filter
 
     @abstractmethod
     def extract(self, clusters: list[str]) -> list[str]:  # pragma: no cover
@@ -140,7 +150,7 @@ class RegexExtractor(BaseExtractor):
         TypeError
             If the configured text filter is not a string.
         """
-        regex_pattern = self.config.get(ConfigOptions.TEXT_FILTER.value)
+        regex_pattern = self.get_text_filter()
         if not isinstance(regex_pattern, str):  # pragma: no cover
             raise TypeError('Incorrect text filter type for regex, expected a regex pattern.')
 
@@ -195,7 +205,7 @@ class PositionalExtractor(BaseExtractor):
         TypeError
             If the configured text filter is not a PositionalFilterType object.
         """
-        position_filter = self.config.get(ConfigOptions.TEXT_FILTER.value)
+        position_filter = self.get_text_filter()
         if not isinstance(position_filter, PositionalFilterType):  # pragma: no cover
             raise TypeError(
                 'Incorrect text filter type for positional, expected a PositionalFilterType object.'
@@ -242,7 +252,7 @@ class RegexListExtractor(BaseExtractor):
         TypeError
             If the text filter is not a list of regex patterns.
         """
-        text_filters = self.config.get(ConfigOptions.TEXT_FILTER.value)
+        text_filters = self.get_text_filter()
         if not isinstance(text_filters, list):  # pragma: no cover
             raise TypeError('Incorrect text filter type for regex-list, expected a list of regex patterns.')
 
@@ -251,9 +261,23 @@ class RegexListExtractor(BaseExtractor):
             clusters = [cluster for cluster in clusters if pattern.search(cluster)]
 
         # Copy the config for safe modification
-        new_config: Finalized = {
-            **self.config,
-            ConfigOptions.TEXT_FILTER_TYPE.value: TextFilterTypes.REGEX.value,
-            ConfigOptions.TEXT_FILTER.value: text_filters[-1],
-        }
+        if hasattr(self.config, 'get'):
+            # Legacy config format
+            new_config: Finalized = {
+                **self.config,
+                ConfigOptions.TEXT_FILTER_TYPE.value: TextFilterTypes.REGEX.value,
+                ConfigOptions.TEXT_FILTER.value: text_filters[-1],
+            }
+        else:
+            # New dataclass config format - create a temporary RegexConfiguration
+            from GenEC.core.configuration import RegexConfiguration
+            new_config = RegexConfiguration(
+                cluster_filter=self.config.cluster_filter,
+                should_slice_clusters=self.config.should_slice_clusters,
+                text_filter=text_filters[-1],
+                src_start_cluster_text=self.config.src_start_cluster_text,
+                src_end_cluster_text=self.config.src_end_cluster_text,
+                ref_start_cluster_text=self.config.ref_start_cluster_text,
+                ref_end_cluster_text=self.config.ref_end_cluster_text,
+            )
         return RegexExtractor(new_config).extract(clusters)
