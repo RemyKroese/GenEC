@@ -165,7 +165,7 @@ class ConfigurationBuilder:
         ConfigurationBuilder
             Builder instance for method chaining
         """
-        self._fields['preset'] = value
+        self._fields[ConfigOptions.PRESET.value] = value
         return self
 
     def with_target_file(self, value: str) -> 'ConfigurationBuilder':
@@ -182,7 +182,7 @@ class ConfigurationBuilder:
         ConfigurationBuilder
             Builder instance for method chaining
         """
-        self._fields['target_file'] = value
+        self._fields[ConfigOptions.TARGET_FILE.value] = value
         return self
 
     def with_group(self, value: str) -> 'ConfigurationBuilder':
@@ -199,7 +199,7 @@ class ConfigurationBuilder:
         ConfigurationBuilder
             Builder instance for method chaining
         """
-        self._fields['group'] = value
+        self._fields[ConfigOptions.GROUP.value] = value
         return self
 
     def build(self) -> BaseConfiguration:  # pylint: disable=R0912
@@ -240,9 +240,9 @@ class ConfigurationBuilder:
                 base_args[field_name] = self._fields[field_name]
 
         # Add metadata fields with defaults
-        base_args['preset'] = self._fields.get('preset', '')
-        base_args['target_file'] = self._fields.get('target_file', '')
-        base_args['group'] = self._fields.get('group', '')
+        base_args[ConfigOptions.PRESET.value] = self._fields.get('preset', '')
+        base_args[ConfigOptions.TARGET_FILE.value] = self._fields.get('target_file', '')
+        base_args[ConfigOptions.GROUP.value] = self._fields.get('group', '')
 
         # Create the appropriate configuration type based on filter_type
         if filter_type == TextFilterTypes.REGEX.value:

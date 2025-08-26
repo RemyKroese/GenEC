@@ -93,6 +93,12 @@ class ConfigOptions(Enum):
         Key for reference cluster start text.
     REF_END_CLUSTER_TEXT : str
         Key for reference cluster end text.
+    PRESET : str
+        Key for preset name.
+    TARGET_FILE : str
+        Key for target file name.
+    GROUP : str
+        Key for group name.
     """
 
     CLUSTER_FILTER = 'cluster_filter'
@@ -103,6 +109,9 @@ class ConfigOptions(Enum):
     SRC_END_CLUSTER_TEXT = 'src_end_cluster_text'
     REF_START_CLUSTER_TEXT = 'ref_start_cluster_text'
     REF_END_CLUSTER_TEXT = 'ref_end_cluster_text'
+    PRESET = 'preset'
+    TARGET_FILE = 'target_file'
+    GROUP = 'group'
 
 
 class TextFilterTypes(Enum):

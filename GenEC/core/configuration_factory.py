@@ -47,7 +47,7 @@ class BasicConfigurationFactory:
             create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER_REGEX)
         )
         if not cluster_filter:
-            cluster_filter = '\n'  # Default if empty
+            cluster_filter = r'\n'  # Default if empty
         builder.with_cluster_filter(cluster_filter)
 
         # Use existing text filter prompts based on filter type
@@ -91,9 +91,9 @@ class BasicConfigurationFactory:
 
             # Validate input
             if not line_str:
-                raise ValueError("Line number is required for positional filter")
+                raise ValueError(create_prompt(Section.ERROR_HANDLING, Key.LINE_NUMBER_REQUIRED))
             if not occurrence_str:
-                raise ValueError("Occurrence number is required for positional filter")
+                raise ValueError(create_prompt(Section.ERROR_HANDLING, Key.OCCURRENCE_NUMBER_REQUIRED))
 
             line = int(line_str)
             occurrence = int(occurrence_str)
@@ -113,16 +113,24 @@ class BasicConfigurationFactory:
         # If slicing clusters, prompt for boundary texts
         if should_slice:
             builder.with_src_start_cluster_text(
-                config_manager.ask_open_question("Source start cluster text: ") or None
+                config_manager.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.SOURCE_START_CLUSTER_TEXT)
+                ) or None
             )
             builder.with_src_end_cluster_text(
-                config_manager.ask_open_question("Source end cluster text: ") or None
+                config_manager.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.SOURCE_END_CLUSTER_TEXT)
+                ) or None
             )
             builder.with_ref_start_cluster_text(
-                config_manager.ask_open_question("Reference start cluster text: ") or None
+                config_manager.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.REFERENCE_START_CLUSTER_TEXT)
+                ) or None
             )
             builder.with_ref_end_cluster_text(
-                config_manager.ask_open_question("Reference end cluster text: ") or None
+                config_manager.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.REFERENCE_END_CLUSTER_TEXT)
+                ) or None
             )
 
         # Build and return the configuration
@@ -184,9 +192,9 @@ class WorkflowConfigurationFactory:
             ConfigOptions.SRC_END_CLUSTER_TEXT.value: extraction_config.src_end_cluster_text,
             ConfigOptions.REF_START_CLUSTER_TEXT.value: extraction_config.ref_start_cluster_text,
             ConfigOptions.REF_END_CLUSTER_TEXT.value: extraction_config.ref_end_cluster_text,
-            'preset': preset,
-            'target_file': target_file,
-            'group': ''
+            ConfigOptions.PRESET.value: preset,
+            ConfigOptions.TARGET_FILE.value: target_file,
+            ConfigOptions.GROUP.value: ''
         })
         return builder.build()
 
@@ -220,7 +228,7 @@ class WorkflowConfigurationFactory:
         configs = []
         for target_file, preset_entries in presets_per_file.items():
             for entry in preset_entries:
-                preset_target = entry['preset']
+                preset_target = entry[ConfigOptions.PRESET.value]
                 group = entry.get('group', '')
 
                 try:
@@ -239,19 +247,20 @@ class WorkflowConfigurationFactory:
                         ConfigOptions.SRC_END_CLUSTER_TEXT.value: extraction_config.src_end_cluster_text,
                         ConfigOptions.REF_START_CLUSTER_TEXT.value: extraction_config.ref_start_cluster_text,
                         ConfigOptions.REF_END_CLUSTER_TEXT.value: extraction_config.ref_end_cluster_text,
-                        'preset': preset_target,
-                        'target_file': target_file,
-                        'group': group
+                        ConfigOptions.PRESET.value: preset_target,
+                        ConfigOptions.TARGET_FILE.value: target_file,
+                        ConfigOptions.GROUP.value: group
                     })
                     configs.append(builder.build())
 
                 # Catching all exceptions is valid here
                 except Exception as e:  # pylint: disable=W0718
-                    console.print(f'[yellow]Skipping preset {preset_target}: {e}[/yellow]')
+                    console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_PRESET,
+                                                preset=preset_target, error=e))
                     continue
 
         if not configs:
-            raise ValueError('None of the provided presets were found.')
+            raise ValueError(create_prompt(Section.ERROR_HANDLING, Key.NO_PRESETS_FOUND))
         return configs
 
 
