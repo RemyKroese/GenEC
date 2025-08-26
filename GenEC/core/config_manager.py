@@ -9,11 +9,10 @@ import sys
 from rich.console import Console
 
 from GenEC import utils
-from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.configuration_factory import WorkflowConfigurationFactory
-
-DEFAULT_CLUSTER_FILTER = r'\n'
+from GenEC.core.prompts import Section, Key, create_prompt
+from GenEC.core.specs import ConfigOptions
 
 console = Console()
 YES_INPUT = ['yes', 'y']
@@ -194,7 +193,7 @@ class ConfigManager:
 
                 # Add group information to preset entry
                 preset_entry_with_group = preset_entry.copy()
-                preset_entry_with_group['group'] = group_name
+                preset_entry_with_group[ConfigOptions.GROUP.value] = group_name
                 preset_entry_with_group['target'] = target_file
 
                 grouped_presets[target_file].append(preset_entry_with_group)

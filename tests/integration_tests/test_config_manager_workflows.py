@@ -39,7 +39,7 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
             'ref_end_cluster_text': ''
         },
         'sub_preset_B': {
-            'cluster_filter': '\\n',
+            'cluster_filter': r'\n',
             'text_filter_type': 'Regex',
             'text_filter': '[a-zA-z]{4}',
             'should_slice_clusters': False,
@@ -75,9 +75,9 @@ class TestConfigManagerWorkflows:
     @pytest.mark.integration
     @patch('GenEC.core.configuration_factory.WorkflowConfigurationFactory.create_preset_list_configs')
     @pytest.mark.parametrize('mock_configs, expected_count', [
-        ([RegexConfiguration(cluster_filter='\\n', should_slice_clusters=False, text_filter='test1')], 1),
-        ([RegexConfiguration(cluster_filter='\\n', should_slice_clusters=False, text_filter='test1'),
-          RegexConfiguration(cluster_filter='\\n', should_slice_clusters=False, text_filter='test2')], 2)
+        ([RegexConfiguration(cluster_filter=r'\n', should_slice_clusters=False, text_filter='test1')], 1),
+        ([RegexConfiguration(cluster_filter=r'\n', should_slice_clusters=False, text_filter='test1'),
+          RegexConfiguration(cluster_filter=r'\n', should_slice_clusters=False, text_filter='test2')], 2)
     ])
     def test_init_with_preset_list_type(self, mock_create_configs: Mock, mock_configs: list, expected_count: int) -> None:
         """Test initialization with preset-list type."""
@@ -150,7 +150,7 @@ class TestConfigManagerWorkflows:
     def test_set_config_no_preset(self, mock_build: Mock, c_instance: ConfigManager) -> None:
         """Test set_config without preset (interactive mode)."""
         mock_config = RegexConfiguration(
-            cluster_filter='\\n',
+            cluster_filter=r'\n',
             should_slice_clusters=False,
             text_filter='test.*'
         )

@@ -65,6 +65,16 @@ class Key(Enum):
     TEXT_FILTER_LIST_ITEM_TYPE_ERROR = 'text_filter_list_item_type_error'
     INVALID_POSITIONAL_FILTER_CONFIG = 'invalid_positional_filter_config'
 
+    # CONFIGURATION_FACTORY
+    SOURCE_START_CLUSTER_TEXT = 'source_start_cluster_text'
+    SOURCE_END_CLUSTER_TEXT = 'source_end_cluster_text'
+    REFERENCE_START_CLUSTER_TEXT = 'reference_start_cluster_text'
+    REFERENCE_END_CLUSTER_TEXT = 'reference_end_cluster_text'
+    LINE_NUMBER_REQUIRED = 'line_number_required'
+    OCCURRENCE_NUMBER_REQUIRED = 'occurrence_number_required'
+    NO_PRESETS_FOUND = 'no_presets_found'
+    SKIPPING_PRESET = 'skipping_preset'
+
 
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
 ENTER_IS_WHITESPACE = '[gold]Enter[/gold]=[purple]whitespace ( )[/purple]'
@@ -88,7 +98,11 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
             Key.POSITIONAL_OCCURRENCE: '[bold cyan]Occurrence number:[/bold cyan] ',
             Key.REGEX_FILTER: '[bold cyan]Regex filter:[/bold cyan] ',
             Key.REGEX_LIST_FILTER: '[bold cyan]Regex filter for search {search}:[/bold cyan] ',
-            Key.REGEX_LIST_CONTINUE: f'[bold cyan]Add another search parameter?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: '
+            Key.REGEX_LIST_CONTINUE: f'[bold cyan]Add another search parameter?[/bold cyan] \\[yes/y, {ENTER_IS_SKIP}]: ',
+            Key.SOURCE_START_CLUSTER_TEXT: f'[bold cyan]Source start cluster text[/bold cyan] \\[{ENTER_IS_SKIP}]: ',
+            Key.SOURCE_END_CLUSTER_TEXT: f'[bold cyan]Source end cluster text[/bold cyan] \\[{ENTER_IS_SKIP}]: ',
+            Key.REFERENCE_START_CLUSTER_TEXT: f'[bold cyan]Reference start cluster text[/bold cyan] \\[{ENTER_IS_SKIP}]: ',
+            Key.REFERENCE_END_CLUSTER_TEXT: f'[bold cyan]Reference end cluster text[/bold cyan] \\[{ENTER_IS_SKIP}]: '
         },
         Section.USER_CHOICE: {
             Key.CHOICE: '[bold cyan]Select option[/bold cyan] [0-{max_index}]: ',
@@ -132,7 +146,11 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
                                                    '[bold red]in text_filter must be string, got[/bold red] '
                                                    '[yellow]{actual_type}[/yellow]'),
             Key.INVALID_POSITIONAL_FILTER_CONFIG: ('[bold red]ERROR: Invalid positional filter configuration:[/bold red] '
-                                                   '[yellow]{error}[/yellow]')
+                                                   '[yellow]{error}[/yellow]'),
+            Key.LINE_NUMBER_REQUIRED: '[bold red]ERROR: Line number is required for positional filter[/bold red]',
+            Key.OCCURRENCE_NUMBER_REQUIRED: '[bold red]ERROR: Occurrence number is required for positional filter[/bold red]',
+            Key.NO_PRESETS_FOUND: '[bold red]ERROR: None of the provided presets were found[/bold red]',
+            Key.SKIPPING_PRESET: '[yellow]Skipping preset {preset}: {error}[/yellow]'
         }
     }
 }

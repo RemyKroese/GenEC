@@ -8,6 +8,7 @@ import pytest
 from rich.console import Console
 
 from GenEC.core.output_manager import OutputManager
+from GenEC.core.specs import ConfigOptions
 from GenEC.core.types.output import Entry, DataExtract, DataCompare
 
 MOCK_RESULTS_COMPARISON: list[Entry] = [
@@ -76,7 +77,7 @@ def test_process_various_output_types(mock_write_output: Mock, mock_print: Mock,
             expected_create_calls.append(
                 call(
                     entry['data'],
-                    entry['preset'],
+                    entry[ConfigOptions.PRESET.value],
                     entry['target']))
 
             expected_txt_output.append(MOCK_ASCII_TABLE)
