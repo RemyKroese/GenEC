@@ -350,7 +350,7 @@ class ConfigManager:
         file_name, preset_name = preset_param.split('/', 1)
         return file_name, preset_name
 
-    def load_presets(self, presets_list_target: str,
+    def load_presets(self, presets_list_target: str,  # pylint: disable=R0914
                      target_variables: Optional[dict[str, str]] = None) -> list[LegacyConfiguration]:  # pragma: no cover
         """
         Load multiple presets from a YAML file and process them into configurations.
@@ -734,18 +734,21 @@ class ConfigManager:
         latest_config = self.configurations[-1].config
 
         # Handle both new ConfigurationType and legacy formats
-        if hasattr(latest_config, 'to_dict'):
-            config_dict = latest_config.to_dict()
-
-            # Convert any dataclass objects in the text_filter field
-            if 'text_filter' in config_dict and is_dataclass(config_dict['text_filter']):
-                config_dict['text_filter'] = asdict(config_dict['text_filter'])
-
-            # Filter out None values for clean preset output
-            return {k: v for k, v in config_dict.items() if v is not None}
-        else:
+        if isinstance(latest_config, dict):
             # Legacy format - already a dict
             return {k: v for k, v in latest_config.items() if v is not None}
+
+        # New dataclass config format
+        config_dict = latest_config.to_dict()
+
+        # Convert any dataclass objects in the text_filter field
+        if 'text_filter' in config_dict:
+            text_filter = config_dict['text_filter']
+            if text_filter is not None and is_dataclass(text_filter):
+                config_dict['text_filter'] = asdict(text_filter)
+
+        # Filter out None values for clean preset output
+        return {k: v for k, v in config_dict.items() if v is not None}
 
     def create_new_preset(self) -> None:
         """Create a preset from the configuration to be written to a file."""

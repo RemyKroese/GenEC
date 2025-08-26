@@ -17,7 +17,7 @@ import yaml
 from GenEC.core import MetaData
 
 if TYPE_CHECKING:  # pragma: no cover
-    from GenEC.core.config_manager import Configuration
+    from GenEC.core.config_manager import LegacyConfiguration
     from GenEC.core.types.output import DataCompare, DataExtract, Entry
 
 
@@ -53,7 +53,7 @@ def get_list_each_element_count(elements: list[str]) -> dict[str, int]:
     return dict(Counter(elements))
 
 
-def read_files(base_path: str, configurations: list['Configuration']) -> dict[str, str]:
+def read_files(base_path: str, configurations: list['LegacyConfiguration']) -> dict[str, str]:
     """
     Read multiple files based on provided configurations.
 

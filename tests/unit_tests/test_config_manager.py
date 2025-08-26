@@ -449,7 +449,11 @@ def test_process_preset_entry_found(mock_load_preset_file: Mock, c_instance: Con
     assert isinstance(result, LegacyConfiguration)
     assert result.preset == 'fileA/presetA'
     assert result.target_file == 'targetA.txt'
-    assert result.config['cluster_filter'] == '\n\n'
+    # Handle both legacy and new config formats
+    if isinstance(result.config, dict):
+        assert result.config['cluster_filter'] == '\n\n'
+    else:
+        assert result.config.cluster_filter == '\n\n'
 
 
 @pytest.mark.unit
