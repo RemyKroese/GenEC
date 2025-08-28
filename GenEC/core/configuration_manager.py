@@ -1,5 +1,6 @@
 """Module for managing configurations in GenEC."""
 
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import is_dataclass, asdict
 from pathlib import Path
@@ -20,7 +21,7 @@ YES_INPUT = ['yes', 'y']
 T = TypeVar('T')
 
 
-class ConfigurationManager:
+class ConfigurationManager(ABC):
     """
     Manages preset configuration loading, processing, and finalization.
 
@@ -355,3 +356,24 @@ class ConfigurationManager:
             utils.append_to_file(f'\n{preset_name}:\n', preset_file_path)
             preset_yaml_data = utils.convert_to_yaml(preset_data)
             utils.append_to_file(preset_yaml_data, preset_file_path)
+
+
+class BasicConfigurationManager(ConfigurationManager):
+    """Configuration manager for single configuration workflows."""
+
+    def __init__(self) -> None:
+        self.configuration: BaseConfiguration
+
+
+class PresetConfigurationManager(ConfigurationManager):
+    """Configuration manager for preset workflows."""
+
+    def __init__(self) -> None:
+        self.configuration: BaseConfiguration
+
+
+class BatchConfigurationManager(ConfigurationManager):
+    """Configuration manager for preset-list workflows."""
+
+    def __init__(self) -> None:
+        self.configurations: list[BaseConfiguration] = []
