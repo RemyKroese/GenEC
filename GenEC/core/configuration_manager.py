@@ -20,7 +20,7 @@ YES_INPUT = ['yes', 'y']
 T = TypeVar('T')
 
 
-class ConfigManager:
+class ConfigurationManager:
     """
     Manages preset configuration loading, processing, and finalization.
 

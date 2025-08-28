@@ -1,10 +1,10 @@
-"""Clean integration tests for GenEC ConfigManager workflows."""
+"""Clean integration tests for GenEC ConfigurationManager workflows."""
 
 from typing import Any
 from unittest.mock import patch, Mock
 import pytest
 
-from GenEC.core.config_manager import ConfigManager
+from GenEC.core.configuration_manager import ConfigurationManager
 from GenEC.core.configuration import RegexConfiguration
 
 
@@ -53,24 +53,24 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
 
 
 @pytest.fixture
-def c_instance() -> ConfigManager:
-    """Create ConfigManager instance for testing."""
-    return ConfigManager(auto_configure=False)
+def c_instance() -> ConfigurationManager:
+    """Create ConfigurationManager instance for testing."""
+    return ConfigurationManager(auto_configure=False)
 
 
-class TestConfigManagerWorkflows:
-    """Test ConfigManager integration workflows."""
+class TestConfigurationManagerWorkflows:
+    """Test ConfigurationManager integration workflows."""
 
     @pytest.mark.integration
-    @patch.object(ConfigManager, 'load_preset_file')
+    @patch.object(ConfigurationManager, 'load_preset_file')
     def test_init_with_preset_type(self, mock_load_preset_file: Mock) -> None:
         """Test initialization with preset type."""
         mock_load_preset_file.return_value = create_test_preset_data()
 
         preset_param = {'type': 'preset', 'value': 'test_preset'}
-        config_manager = ConfigManager(preset_param=preset_param)
+        configuration_manager = ConfigurationManager(preset_param=preset_param)
 
-        assert len(config_manager.configurations) == 1
+        assert len(configuration_manager.configurations) == 1
 
     @pytest.mark.integration
     @patch('GenEC.core.configuration_factory.WorkflowConfigurationFactory.create_preset_list_configs')
@@ -84,9 +84,9 @@ class TestConfigManagerWorkflows:
         mock_create_configs.return_value = mock_configs
 
         preset_param = {'type': 'preset-list', 'value': 'test_list'}
-        config_manager = ConfigManager(preset_param=preset_param)
+        configuration_manager = ConfigurationManager(preset_param=preset_param)
 
-        assert len(config_manager.configurations) == expected_count
+        assert len(configuration_manager.configurations) == expected_count
 
     @pytest.mark.integration
     def test_init_with_invalid_type(self) -> None:
@@ -94,12 +94,12 @@ class TestConfigManagerWorkflows:
         preset_param = {'type': 'invalid_type', 'value': 'test'}
 
         with pytest.raises(ValueError, match='is not a valid preset parameter type'):
-            ConfigManager(preset_param=preset_param)
+            ConfigurationManager(preset_param=preset_param)
 
     @pytest.mark.integration
-    @patch.object(ConfigManager, 'load_preset_file')
-    @patch.object(ConfigManager, 'ask_mpc_question')
-    def test_load_preset_no_preset_name(self, mockask_mpc_question: Mock, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'load_preset_file')
+    @patch.object(ConfigurationManager, 'ask_mpc_question')
+    def test_load_preset_no_preset_name(self, mockask_mpc_question: Mock, mock_load_preset_file: Mock, c_instance: ConfigurationManager) -> None:
         """Test loading preset when no preset name is provided."""
         multiple_presets = create_multiple_presets_data()
         mock_load_preset_file.return_value = multiple_presets
@@ -113,8 +113,8 @@ class TestConfigManagerWorkflows:
         assert result == multiple_presets[preset_name]
 
     @pytest.mark.integration
-    @patch.object(ConfigManager, 'load_preset_file')
-    def test_load_preset_invalid_preset_name(self, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'load_preset_file')
+    def test_load_preset_invalid_preset_name(self, mock_load_preset_file: Mock, c_instance: ConfigurationManager) -> None:
         """Test loading preset with invalid preset name."""
         test_presets = create_test_preset_data()
         mock_load_preset_file.return_value = test_presets
@@ -123,8 +123,8 @@ class TestConfigManagerWorkflows:
             c_instance.load_preset('test_file/invalid_preset')
 
     @pytest.mark.integration
-    @patch.object(ConfigManager, 'load_preset_file')
-    def test_load_from_single_preset(self, mock_load_preset_file: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'load_preset_file')
+    def test_load_from_single_preset(self, mock_load_preset_file: Mock, c_instance: ConfigurationManager) -> None:
         """Test loading from file with single preset."""
         test_presets = create_test_preset_data()
         mock_load_preset_file.return_value = test_presets
@@ -134,9 +134,10 @@ class TestConfigManagerWorkflows:
         assert result == test_presets['main_preset']
 
     @pytest.mark.integration
-    @patch.object(ConfigManager, 'load_preset_file')
+    @patch.object(ConfigurationManager, 'load_preset_file')
     @pytest.mark.parametrize('preset_name', ['main_preset', 'sub_preset_A'])
-    def test_load_from_multiple_presets_existing_preset_name(self, mock_load_preset_file: Mock, preset_name: str, c_instance: ConfigManager) -> None:
+    def test_load_from_multiple_presets_existing_preset_name(self, mock_load_preset_file: Mock,
+                                                             preset_name: str, c_instance: ConfigurationManager) -> None:
         """Test loading specific preset from multiple presets."""
         multiple_presets = create_multiple_presets_data()
         mock_load_preset_file.return_value = multiple_presets
@@ -147,7 +148,7 @@ class TestConfigManagerWorkflows:
 
     @pytest.mark.integration
     @patch('GenEC.core.configuration_factory.BasicConfigurationFactory.build_interactive')
-    def test_set_config_no_preset(self, mock_build: Mock, c_instance: ConfigManager) -> None:
+    def test_set_config_no_preset(self, mock_build: Mock, c_instance: ConfigurationManager) -> None:
         """Test set_config without preset (interactive mode)."""
         mock_config = RegexConfiguration(
             cluster_filter=r'\n',

@@ -7,7 +7,7 @@ from typing import Callable, Optional, Type, TypeVar, TYPE_CHECKING
 from GenEC import utils
 from GenEC.core import FileID, Workflows
 from GenEC.core.analyze import Extractor, Comparer
-from GenEC.core.config_manager import ConfigManager
+from GenEC.core.configuration_manager import ConfigurationManager
 from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.output_manager import OutputManager
 from GenEC.core.types.output import DataExtract, DataCompare, Entry
@@ -32,16 +32,16 @@ class Workflow(ABC):
         self.reference = args.reference
         self.output_directory = args.output_directory
         self.output_types = args.output_types
-        self.config_manager: ConfigManager
+        self.configuration_manager: ConfigurationManager
 
     @abstractmethod
-    def _get_config_manager(self) -> ConfigManager:  # pragma: no cover
+    def _get_configuration_manager(self) -> ConfigurationManager:  # pragma: no cover
         """
         Return the configuration manager for this workflow.
 
         Returns
         -------
-        ConfigManager
+        ConfigurationManager
             Configuration manager instance that provides workflow configurations.
         """
 
@@ -115,9 +115,9 @@ class Workflow(ABC):
 
     def run(self) -> None:
         """Execute the workflow: read files, process configurations, and generate output."""
-        assert self.config_manager is not None, 'config_manager must be initialized before run()'
-        source_data, ref_data = self._get_data(self.config_manager.configurations)
-        results = self._process_configurations(self.config_manager.configurations, source_data, ref_data)
+        assert self.configuration_manager is not None, 'configuration_manager must be initialized before run()'
+        source_data, ref_data = self._get_data(self.configuration_manager.configurations)
+        results = self._process_configurations(self.configuration_manager.configurations, source_data, ref_data)
 
         output_manager = OutputManager(self.output_directory, self.output_types)
         output_manager.process(results, root=self.source, is_comparison=bool(ref_data))
@@ -187,25 +187,25 @@ class Basic(Workflow):
 
     def __init__(self, args: 'argparse.Namespace'):
         super().__init__(args)
-        self.config_manager = self._get_config_manager()
+        self.configuration_manager = self._get_configuration_manager()
 
-    def _get_config_manager(self) -> ConfigManager:
+    def _get_configuration_manager(self) -> ConfigurationManager:
         """
-        Initialize a ConfigManager.
+        Initialize a ConfigurationManager.
 
         Returns
         -------
-        ConfigManager
+        ConfigurationManager
             Configuration manager initialized.
         """
-        return ConfigManager()
+        return ConfigurationManager()
 
     def run(self) -> None:
         """Execute the base workflow and request if a preset should be generated from the CLI input."""
         super().run()
         print('\n')
-        if self.config_manager.should_store_configuration():
-            self.config_manager.create_new_preset()
+        if self.configuration_manager.should_store_configuration():
+            self.configuration_manager.create_new_preset()
 
 
 @register_workflow(Workflows.PRESET.value)
@@ -223,19 +223,19 @@ class Preset(Workflow):
         super().__init__(args)
         self.preset = args.preset
         self.presets_directory = args.presets_directory
-        self.config_manager = self._get_config_manager()
+        self.configuration_manager = self._get_configuration_manager()
 
-    def _get_config_manager(self) -> ConfigManager:
+    def _get_configuration_manager(self) -> ConfigurationManager:
         """
-        Initialize a ConfigManager for the specified preset.
+        Initialize a ConfigurationManager for the specified preset.
 
         Returns
         -------
-        ConfigManager
+        ConfigurationManager
             Configuration manager initialized with the preset.
         """
         preset_param: dict[str, str] = {'type': Workflows.PRESET.value, 'value': self.preset}
-        return ConfigManager(preset_param, self.presets_directory)
+        return ConfigurationManager(preset_param, self.presets_directory)
 
 
 @register_workflow(Workflows.PRESET_LIST.value)
@@ -255,16 +255,16 @@ class PresetList(Workflow):
         self.preset_list = args.preset_list
         self.presets_directory = args.presets_directory
         self.target_variables = args.target_variables
-        self.config_manager = self._get_config_manager()
+        self.configuration_manager = self._get_configuration_manager()
 
-    def _get_config_manager(self) -> ConfigManager:
+    def _get_configuration_manager(self) -> ConfigurationManager:
         """
-        Initialize a ConfigManager for the specified list of presets.
+        Initialize a ConfigurationManager for the specified list of presets.
 
         Returns
         -------
-        ConfigManager
+        ConfigurationManager
             Configuration manager initialized with the preset list.
         """
         preset_param: dict[str, str] = {'type': Workflows.PRESET_LIST.value, 'value': self.preset_list}
-        return ConfigManager(preset_param, self.presets_directory, self.target_variables)
+        return ConfigurationManager(preset_param, self.presets_directory, self.target_variables)
