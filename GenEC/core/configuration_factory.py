@@ -11,21 +11,21 @@ from GenEC.core.prompts import Section, Key, create_prompt
 from GenEC.core.specs import PositionalFilterType, TextFilterTypes, ConfigOptions
 
 if TYPE_CHECKING:
-    from GenEC.core.config_manager import ConfigManager
+    from GenEC.core.configuration_manager import ConfigurationManager
 
 
 class BasicConfigurationFactory:
     """Factory for creating configurations interactively."""
 
     @staticmethod
-    def build_interactive(config_manager: 'ConfigManager') -> BaseConfiguration:  # pylint: disable=R0914
+    def build_interactive(configuration_manager: 'ConfigurationManager') -> BaseConfiguration:  # pylint: disable=R0914
         """
         Build a configuration by prompting the user for all values using existing prompt methods.
 
         Parameters
         ----------
-        config_manager : ConfigManager
-            ConfigManager instance with access to prompt methods
+        configuration_manager : ConfigurationManager
+            ConfigurationManager instance with access to prompt methods
 
         Returns
         -------
@@ -36,14 +36,14 @@ class BasicConfigurationFactory:
 
         # Use existing filter type selection with menu
         filter_options = [t.value for t in TextFilterTypes]
-        filter_type = config_manager.ask_mpc_question(
+        filter_type = configuration_manager.ask_mpc_question(
             create_prompt(Section.SET_CONFIG, Key.TEXT_FILTER_TYPE),
             filter_options
         )
         builder.with_filter_type(filter_type)
 
         # Use existing cluster filter prompt
-        cluster_filter = config_manager.ask_open_question(
+        cluster_filter = configuration_manager.ask_open_question(
             create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER_REGEX)
         )
         if not cluster_filter:
@@ -52,7 +52,7 @@ class BasicConfigurationFactory:
 
         # Use existing text filter prompts based on filter type
         if filter_type == TextFilterTypes.REGEX.value:
-            regex_pattern = config_manager.ask_open_question(
+            regex_pattern = configuration_manager.ask_open_question(
                 create_prompt(Section.SET_CONFIG, Key.REGEX_FILTER)
             )
             builder.with_text_filter(regex_pattern)
@@ -61,7 +61,7 @@ class BasicConfigurationFactory:
             patterns: list[str] = []
             search_count = 1
             while True:
-                pattern = config_manager.ask_open_question(
+                pattern = configuration_manager.ask_open_question(
                     create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_FILTER, search=search_count)
                 )
                 if not pattern:
@@ -70,7 +70,7 @@ class BasicConfigurationFactory:
                 search_count += 1
 
                 # Ask if user wants to add another pattern
-                continue_response = config_manager.ask_open_question(
+                continue_response = configuration_manager.ask_open_question(
                     create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_CONTINUE)
                 ).lower()
                 if continue_response not in ('yes', 'y'):
@@ -79,13 +79,13 @@ class BasicConfigurationFactory:
 
         elif filter_type == TextFilterTypes.POSITIONAL.value:
             # Use existing positional filter prompts
-            separator = config_manager.ask_open_question(
+            separator = configuration_manager.ask_open_question(
                 create_prompt(Section.SET_CONFIG, Key.POSITIONAL_SEPARATOR)
             )
-            line_str = config_manager.ask_open_question(
+            line_str = configuration_manager.ask_open_question(
                 create_prompt(Section.SET_CONFIG, Key.POSITIONAL_LINE)
             )
-            occurrence_str = config_manager.ask_open_question(
+            occurrence_str = configuration_manager.ask_open_question(
                 create_prompt(Section.SET_CONFIG, Key.POSITIONAL_OCCURRENCE)
             )
 
@@ -105,7 +105,7 @@ class BasicConfigurationFactory:
             builder.with_text_filter(positional_filter)
 
         # Now ask about slicing clusters (after text filter is set)
-        should_slice = config_manager.ask_open_question(
+        should_slice = configuration_manager.ask_open_question(
             create_prompt(Section.SET_CONFIG, Key.SHOULD_SLICE_CLUSTERS)
         ).lower() in ('y', 'yes')
         builder.with_should_slice_clusters(should_slice)
@@ -113,22 +113,22 @@ class BasicConfigurationFactory:
         # If slicing clusters, prompt for boundary texts
         if should_slice:
             builder.with_src_start_cluster_text(
-                config_manager.ask_open_question(
+                configuration_manager.ask_open_question(
                     create_prompt(Section.SET_CONFIG, Key.SOURCE_START_CLUSTER_TEXT)
                 ) or None
             )
             builder.with_src_end_cluster_text(
-                config_manager.ask_open_question(
+                configuration_manager.ask_open_question(
                     create_prompt(Section.SET_CONFIG, Key.SOURCE_END_CLUSTER_TEXT)
                 ) or None
             )
             builder.with_ref_start_cluster_text(
-                config_manager.ask_open_question(
+                configuration_manager.ask_open_question(
                     create_prompt(Section.SET_CONFIG, Key.REFERENCE_START_CLUSTER_TEXT)
                 ) or None
             )
             builder.with_ref_end_cluster_text(
-                config_manager.ask_open_question(
+                configuration_manager.ask_open_question(
                     create_prompt(Section.SET_CONFIG, Key.REFERENCE_END_CLUSTER_TEXT)
                 ) or None
             )
@@ -141,25 +141,25 @@ class WorkflowConfigurationFactory:
     """Factory for creating workflow-specific configurations."""
 
     @staticmethod
-    def create_basic_config(config_manager: 'ConfigManager') -> BaseConfiguration:
+    def create_basic_config(configuration_manager: 'ConfigurationManager') -> BaseConfiguration:
         """
         Create a basic workflow configuration.
 
         Parameters
         ----------
-        config_manager : ConfigManager
-            ConfigManager instance with access to prompt methods
+        configuration_manager : ConfigurationManager
+            ConfigurationManager instance with access to prompt methods
 
         Returns
         -------
         BaseConfiguration
             Configuration for basic workflow (no metadata)
         """
-        return BasicConfigurationFactory.build_interactive(config_manager)
+        return BasicConfigurationFactory.build_interactive(configuration_manager)
 
     @staticmethod
     def create_preset_config(
-            config_manager: 'ConfigManager',
+            configuration_manager: 'ConfigurationManager',
             preset: str,
             target_file: str = '') -> BaseConfiguration:
         """
@@ -167,8 +167,8 @@ class WorkflowConfigurationFactory:
 
         Parameters
         ----------
-        config_manager : ConfigManager
-            ConfigManager instance for loading presets
+        configuration_manager : ConfigurationManager
+            ConfigurationManager instance for loading presets
         preset : str
             Preset string in 'file/preset' format
         target_file : str, optional
@@ -179,7 +179,7 @@ class WorkflowConfigurationFactory:
         BaseConfiguration
             Configuration for preset workflow with metadata
         """
-        extraction_config = PresetConfigurationFactory.build_from_preset(config_manager, preset)
+        extraction_config = PresetConfigurationFactory.build_from_preset(configuration_manager, preset)
 
         # Create a new config with metadata by rebuilding through the builder
         builder = ConfigurationBuilder()
@@ -200,7 +200,7 @@ class WorkflowConfigurationFactory:
 
     @staticmethod
     def create_preset_list_configs(
-            config_manager: 'ConfigManager',
+            configuration_manager: 'ConfigurationManager',
             presets_list_target: str,
             target_variables: Optional[dict[str, str]] = None) -> list[BaseConfiguration]:
         """
@@ -208,8 +208,8 @@ class WorkflowConfigurationFactory:
 
         Parameters
         ----------
-        config_manager : ConfigManager
-            ConfigManager instance for loading presets
+        configuration_manager : ConfigurationManager
+            ConfigurationManager instance for loading presets
         presets_list_target : str
             The name of the presets list YAML file (without extension)
         target_variables : Optional[dict[str, str]], optional
@@ -222,8 +222,8 @@ class WorkflowConfigurationFactory:
         """
         console = Console()
 
-        presets_list = utils.read_yaml_file(config_manager.presets_directory / f'{presets_list_target}.yaml')
-        presets_per_file = config_manager.group_presets_by_file(presets_list, target_variables)
+        presets_list = utils.read_yaml_file(configuration_manager.presets_directory / f'{presets_list_target}.yaml')
+        presets_per_file = configuration_manager.group_presets_by_file(presets_list, target_variables)
 
         configs = []
         for target_file, preset_entries in presets_per_file.items():
@@ -234,7 +234,7 @@ class WorkflowConfigurationFactory:
                 try:
                     # preset_target is already in the format 'file/preset_name'
                     extraction_config = PresetConfigurationFactory.build_from_preset(
-                        config_manager, preset_target)
+                        configuration_manager, preset_target)
 
                     # Create config with full metadata
                     builder = ConfigurationBuilder()
@@ -269,9 +269,9 @@ class PresetConfigurationFactory:
 
     @staticmethod
     def build_from_preset(  # pylint: disable=R0914
-            config_manager: 'ConfigManager', preset_target: str) -> BaseConfiguration:
+            configuration_manager: 'ConfigurationManager', preset_target: str) -> BaseConfiguration:
         """Build configuration from a preset."""
-        initialized_config = config_manager.load_preset(preset_target)
+        initialized_config = configuration_manager.load_preset(preset_target)
         return PresetConfigurationFactory._convert_initialized_to_new_config(initialized_config)
 
     @staticmethod

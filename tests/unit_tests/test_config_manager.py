@@ -1,4 +1,4 @@
-"""Clean unit tests for GenEC ConfigManager individual methods."""
+"""Clean unit tests for GenEC ConfigurationManager individual methods."""
 # pylint: disable=protected-access
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch, Mock
 import pytest
 
-from GenEC.core.config_manager import ConfigManager
+from GenEC.core.configuration_manager import ConfigurationManager
 from GenEC.core.configuration import RegexConfiguration
 
 
@@ -57,17 +57,17 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
 
 
 @pytest.fixture
-def c_instance() -> ConfigManager:
-    """Create a ConfigManager instance for testing."""
-    return ConfigManager(auto_configure=False)
+def c_instance() -> ConfigurationManager:
+    """Create a ConfigurationManager instance for testing."""
+    return ConfigurationManager(auto_configure=False)
 
 
-class TestConfigManagerUserInteraction:
+class TestConfigurationManagerUserInteraction:
     """Test user interaction methods."""
 
     @pytest.mark.unit
     @patch('builtins.input')
-    def test_ask_open_question(self, mock_input: Mock, c_instance: ConfigManager) -> None:
+    def test_ask_open_question(self, mock_input: Mock, c_instance: ConfigurationManager) -> None:
         """Test ask_open_question method."""
         mock_input.return_value = 'test_response'
         result = c_instance.ask_open_question('Test question: ')
@@ -76,7 +76,7 @@ class TestConfigManagerUserInteraction:
 
     @pytest.mark.unit
     @patch('builtins.input')
-    def test_ask_mpc_question_valid_choice(self, mock_input: Mock, c_instance: ConfigManager) -> None:
+    def test_ask_mpc_question_valid_choice(self, mock_input: Mock, c_instance: ConfigurationManager) -> None:
         """Test ask_mpc_question with valid choice."""
         mock_input.return_value = '1'
         options = ['option1', 'option2', 'option3']
@@ -85,7 +85,7 @@ class TestConfigManagerUserInteraction:
 
     @pytest.mark.unit
     @patch('builtins.input')
-    def test_ask_mpc_question_exit_choice(self, mock_input: Mock, c_instance: ConfigManager) -> None:
+    def test_ask_mpc_question_exit_choice(self, mock_input: Mock, c_instance: ConfigurationManager) -> None:
         """Test ask_mpc_question with exit choice."""
         mock_input.return_value = '0'
         options = ['option1', 'option2']
@@ -95,7 +95,7 @@ class TestConfigManagerUserInteraction:
 
     @pytest.mark.unit
     @patch('builtins.input')
-    def test_get_user_choice_valid(self, mock_input: Mock, c_instance: ConfigManager) -> None:
+    def test_get_user_choice_valid(self, mock_input: Mock, c_instance: ConfigurationManager) -> None:
         """Test _get_user_choice with valid input."""
         mock_input.return_value = '2'
         result = c_instance._get_user_choice(3)
@@ -103,7 +103,7 @@ class TestConfigManagerUserInteraction:
 
     @pytest.mark.unit
     @patch('builtins.input')
-    def test_get_user_choice_invalid_then_valid(self, mock_input: Mock, c_instance: ConfigManager) -> None:
+    def test_get_user_choice_invalid_then_valid(self, mock_input: Mock, c_instance: ConfigurationManager) -> None:
         """Test _get_user_choice with invalid then valid input."""
         mock_input.side_effect = ['invalid', '10', '2']
         result = c_instance._get_user_choice(3)
@@ -111,13 +111,13 @@ class TestConfigManagerUserInteraction:
         assert mock_input.call_count == 3
 
 
-class TestConfigManagerPresetLoading:
+class TestConfigurationManagerPresetLoading:
     """Test preset loading methods."""
 
     @pytest.mark.unit
     @patch('GenEC.utils.read_yaml_file')
-    @patch.object(ConfigManager, '__init__', lambda x, **kwargs: None)
-    def test_load_preset_file_success(self, mock_read_yaml: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, '__init__', lambda x, **kwargs: None)
+    def test_load_preset_file_success(self, mock_read_yaml: Mock, c_instance: ConfigurationManager) -> None:
         """Test successful preset file loading."""
         # Manually set the presets_directory since __init__ is mocked
         c_instance.presets_directory = Path('/fake/presets')
@@ -132,14 +132,14 @@ class TestConfigManagerPresetLoading:
 
     @pytest.mark.unit
     @patch('GenEC.utils.read_yaml_file')
-    def test_load_preset_file_not_found(self, mock_read_yaml: Mock, c_instance: ConfigManager) -> None:
+    def test_load_preset_file_not_found(self, mock_read_yaml: Mock, c_instance: ConfigurationManager) -> None:
         """Test preset file not found."""
         with pytest.raises(FileNotFoundError):
             c_instance.load_preset_file('nonexistent')
 
     @pytest.mark.unit
-    @patch.object(ConfigManager, 'load_preset_file')
-    def test_load_preset_with_file_and_name(self, mock_load_file: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'load_preset_file')
+    def test_load_preset_with_file_and_name(self, mock_load_file: Mock, c_instance: ConfigurationManager) -> None:
         """Test loading preset with file/name format."""
         mock_load_file.return_value = create_multiple_presets_data()
 
@@ -150,8 +150,8 @@ class TestConfigManagerPresetLoading:
         assert result == expected
 
     @pytest.mark.unit
-    @patch.object(ConfigManager, 'load_preset_file')
-    def test_load_preset_just_name(self, mock_load_file: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'load_preset_file')
+    def test_load_preset_just_name(self, mock_load_file: Mock, c_instance: ConfigurationManager) -> None:
         """Test loading preset with just name (no file specified)."""
         mock_load_file.return_value = create_test_preset_data()
 
@@ -162,11 +162,11 @@ class TestConfigManagerPresetLoading:
         assert result == expected
 
 
-class TestConfigManagerGrouping:
+class TestConfigurationManagerGrouping:
     """Test preset grouping functionality."""
 
     @pytest.mark.unit
-    def test_group_presets_by_file_basic(self, c_instance: ConfigManager) -> None:
+    def test_group_presets_by_file_basic(self, c_instance: ConfigurationManager) -> None:
         """Test basic preset grouping by file."""
         grouped_entries = {
             'group_1': [
@@ -197,7 +197,7 @@ class TestConfigManagerGrouping:
         assert results == expected
 
     @pytest.mark.unit
-    def test_group_presets_by_file_with_variables(self, c_instance: ConfigManager) -> None:
+    def test_group_presets_by_file_with_variables(self, c_instance: ConfigurationManager) -> None:
         """Test preset grouping with variable substitution."""
         grouped_entries = {
             'group_1': [
@@ -222,12 +222,12 @@ class TestConfigManagerGrouping:
         assert results == expected
 
 
-class TestConfigManagerConfiguration:
+class TestConfigurationManagerConfiguration:
     """Test configuration-related methods."""
 
     @pytest.mark.unit
-    @patch.object(ConfigManager, 'ask_open_question')
-    def test_should_store_configuration_yes(self, mock_ask: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'ask_open_question')
+    def test_should_store_configuration_yes(self, mock_ask: Mock, c_instance: ConfigurationManager) -> None:
         """Test should_store_configuration returns True for yes."""
         mock_ask.return_value = 'yes'
 
@@ -236,8 +236,8 @@ class TestConfigManagerConfiguration:
         assert result is True
 
     @pytest.mark.unit
-    @patch.object(ConfigManager, 'ask_open_question')
-    def test_should_store_configuration_no(self, mock_ask: Mock, c_instance: ConfigManager) -> None:
+    @patch.object(ConfigurationManager, 'ask_open_question')
+    def test_should_store_configuration_no(self, mock_ask: Mock, c_instance: ConfigurationManager) -> None:
         """Test should_store_configuration returns False for no."""
         mock_ask.return_value = 'no'
 
@@ -246,7 +246,7 @@ class TestConfigManagerConfiguration:
         assert result is False
 
     @pytest.mark.unit
-    def test_get_preset_data_with_configuration(self, c_instance: ConfigManager) -> None:
+    def test_get_preset_data_with_configuration(self, c_instance: ConfigurationManager) -> None:
         """Test _get_preset_data with existing configuration."""
         # Create a test configuration
         test_config = RegexConfiguration(
@@ -271,7 +271,7 @@ class TestConfigManagerConfiguration:
         assert result == expected
 
     @pytest.mark.unit
-    def test_get_preset_data_no_configuration(self, c_instance: ConfigManager) -> None:
+    def test_get_preset_data_no_configuration(self, c_instance: ConfigurationManager) -> None:
         """Test _get_preset_data with no configuration returns empty dict."""
         c_instance.configurations = []
 

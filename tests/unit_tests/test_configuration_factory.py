@@ -20,11 +20,11 @@ class TestBasicConfigurationFactory:
 
     def test_build_interactive_regex_filter(self) -> None:
         """Test building regex configuration interactively."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
-        config_manager.ask_open_question.side_effect = [r'\n', 'test_pattern', 'no']
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
+        configuration_manager.ask_open_question.side_effect = [r'\n', 'test_pattern', 'no']
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert isinstance(config, RegexConfiguration)
         assert config.cluster_filter == r'\n'
@@ -32,24 +32,24 @@ class TestBasicConfigurationFactory:
         assert config.should_slice_clusters is False
 
         # Verify correct prompts were called
-        config_manager.ask_mpc_question.assert_called_once()
-        assert config_manager.ask_open_question.call_count == 3
+        configuration_manager.ask_mpc_question.assert_called_once()
+        assert configuration_manager.ask_open_question.call_count == 3
 
     def test_build_interactive_regex_filter_empty_cluster_filter_uses_default(self) -> None:
         """Test that empty cluster filter defaults to newline."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
-        config_manager.ask_open_question.side_effect = ['', 'test_pattern', 'no']
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
+        configuration_manager.ask_open_question.side_effect = ['', 'test_pattern', 'no']
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert config.cluster_filter == r'\n'  # Default when empty
 
     def test_build_interactive_regex_list_filter(self) -> None:
         """Test building regex list configuration interactively."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX_LIST.value
-        config_manager.ask_open_question.side_effect = [
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX_LIST.value
+        configuration_manager.ask_open_question.side_effect = [
             '\\n\\n',  # cluster_filter
             'pattern1',  # first pattern
             'yes',  # continue adding patterns
@@ -62,7 +62,7 @@ class TestBasicConfigurationFactory:
             'ref_end'  # ref_end_cluster_text
         ]
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert isinstance(config, RegexListConfiguration)
         assert config.cluster_filter == '\\n\\n'
@@ -71,9 +71,9 @@ class TestBasicConfigurationFactory:
 
     def test_build_interactive_regex_list_filter_empty_pattern_stops(self) -> None:
         """Test that empty pattern stops regex list input."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX_LIST.value
-        config_manager.ask_open_question.side_effect = [
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX_LIST.value
+        configuration_manager.ask_open_question.side_effect = [
             r'\n',  # cluster_filter
             'pattern1',  # first pattern
             'yes',  # continue adding patterns
@@ -81,15 +81,15 @@ class TestBasicConfigurationFactory:
             'no'  # should_slice_clusters
         ]
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert config.text_filter == ['pattern1']
 
     def test_build_interactive_positional_filter(self) -> None:
         """Test building positional configuration interactively."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.POSITIONAL.value
-        config_manager.ask_open_question.side_effect = [
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.POSITIONAL.value
+        configuration_manager.ask_open_question.side_effect = [
             '\\n\\n',  # cluster_filter
             '=',  # separator
             '2',  # line
@@ -101,7 +101,7 @@ class TestBasicConfigurationFactory:
             'ref_end'  # ref_end_cluster_text
         ]
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert isinstance(config, PositionalConfiguration)
         assert config.cluster_filter == '\\n\\n'
@@ -112,27 +112,27 @@ class TestBasicConfigurationFactory:
 
     def test_build_interactive_positional_filter_missing_line_raises_error(self) -> None:
         """Test that missing line number raises ValueError."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.POSITIONAL.value
-        config_manager.ask_open_question.side_effect = ['\\n\\n', '=', '', '1', 'no']
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.POSITIONAL.value
+        configuration_manager.ask_open_question.side_effect = ['\\n\\n', '=', '', '1', 'no']
 
         with pytest.raises(ValueError, match="Line number is required for positional filter"):
-            BasicConfigurationFactory.build_interactive(config_manager)
+            BasicConfigurationFactory.build_interactive(configuration_manager)
 
     def test_build_interactive_positional_filter_missing_occurrence_raises_error(self) -> None:
         """Test that missing occurrence number raises ValueError."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.POSITIONAL.value
-        config_manager.ask_open_question.side_effect = ['\\n\\n', '=', '2', '', 'no']
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.POSITIONAL.value
+        configuration_manager.ask_open_question.side_effect = ['\\n\\n', '=', '2', '', 'no']
 
         with pytest.raises(ValueError, match="Occurrence number is required for positional filter"):
-            BasicConfigurationFactory.build_interactive(config_manager)
+            BasicConfigurationFactory.build_interactive(configuration_manager)
 
     def test_build_interactive_with_cluster_slicing(self) -> None:
         """Test building configuration with cluster slicing enabled."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
-        config_manager.ask_open_question.side_effect = [
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
+        configuration_manager.ask_open_question.side_effect = [
             r'\n',  # cluster_filter
             'test_pattern',  # regex_pattern
             'yes',  # should_slice_clusters
@@ -142,7 +142,7 @@ class TestBasicConfigurationFactory:
             'ref_end'  # ref_end_cluster_text
         ]
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert config.should_slice_clusters is True
         assert config.src_start_cluster_text == 'src_start'
@@ -152,9 +152,9 @@ class TestBasicConfigurationFactory:
 
     def test_build_interactive_with_cluster_slicing_empty_values_become_none(self) -> None:
         """Test that empty cluster slicing values become None."""
-        config_manager = Mock()
-        config_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
-        config_manager.ask_open_question.side_effect = [
+        configuration_manager = Mock()
+        configuration_manager.ask_mpc_question.return_value = TextFilterTypes.REGEX.value
+        configuration_manager.ask_open_question.side_effect = [
             r'\n',  # cluster_filter
             'test_pattern',  # regex_pattern
             'yes',  # should_slice_clusters
@@ -164,7 +164,7 @@ class TestBasicConfigurationFactory:
             ''  # empty ref_end_cluster_text
         ]
 
-        config = BasicConfigurationFactory.build_interactive(config_manager)
+        config = BasicConfigurationFactory.build_interactive(configuration_manager)
 
         assert config.src_start_cluster_text is None
         assert config.src_end_cluster_text is None
@@ -177,17 +177,17 @@ class TestWorkflowConfigurationFactory:
 
     def test_create_basic_config(self) -> None:
         """Test creating basic workflow configuration."""
-        config_manager = Mock()
+        configuration_manager = Mock()
         expected_config = Mock(spec=RegexConfiguration)
 
         with patch.object(BasicConfigurationFactory, 'build_interactive', return_value=expected_config):
-            result = WorkflowConfigurationFactory.create_basic_config(config_manager)
+            result = WorkflowConfigurationFactory.create_basic_config(configuration_manager)
 
         assert result is expected_config
 
     def test_create_preset_config(self) -> None:
         """Test creating preset workflow configuration."""
-        config_manager = Mock()
+        configuration_manager = Mock()
         extraction_config = Mock()
         extraction_config.cluster_filter = r'\n'
         extraction_config.should_slice_clusters = False
@@ -200,7 +200,7 @@ class TestWorkflowConfigurationFactory:
 
         with patch.object(PresetConfigurationFactory, 'build_from_preset', return_value=extraction_config):
             config = WorkflowConfigurationFactory.create_preset_config(
-                config_manager, 'test_preset', 'test_file.txt'
+                configuration_manager, 'test_preset', 'test_file.txt'
             )
 
         assert isinstance(config, RegexConfiguration)
@@ -212,7 +212,7 @@ class TestWorkflowConfigurationFactory:
 
     def test_create_preset_config_with_default_target_file(self) -> None:
         """Test creating preset configuration with default empty target file."""
-        config_manager = Mock()
+        configuration_manager = Mock()
         extraction_config = Mock()
         extraction_config.cluster_filter = r'\n'
         extraction_config.should_slice_clusters = False
@@ -224,16 +224,16 @@ class TestWorkflowConfigurationFactory:
         extraction_config.ref_end_cluster_text = None
 
         with patch.object(PresetConfigurationFactory, 'build_from_preset', return_value=extraction_config):
-            config = WorkflowConfigurationFactory.create_preset_config(config_manager, 'test_preset')
+            config = WorkflowConfigurationFactory.create_preset_config(configuration_manager, 'test_preset')
 
         assert config.target_file == ''
 
     @patch('GenEC.utils.read_yaml_file')
     def test_create_preset_list_configs(self, mock_read_yaml: Mock) -> None:
         """Test creating preset list configurations."""
-        config_manager = Mock()
-        config_manager.presets_directory = Path('/test/presets')
-        config_manager.group_presets_by_file.return_value = {
+        configuration_manager = Mock()
+        configuration_manager.presets_directory = Path('/test/presets')
+        configuration_manager.group_presets_by_file.return_value = {
             'file1.txt': [
                 {'preset': 'preset_file/preset1', 'group': 'group1'},
                 {'preset': 'preset_file/preset2', 'group': 'group2'}
@@ -257,7 +257,7 @@ class TestWorkflowConfigurationFactory:
 
         with patch.object(PresetConfigurationFactory, 'build_from_preset', return_value=extraction_config):
             configs = WorkflowConfigurationFactory.create_preset_list_configs(
-                config_manager, 'test_presets', {'var1': 'value1'}
+                configuration_manager, 'test_presets', {'var1': 'value1'}
             )
 
         assert len(configs) == 3
@@ -283,9 +283,9 @@ class TestWorkflowConfigurationFactory:
     @patch('GenEC.utils.read_yaml_file')
     def test_create_preset_list_configs_with_preset_error(self, mock_read_yaml: Mock) -> None:
         """Test handling of preset loading errors in preset list."""
-        config_manager = Mock()
-        config_manager.presets_directory = Path('/test/presets')
-        config_manager.group_presets_by_file.return_value = {
+        configuration_manager = Mock()
+        configuration_manager.presets_directory = Path('/test/presets')
+        configuration_manager.group_presets_by_file.return_value = {
             'file1.txt': [
                 {'preset': 'good_preset', 'group': 'group1'},
                 {'preset': 'bad_preset', 'group': 'group2'}
@@ -315,7 +315,7 @@ class TestWorkflowConfigurationFactory:
                 mock_console_class.return_value = mock_console_instance
 
                 configs = WorkflowConfigurationFactory.create_preset_list_configs(
-                    config_manager, 'test_presets'
+                    configuration_manager, 'test_presets'
                 )
 
         # Should only have 1 config (the good one)
@@ -328,9 +328,9 @@ class TestWorkflowConfigurationFactory:
     @patch('GenEC.utils.read_yaml_file')
     def test_create_preset_list_configs_no_valid_presets_raises_error(self, mock_read_yaml: Mock) -> None:
         """Test that having no valid presets raises ValueError."""
-        config_manager = Mock()
-        config_manager.presets_directory = Path('/test/presets')
-        config_manager.group_presets_by_file.return_value = {
+        configuration_manager = Mock()
+        configuration_manager.presets_directory = Path('/test/presets')
+        configuration_manager.group_presets_by_file.return_value = {
             'file1.txt': [{'preset': 'bad_preset'}]
         }
 
@@ -339,7 +339,7 @@ class TestWorkflowConfigurationFactory:
         with patch.object(PresetConfigurationFactory, 'build_from_preset', side_effect=ValueError('Error')):
             with patch('GenEC.core.configuration_factory.Console'):
                 with pytest.raises(ValueError, match='None of the provided presets were found.'):
-                    WorkflowConfigurationFactory.create_preset_list_configs(config_manager, 'test_presets')
+                    WorkflowConfigurationFactory.create_preset_list_configs(configuration_manager, 'test_presets')
 
 
 class TestPresetConfigurationFactory:
@@ -347,7 +347,7 @@ class TestPresetConfigurationFactory:
 
     def test_build_from_preset(self) -> None:
         """Test building configuration from preset."""
-        config_manager = Mock()
+        configuration_manager = Mock()
         initialized_config = {
             'cluster_filter': r'\n',
             'should_slice_clusters': True,
@@ -359,9 +359,9 @@ class TestPresetConfigurationFactory:
             'ref_end_cluster_text': 'ref_end'
         }
 
-        config_manager.load_preset.return_value = initialized_config
+        configuration_manager.load_preset.return_value = initialized_config
 
-        config = PresetConfigurationFactory.build_from_preset(config_manager, 'test_preset')
+        config = PresetConfigurationFactory.build_from_preset(configuration_manager, 'test_preset')
 
         assert isinstance(config, RegexConfiguration)
         assert config.cluster_filter == r'\n'
@@ -372,7 +372,7 @@ class TestPresetConfigurationFactory:
         assert config.ref_start_cluster_text == 'ref_start'
         assert config.ref_end_cluster_text == 'ref_end'
 
-        config_manager.load_preset.assert_called_once_with('test_preset')
+        configuration_manager.load_preset.assert_called_once_with('test_preset')
 
     def test_convert_initialized_to_new_config_regex(self) -> None:
         """Test converting initialized config dict to regex configuration."""
