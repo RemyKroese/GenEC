@@ -10,7 +10,7 @@ import pytest
 
 from GenEC.core.configuration_manager import BasicConfigurationManager, PresetConfigurationManager, BatchConfigurationManager
 from GenEC.core.configuration import RegexConfiguration, PositionalConfiguration, RegexListConfiguration
-from GenEC.core.specs import PositionalFilterType
+from GenEC.core.specs import PositionalFilterType, DEFAULT_PRESETS_DIRECTORY
 
 
 def create_test_preset_data() -> dict[str, dict[str, Any]]:
@@ -74,8 +74,7 @@ class TestConfigurationManagerConstructor:
     def test_constructor_default_presets_directory(self) -> None:
         """Test constructor with default presets directory."""
         manager = BasicConfigurationManager()
-        expected_path = Path(__file__).parent.parent.parent / 'GenEC' / 'presets'
-        assert manager.presets_directory == expected_path
+        assert manager.presets_directory == DEFAULT_PRESETS_DIRECTORY
 
     @pytest.mark.unit
     def test_constructor_with_custom_presets_directory(self) -> None:

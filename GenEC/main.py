@@ -5,7 +5,6 @@ from typing import cast, Optional, Sequence, Union
 from pathlib import Path
 import sys
 
-
 # Pyinstaller workaround
 if getattr(sys, 'frozen', False):  # pragma: no cover
     project_path = Path(sys.executable).parent
@@ -14,7 +13,7 @@ else:
 sys.path.insert(0, str(project_path))
 
 from GenEC.core import workflows, Workflows  # noqa: E402  # pylint: disable=wrong-import-position
-from GenEC.core.specs import MetaData  # noqa: E402  # pylint: disable=wrong-import-position
+from GenEC.core.specs import MetaData, DEFAULT_PRESETS_DIRECTORY  # noqa: E402  # pylint: disable=wrong-import-position
 
 
 QUICK_EXAMPLES = ('Quick examples:\n'
@@ -132,7 +131,7 @@ def parse_arguments() -> argparse.Namespace:
 
     common_preset = argparse.ArgumentParser(add_help=False)
     common_preset.add_argument('-d', '--presets-directory', type=str, required=False,
-                               default=project_path / 'presets',
+                               default=DEFAULT_PRESETS_DIRECTORY,
                                help='Directory where presets are stored. default: %(default)s')
 
     # Basic workflow

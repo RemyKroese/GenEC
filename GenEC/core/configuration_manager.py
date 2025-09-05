@@ -13,7 +13,7 @@ from GenEC import utils
 from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.configuration_builder import ConfigurationBuilder
 from GenEC.core.prompts import Section, Key, create_prompt
-from GenEC.core.specs import ConfigOptions, PositionalFilterType, TextFilterTypes
+from GenEC.core.specs import ConfigOptions, PositionalFilterType, TextFilterTypes, DEFAULT_PRESETS_DIRECTORY
 
 console = Console()
 YES_INPUT = ['yes', 'y']
@@ -44,7 +44,7 @@ class ConfigurationManager(ABC):
         if presets_directory:
             self.presets_directory = Path(presets_directory)
         else:
-            self.presets_directory = Path(__file__).parent.parent / 'presets'
+            self.presets_directory = DEFAULT_PRESETS_DIRECTORY
         self.configurations: list[BaseConfiguration] = []
 
     # User Interaction Methods
@@ -433,9 +433,11 @@ class BasicConfigurationManager(ConfigurationManager):
                 console.print(create_prompt(Section.WRITE_CONFIG, Key.INVALID_PRESET_NAME))
 
         file_name = self.ask_open_question(create_prompt(
-            Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME))
+            Section.WRITE_CONFIG, Key.DESTINATION_FILE_NAME,
+            presets_directory=DEFAULT_PRESETS_DIRECTORY))
 
-        preset_file_path = self.presets_directory / f'{file_name}.yaml'
+        # Use the default presets directory with PyInstaller support
+        preset_file_path = DEFAULT_PRESETS_DIRECTORY / f'{file_name}.yaml'
         preset_data = self._get_preset_data()
 
         if not preset_file_path.exists():
