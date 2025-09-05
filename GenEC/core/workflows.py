@@ -7,7 +7,10 @@ from typing import Callable, Optional, Type, TypeVar, TYPE_CHECKING
 from GenEC import utils
 from GenEC.core import FileID, Workflows
 from GenEC.core.analyze import Extractor, Comparer
-from GenEC.core.configuration_manager import ConfigurationManager
+from GenEC.core.configuration_manager import (
+    ConfigurationManager, BasicConfigurationManager,
+    PresetConfigurationManager, BatchConfigurationManager
+)
 from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.output_manager import OutputManager
 from GenEC.core.types.output import DataExtract, DataCompare, Entry
@@ -187,18 +190,20 @@ class Basic(Workflow):
 
     def __init__(self, args: 'argparse.Namespace'):
         super().__init__(args)
-        self.configuration_manager = self._get_configuration_manager()
+        self.configuration_manager: BasicConfigurationManager = self._get_configuration_manager()
 
-    def _get_configuration_manager(self) -> ConfigurationManager:
+    def _get_configuration_manager(self) -> BasicConfigurationManager:
         """
-        Initialize a ConfigurationManager.
+        Initialize a BasicConfigurationManager.
 
         Returns
         -------
-        ConfigurationManager
-            Configuration manager initialized.
+        BasicConfigurationManager
+            Configuration manager initialized for basic workflow.
         """
-        return ConfigurationManager()
+        manager = BasicConfigurationManager()
+        manager.initialize_configuration()
+        return manager
 
     def run(self) -> None:
         """Execute the base workflow and request if a preset should be generated from the CLI input."""
@@ -225,17 +230,21 @@ class Preset(Workflow):
         self.presets_directory = args.presets_directory
         self.configuration_manager = self._get_configuration_manager()
 
-    def _get_configuration_manager(self) -> ConfigurationManager:
+    def _get_configuration_manager(self) -> PresetConfigurationManager:
         """
-        Initialize a ConfigurationManager for the specified preset.
+        Initialize a PresetConfigurationManager for the specified preset.
 
         Returns
         -------
-        ConfigurationManager
+        PresetConfigurationManager
             Configuration manager initialized with the preset.
         """
-        preset_param: dict[str, str] = {'type': Workflows.PRESET.value, 'value': self.preset}
-        return ConfigurationManager(preset_param, self.presets_directory)
+        manager = PresetConfigurationManager(
+            presets_directory=self.presets_directory,
+            preset=self.preset
+        )
+        manager.initialize_configuration()
+        return manager
 
 
 @register_workflow(Workflows.PRESET_LIST.value)
@@ -257,14 +266,19 @@ class PresetList(Workflow):
         self.target_variables = args.target_variables
         self.configuration_manager = self._get_configuration_manager()
 
-    def _get_configuration_manager(self) -> ConfigurationManager:
+    def _get_configuration_manager(self) -> BatchConfigurationManager:
         """
-        Initialize a ConfigurationManager for the specified list of presets.
+        Initialize a BatchConfigurationManager for the specified list of presets.
 
         Returns
         -------
-        ConfigurationManager
+        BatchConfigurationManager
             Configuration manager initialized with the preset list.
         """
-        preset_param: dict[str, str] = {'type': Workflows.PRESET_LIST.value, 'value': self.preset_list}
-        return ConfigurationManager(preset_param, self.presets_directory, self.target_variables)
+        manager = BatchConfigurationManager(
+            presets_directory=self.presets_directory,
+            preset_list=self.preset_list,
+            target_variables=self.target_variables
+        )
+        manager.initialize_configuration()
+        return manager
