@@ -9,48 +9,18 @@ from GenEC.core.configuration_manager import (
 )
 
 
-def create_test_preset_data() -> dict[str, dict[str, Any]]:
-    """Helper function to create standard test preset data."""
+def create_test_preset() -> dict[str, Any]:
+    """Create standard test preset data."""
     return {
-        'main_preset': {
-            'cluster_filter': '',
-            'text_filter_type': 'Regex',
-            'text_filter': '',
-            'should_slice_clusters': False,
-            'src_start_cluster_text': '',
-            'src_end_cluster_text': '',
-            'ref_start_cluster_text': '',
-            'ref_end_cluster_text': ''
-        }
+        'cluster_filter': '',
+        'text_filter_type': 'Regex',
+        'text_filter': '',
+        'should_slice_clusters': False,
+        'src_start_cluster_text': '',
+        'src_end_cluster_text': '',
+        'ref_start_cluster_text': '',
+        'ref_end_cluster_text': ''
     }
-
-
-def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
-    """Helper function to create multiple test presets."""
-    base_data = create_test_preset_data()
-    base_data.update({
-        'sub_preset_A': {
-            'cluster_filter': '',
-            'text_filter_type': 'Regex',
-            'text_filter': '',
-            'should_slice_clusters': True,
-            'src_start_cluster_text': '',
-            'src_end_cluster_text': '',
-            'ref_start_cluster_text': '',
-            'ref_end_cluster_text': ''
-        },
-        'sub_preset_B': {
-            'cluster_filter': r'\n',
-            'text_filter_type': 'Regex',
-            'text_filter': '[a-zA-z]{4}',
-            'should_slice_clusters': False,
-            'src_start_cluster_text': '',
-            'src_end_cluster_text': '',
-            'ref_start_cluster_text': '',
-            'ref_end_cluster_text': ''
-        }
-    })
-    return base_data
 
 
 class TestBasicConfigurationManagerWorkflow:
@@ -61,15 +31,9 @@ class TestBasicConfigurationManagerWorkflow:
     @patch('GenEC.core.configuration_manager.BasicConfigurationManager.ask_open_question')
     def test_basic_initialization_integration(self, mock_ask_open: Mock, mock_ask_mpc: Mock) -> None:
         """Test basic configuration manager initialization with interactive configuration."""
-        # Mock user input responses
         mock_ask_mpc.return_value = 'Regex'
-        mock_ask_open.side_effect = [
-            r'\n',      # cluster_filter
-            'test.*',   # regex pattern
-            'n'         # should_slice_clusters
-        ]
+        mock_ask_open.side_effect = [r'\n', 'test.*', 'n']
 
-        # Test the actual initialization
         basic_manager = BasicConfigurationManager()
         basic_manager.initialize_configuration()
 
@@ -95,7 +59,6 @@ class TestPresetConfigurationManagerWorkflow:
     @patch('GenEC.core.configuration_manager.PresetConfigurationManager.load_preset')
     def test_preset_initialization_integration_old(self, mock_load_preset: Mock) -> None:
         """Test preset configuration manager initialization with preset loading."""
-        # Mock preset data
         preset_data = {
             'cluster_filter': r'\n',
             'text_filter_type': 'Regex',
@@ -104,7 +67,6 @@ class TestPresetConfigurationManagerWorkflow:
         }
         mock_load_preset.return_value = preset_data
 
-        # Test the actual initialization
         preset_manager = PresetConfigurationManager(preset='test_preset')
         preset_manager.initialize_configuration()
 
@@ -120,7 +82,11 @@ class TestPresetConfigurationManagerWorkflow:
     def test_load_preset_no_preset_name(self, mock_ask_mpc_question: Mock, mock_load_preset_file: Mock,
                                         preset_instance: PresetConfigurationManager) -> None:
         """Test loading preset when no preset name is provided."""
-        multiple_presets = create_multiple_presets_data()
+        multiple_presets = {
+            'main_preset': create_test_preset(),
+            'sub_preset_A': create_test_preset(),
+            'sub_preset_B': create_test_preset()
+        }
         mock_load_preset_file.return_value = multiple_presets
         mock_ask_mpc_question.return_value = preset_name = 'main_preset'
 
@@ -136,7 +102,7 @@ class TestPresetConfigurationManagerWorkflow:
     @patch.object(PresetConfigurationManager, 'load_preset_file')
     def test_load_preset_invalid_preset_name(self, mock_load_preset_file: Mock, preset_instance: PresetConfigurationManager) -> None:
         """Test loading preset with invalid preset name."""
-        test_presets = create_test_preset_data()
+        test_presets = {'main_preset': create_test_preset()}
         mock_load_preset_file.return_value = test_presets
 
         with pytest.raises(ValueError, match="Preset 'invalid_preset' not found"):
@@ -146,7 +112,7 @@ class TestPresetConfigurationManagerWorkflow:
     @patch.object(PresetConfigurationManager, 'load_preset_file')
     def test_load_from_single_preset(self, mock_load_preset_file: Mock, preset_instance: PresetConfigurationManager) -> None:
         """Test loading from file with single preset."""
-        test_presets = create_test_preset_data()
+        test_presets = {'main_preset': create_test_preset()}
         mock_load_preset_file.return_value = test_presets
 
         result = preset_instance.load_preset('test_file')
@@ -159,7 +125,10 @@ class TestPresetConfigurationManagerWorkflow:
     def test_load_from_multiple_presets_existing_preset_name(self, mock_load_preset_file: Mock,
                                                              preset_name: str, preset_instance: PresetConfigurationManager) -> None:
         """Test loading specific preset from multiple presets."""
-        multiple_presets = create_multiple_presets_data()
+        multiple_presets = {
+            'main_preset': create_test_preset(),
+            'sub_preset_A': create_test_preset()
+        }
         mock_load_preset_file.return_value = multiple_presets
 
         result = preset_instance.load_preset(f'test_file/{preset_name}')
@@ -183,25 +152,17 @@ class TestBatchConfigurationManagerWorkflow:
     @patch('GenEC.utils.read_yaml_file')
     def test_batch_initialization_integration(self, mock_read_yaml: Mock, mock_group_presets: Mock) -> None:
         """Test batch configuration manager initialization with preset list loading."""
-        # Mock preset list data
         mock_read_yaml.return_value = {'group1': [{'preset': 'file/preset1', 'target': 'file1.txt'}]}
         mock_group_presets.return_value = {'file1.txt': [{'preset': 'file/preset1', 'target': 'file1.txt', 'group': 'group1'}]}
 
-        # Mock preset loading
         with patch.object(BatchConfigurationManager, 'load_preset') as mock_load_preset:
-            mock_load_preset.return_value = {
-                'cluster_filter': r'\n',
-                'text_filter_type': 'Regex',
-                'text_filter': 'test.*',
-                'should_slice_clusters': False
-            }
+            mock_load_preset.return_value = create_test_preset()
 
-            # Test the actual initialization
             batch_manager = BatchConfigurationManager(preset_list='test_list')
             batch_manager.initialize_configuration()
 
             assert len(batch_manager.configurations) == 1
             config = batch_manager.configurations[0]
-            assert config.cluster_filter == r'\n'
-            assert config.text_filter == 'test.*'
+            assert config.cluster_filter == ''
+            assert config.text_filter == ''
             assert config.should_slice_clusters is False

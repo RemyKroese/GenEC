@@ -33,8 +33,7 @@ class OutputManager:
     def process(self,
                 results: dict[str, list[Entry]],
                 root: str,
-                file_name: str = 'result',
-                is_comparison: bool = False
+                file_name: str = 'result'
                 ) -> None:
         """
         Process and output extracted or compared results.
@@ -47,20 +46,12 @@ class OutputManager:
             The root directory or identifier of the source data.
         file_name : str, optional
             The base name of output files, by default 'result'.
-        is_comparison : bool, optional
-            Whether the results are comparison results, by default False.
         """
         for group, entries in results.items():
             ascii_tables: list['Panel'] = []
             for entry in entries:
-                preset = entry.get('preset', 'Unknown')
-                target = entry.get('target', 'Unknown')
-                if is_comparison:
-                    ascii_tables.append(utils.create_comparison_table(cast(dict[str, DataCompare],
-                                                                           entry['data']), preset, target))
-                else:
-                    ascii_tables.append(utils.create_extraction_table(cast(dict[str, DataExtract],
-                                                                           entry['data']), preset, target))
+                table = self._create_table_for_entry(entry)
+                ascii_tables.append(table)
             if self.should_print_results:
                 for table in ascii_tables:
                     console.print('\n')
@@ -68,6 +59,37 @@ class OutputManager:
             if self.output_directory and self.output_types:
                 output_path = self._create_output_path(group, root, file_name=file_name)
                 utils.write_output(entries, ascii_tables, output_path, self.output_types)
+
+    def _create_table_for_entry(self, entry: Entry) -> 'Panel':
+        """
+        Create the appropriate table (comparison or extraction) for a single entry.
+
+        Parameters
+        ----------
+        entry : Entry
+            The entry containing data and metadata.
+
+        Returns
+        -------
+        Panel
+            The formatted table panel for display.
+        """
+        preset = entry.get('preset', 'Unknown')
+        target = entry.get('target', 'Unknown')
+        entry_data = entry['data']
+
+        if entry_data:
+            first_data_item = next(iter(entry_data.values()))
+            has_comparison_data = 'reference' in first_data_item and 'difference' in first_data_item
+
+            if has_comparison_data:
+                return utils.create_comparison_table(cast(dict[str, DataCompare],
+                                                          entry_data), preset, target)
+            return utils.create_extraction_table(cast(dict[str, DataExtract],
+                                                      entry_data), preset, target)
+        # Empty data - create empty extraction table
+        return utils.create_extraction_table(cast(dict[str, DataExtract],
+                                                  entry_data), preset, target)
 
     def _create_output_path(self, group: str, root: str, file_name: str = 'result') -> Path:
         """

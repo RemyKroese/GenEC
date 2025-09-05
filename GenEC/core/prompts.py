@@ -74,6 +74,9 @@ class Key(Enum):
     OCCURRENCE_NUMBER_REQUIRED = 'occurrence_number_required'
     NO_PRESETS_FOUND = 'no_presets_found'
     SKIPPING_PRESET = 'skipping_preset'
+    SKIPPING_TARGET_FILE = 'skipping_target_file'
+    SKIPPING_SOURCE_FILE = 'skipping_source_file'
+    SKIPPING_REFERENCE_FILE = 'skipping_reference_file'
 
 
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
@@ -150,7 +153,10 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
             Key.LINE_NUMBER_REQUIRED: '[bold red]ERROR: Line number is required for positional filter[/bold red]',
             Key.OCCURRENCE_NUMBER_REQUIRED: '[bold red]ERROR: Occurrence number is required for positional filter[/bold red]',
             Key.NO_PRESETS_FOUND: '[bold red]ERROR: None of the provided presets were found[/bold red]',
-            Key.SKIPPING_PRESET: '[yellow]Skipping preset {preset}: {error}[/yellow]'
+            Key.SKIPPING_PRESET: '[yellow]Skipping preset {preset}: {error}[/yellow]',
+            Key.SKIPPING_TARGET_FILE: '[yellow]Skipping target file {target_file}: {error}[/yellow]',
+            Key.SKIPPING_SOURCE_FILE: '[bold red]source file[/bold red] {target_file} not found - [red]skipping analysis[/red]',
+            Key.SKIPPING_REFERENCE_FILE: '[bold cyan]reference file[/bold cyan] {target_file} not found - [cyan]skipping comparison[/cyan]'
         }
     }
 }

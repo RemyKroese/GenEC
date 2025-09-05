@@ -13,7 +13,7 @@ from GenEC.core.configuration import RegexConfiguration
 
 
 def create_test_preset_data() -> dict[str, dict[str, Any]]:
-    """Helper function to create standard test preset data."""
+    """Create standard test preset data."""
     return {
         'main_preset': {
             'cluster_filter': '',
@@ -29,7 +29,7 @@ def create_test_preset_data() -> dict[str, dict[str, Any]]:
 
 
 def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
-    """Helper function to create multiple test presets."""
+    """Create multiple test presets."""
     base_data = create_test_preset_data()
     base_data.update({
         'sub_preset_A': {
@@ -59,7 +59,7 @@ def create_multiple_presets_data() -> dict[str, dict[str, Any]]:
 @pytest.fixture
 @patch.object(BasicConfigurationManager, '__init__', lambda x, **kwargs: None)
 def c_instance() -> BasicConfigurationManager:
-    """Create a BasicConfigurationManager instance for testing."""
+    """Create BasicConfigurationManager instance for testing."""
     instance = BasicConfigurationManager()
     instance.presets_directory = Path('/fake/presets')
     instance.configurations = []
@@ -123,11 +123,9 @@ class TestConfigurationManagerPresetLoading:
     @patch.object(BasicConfigurationManager, '__init__', lambda x, **kwargs: None)
     def test_load_preset_file_success(self, mock_read_yaml: Mock, c_instance: BasicConfigurationManager) -> None:
         """Test successful preset file loading."""
-        # Manually set the presets_directory since __init__ is mocked
         c_instance.presets_directory = Path('/fake/presets')
         mock_read_yaml.return_value = create_test_preset_data()
 
-        # Mock the file existence check
         with patch('pathlib.Path.exists', return_value=True):
             result = c_instance.load_preset_file('test_preset')
 
