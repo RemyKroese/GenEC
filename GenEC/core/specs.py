@@ -2,6 +2,17 @@
 
 from enum import Enum, IntEnum
 from dataclasses import dataclass
+from pathlib import Path
+import sys
+
+
+# PyInstaller workaround for default presets directory
+if getattr(sys, 'frozen', False):  # pragma: no cover
+    _project_path = Path(sys.executable).parent
+else:
+    _project_path = Path(__file__).resolve().parent.parent.parent
+
+DEFAULT_PRESETS_DIRECTORY = _project_path / 'presets'
 
 
 class MetaData(Enum):
