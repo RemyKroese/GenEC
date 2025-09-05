@@ -65,7 +65,7 @@ class Key(Enum):
     TEXT_FILTER_LIST_ITEM_TYPE_ERROR = 'text_filter_list_item_type_error'
     INVALID_POSITIONAL_FILTER_CONFIG = 'invalid_positional_filter_config'
 
-    # CONFIGURATION_FACTORY
+    # CONFIGURATION_MANAGER - Interactive configuration and preset handling
     SOURCE_START_CLUSTER_TEXT = 'source_start_cluster_text'
     SOURCE_END_CLUSTER_TEXT = 'source_end_cluster_text'
     REFERENCE_START_CLUSTER_TEXT = 'reference_start_cluster_text'

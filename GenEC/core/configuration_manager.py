@@ -11,9 +11,9 @@ from rich.console import Console
 
 from GenEC import utils
 from GenEC.core.configuration import BaseConfiguration
-from GenEC.core.configuration_factory import WorkflowConfigurationFactory
+from GenEC.core.configuration_builder import ConfigurationBuilder
 from GenEC.core.prompts import Section, Key, create_prompt
-from GenEC.core.specs import ConfigOptions
+from GenEC.core.specs import ConfigOptions, PositionalFilterType, TextFilterTypes
 
 console = Console()
 YES_INPUT = ['yes', 'y']
@@ -31,46 +31,21 @@ class ConfigurationManager(ABC):
     """
 
     def __init__(self,
-                 preset_param: Optional[dict[str, str]] = None,
-                 presets_directory: Optional[str] = None,
-                 target_variables: Optional[dict[str, str]] = None,
-                 auto_configure: bool = True) -> None:
+                 presets_directory: Optional[str] = None) -> None:
         """
-        Initialize the configuration manager and optionally load presets.
+        Initialize the configuration manager. Configuration(s) are created separately.
 
         Parameters
         ----------
-        preset_param : Optional[dict[str, str]], optional
-            Dictionary specifying a preset or preset list to load. Must include:
-            - 'type': either 'preset' or 'preset-list'
-            - 'value': the preset identifier or list name.
-            If None, configuration is set interactively.
         presets_directory : Optional[str], optional
             Path to the directory containing preset YAML files.
             Defaults to the 'presets' directory in the package root.
-        target_variables : Optional[dict[str, str]], optional
-            Mapping of placeholder names to replacement values for target file paths.
-            Applied when loading presets from a list.
-        auto_configure : bool, optional
-            Whether to automatically configure on initialization. Default True.
-            Set to False for testing scenarios.
         """
         if presets_directory:
             self.presets_directory = Path(presets_directory)
         else:
             self.presets_directory = Path(__file__).parent.parent / 'presets'
         self.configurations: list[BaseConfiguration] = []
-
-        if auto_configure:
-            if preset_param:
-                if preset_param['type'] == 'preset':
-                    self.set_config(preset_param['value'])
-                elif preset_param['type'] == 'preset-list':
-                    self.configurations.extend(self.load_presets(preset_param['value'], target_variables))
-                else:
-                    raise ValueError(f"{preset_param['type']} is not a valid preset parameter type.")
-            else:
-                self.set_config()
 
     # User Interaction Methods
     def ask_open_question(self, prompt: str) -> str:
@@ -140,27 +115,6 @@ class ConfigurationManager(ABC):
                 console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
             except ValueError:
                 console.print(create_prompt(Section.USER_CHOICE, Key.INVALID_CHOICE))
-
-    def load_presets(self, presets_list_target: str,
-                     target_variables: Optional[dict[str, str]] = None) -> list[BaseConfiguration]:
-        """
-        Load multiple presets from a presets list configuration.
-
-        Parameters
-        ----------
-        presets_list_target : str
-            The name of the presets list YAML file (without extension).
-        target_variables : Optional[dict[str, str]], optional
-            Variables used to replace placeholders in target file paths.
-
-        Returns
-        -------
-        list[BaseConfiguration]
-            List of loaded and configured preset configurations.
-        """
-        return WorkflowConfigurationFactory.create_preset_list_configs(
-            self, presets_list_target, target_variables
-        )
 
     def group_presets_by_file(self,
                               presets_list: dict[str, list[dict[str, str]]],
@@ -267,23 +221,161 @@ class ConfigurationManager(ABC):
         presets: dict[str, dict[str, Any]] = cast(dict[str, dict[str, Any]], presets_data)
         return presets
 
-    def set_config(self, preset: str = '', target_file: str = '') -> None:
+    # Removed set_config; derived classes must implement their own config logic
+
+    @abstractmethod
+    def initialize_configuration(self) -> None:
         """
-        Set up configuration either from preset or interactively.
+        Initialize configuration(s) for the specific workflow.
+
+        Derived classes must implement this method to create their configurations
+        based on their workflow type (basic, preset, or preset-list).
+        """
+
+
+class BasicConfigurationManager(ConfigurationManager):
+    """Configuration manager for single configuration workflows."""
+
+    def initialize_configuration(self) -> None:
+        """Create configuration for basic workflow."""
+        config = self._build_interactive_configuration()
+        self.configurations = [config]
+
+    def _build_interactive_configuration(self) -> BaseConfiguration:
+        """
+        Build a configuration by prompting the user for all values.
+
+        Returns
+        -------
+        BaseConfiguration
+            The built configuration
+        """
+        builder = ConfigurationBuilder()
+
+        # Configure filter type and basic settings
+        filter_type = self.ask_mpc_question(
+            create_prompt(Section.SET_CONFIG, Key.TEXT_FILTER_TYPE),
+            [t.value for t in TextFilterTypes]
+        )
+        builder.with_filter_type(filter_type)
+
+        # Configure cluster filter
+        cluster_filter = self.ask_open_question(
+            create_prompt(Section.SET_CONFIG, Key.CLUSTER_FILTER_REGEX)
+        )
+        if not cluster_filter:
+            cluster_filter = r'\n'  # Default if empty
+        builder.with_cluster_filter(cluster_filter)
+
+        # Configure text filter based on type
+        self._configure_text_filter(builder, filter_type)
+
+        # Configure cluster slicing
+        self._configure_cluster_slicing(builder)
+
+        return builder.build()
+
+    def _configure_text_filter(self, builder: ConfigurationBuilder, filter_type: str) -> None:
+        """
+        Configure the text filter based on the selected filter type.
 
         Parameters
         ----------
-        preset : str, optional
-            Preset identifier to load, by default ''
-        target_file : str, optional
-            Target file name for workflow metadata, by default ''
+        builder : ConfigurationBuilder
+            The configuration builder to update
+        filter_type : str
+            The selected text filter type
         """
-        if preset:
-            config = WorkflowConfigurationFactory.create_preset_config(self, preset, target_file)
-        else:
-            config = WorkflowConfigurationFactory.create_basic_config(self)
+        if filter_type == TextFilterTypes.REGEX.value:
+            self._configure_regex_filter(builder)
+        elif filter_type == TextFilterTypes.REGEX_LIST.value:
+            self._configure_regex_list_filter(builder)
+        elif filter_type == TextFilterTypes.POSITIONAL.value:
+            self._configure_positional_filter(builder)
 
-        self.configurations.append(config)
+    def _configure_regex_filter(self, builder: ConfigurationBuilder) -> None:
+        """Configure a regex text filter."""
+        regex_pattern = self.ask_open_question(
+            create_prompt(Section.SET_CONFIG, Key.REGEX_FILTER)
+        )
+        builder.with_text_filter(regex_pattern)
+
+    def _configure_regex_list_filter(self, builder: ConfigurationBuilder) -> None:
+        """Configure a regex list text filter."""
+        patterns: list[str] = []
+        search_count = 1
+        while True:
+            pattern = self.ask_open_question(
+                create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_FILTER, search=search_count)
+            )
+            if not pattern:
+                break
+            patterns.append(pattern)
+            search_count += 1
+
+            # Ask if user wants to add another pattern
+            continue_response = self.ask_open_question(
+                create_prompt(Section.SET_CONFIG, Key.REGEX_LIST_CONTINUE)
+            ).lower()
+            if continue_response not in ('yes', 'y'):
+                break
+        builder.with_text_filter(patterns)
+
+    def _configure_positional_filter(self, builder: ConfigurationBuilder) -> None:
+        """Configure a positional text filter."""
+        separator = self.ask_open_question(
+            create_prompt(Section.SET_CONFIG, Key.POSITIONAL_SEPARATOR)
+        )
+        line_str = self.ask_open_question(
+            create_prompt(Section.SET_CONFIG, Key.POSITIONAL_LINE)
+        )
+        occurrence_str = self.ask_open_question(
+            create_prompt(Section.SET_CONFIG, Key.POSITIONAL_OCCURRENCE)
+        )
+
+        # Validate input
+        if not line_str:
+            raise ValueError(create_prompt(Section.ERROR_HANDLING, Key.LINE_NUMBER_REQUIRED))
+        if not occurrence_str:
+            raise ValueError(create_prompt(Section.ERROR_HANDLING, Key.OCCURRENCE_NUMBER_REQUIRED))
+
+        line = int(line_str)
+        occurrence = int(occurrence_str)
+        positional_filter = PositionalFilterType(
+            separator=separator,
+            line=line,
+            occurrence=occurrence
+        )
+        builder.with_text_filter(positional_filter)
+
+    def _configure_cluster_slicing(self, builder: ConfigurationBuilder) -> None:
+        """Configure cluster slicing settings."""
+        should_slice = self.ask_open_question(
+            create_prompt(Section.SET_CONFIG, Key.SHOULD_SLICE_CLUSTERS)
+        ).lower() in ('y', 'yes')
+        builder.with_should_slice_clusters(should_slice)
+
+        if should_slice:
+            builder.with_src_start_cluster_text(
+                self.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.SOURCE_START_CLUSTER_TEXT)
+                ) or None
+            )
+            builder.with_src_end_cluster_text(
+                self.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.SOURCE_END_CLUSTER_TEXT)
+                ) or None
+            )
+            builder.with_ref_start_cluster_text(
+                self.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.REFERENCE_START_CLUSTER_TEXT)
+                ) or None
+            )
+            builder.with_ref_end_cluster_text(
+                self.ask_open_question(
+                    create_prompt(Section.SET_CONFIG, Key.REFERENCE_END_CLUSTER_TEXT)
+                ) or None
+            )
 
     def should_store_configuration(self) -> bool:
         """
@@ -358,22 +450,273 @@ class ConfigurationManager(ABC):
             utils.append_to_file(preset_yaml_data, preset_file_path)
 
 
-class BasicConfigurationManager(ConfigurationManager):
-    """Configuration manager for single configuration workflows."""
-
-    def __init__(self) -> None:
-        self.configuration: BaseConfiguration
-
-
 class PresetConfigurationManager(ConfigurationManager):
     """Configuration manager for preset workflows."""
 
-    def __init__(self) -> None:
-        self.configuration: BaseConfiguration
+    def __init__(self, presets_directory: Optional[str] = None, preset: str = '') -> None:
+        """
+        Initialize the preset configuration manager.
+
+        Parameters
+        ----------
+        presets_directory : Optional[str], optional
+            Path to the directory containing preset YAML files.
+        preset : str, optional
+            Preset identifier in format 'filename/preset_name' or just 'preset_name'.
+        """
+        super().__init__(presets_directory)
+        self.preset = preset
+
+    def initialize_configuration(self) -> None:
+        """Load configuration from preset."""
+        config = self._build_preset_configuration(self.preset)
+        self.configurations = [config]
+
+    def _build_preset_configuration(self, preset: str, target_file: str = '') -> BaseConfiguration:
+        """
+        Create a preset workflow configuration.
+
+        Parameters
+        ----------
+        preset : str
+            Preset string in 'file/preset' format
+        target_file : str, optional
+            Associated target file name, by default ''
+
+        Returns
+        -------
+        BaseConfiguration
+            Configuration for preset workflow with metadata
+        """
+        extraction_config = self._build_from_preset(preset)
+
+        # Create a new config with metadata by rebuilding through the builder
+        builder = ConfigurationBuilder()
+        builder._fields.update({
+            ConfigOptions.CLUSTER_FILTER.value: extraction_config.cluster_filter,
+            ConfigOptions.SHOULD_SLICE_CLUSTERS.value: extraction_config.should_slice_clusters,
+            ConfigOptions.TEXT_FILTER_TYPE.value: extraction_config.filter_type,
+            ConfigOptions.TEXT_FILTER.value: extraction_config.text_filter,
+            ConfigOptions.SRC_START_CLUSTER_TEXT.value: extraction_config.src_start_cluster_text,
+            ConfigOptions.SRC_END_CLUSTER_TEXT.value: extraction_config.src_end_cluster_text,
+            ConfigOptions.REF_START_CLUSTER_TEXT.value: extraction_config.ref_start_cluster_text,
+            ConfigOptions.REF_END_CLUSTER_TEXT.value: extraction_config.ref_end_cluster_text,
+            ConfigOptions.PRESET.value: preset,
+            ConfigOptions.TARGET_FILE.value: target_file,
+            ConfigOptions.GROUP.value: ''
+        })
+        return builder.build()
+
+    def _build_from_preset(self, preset_target: str) -> BaseConfiguration:
+        """Build configuration from a preset."""
+        initialized_config = self.load_preset(preset_target)
+        return self._convert_initialized_to_config(initialized_config)
+
+    def _convert_initialized_to_config(self, initialized: dict[str, Any]) -> BaseConfiguration:
+        """Convert initialized config dict to new configuration format."""
+        builder = ConfigurationBuilder()
+
+        # Map required fields - handle None values safely
+        cluster_filter = initialized.get('cluster_filter')
+        if cluster_filter is not None:
+            builder.with_cluster_filter(cluster_filter)
+
+        text_filter_type = initialized.get('text_filter_type')
+        if text_filter_type is not None:
+            builder.with_filter_type(text_filter_type)
+
+        text_filter = initialized.get('text_filter')
+        if text_filter is not None:
+            builder.with_text_filter(text_filter)
+
+        should_slice_clusters = initialized.get('should_slice_clusters')
+        if should_slice_clusters is not None:
+            builder.with_should_slice_clusters(should_slice_clusters)
+
+        # Map optional slicing fields
+        src_start = initialized.get('src_start_cluster_text')
+        if src_start is not None:
+            builder.with_src_start_cluster_text(src_start)
+
+        src_end = initialized.get('src_end_cluster_text')
+        if src_end is not None:
+            builder.with_src_end_cluster_text(src_end)
+
+        ref_start = initialized.get('ref_start_cluster_text')
+        if ref_start is not None:
+            builder.with_ref_start_cluster_text(ref_start)
+
+        ref_end = initialized.get('ref_end_cluster_text')
+        if ref_end is not None:
+            builder.with_ref_end_cluster_text(ref_end)
+
+        return builder.build()
 
 
 class BatchConfigurationManager(ConfigurationManager):
     """Configuration manager for preset-list workflows."""
 
-    def __init__(self) -> None:
-        self.configurations: list[BaseConfiguration] = []
+    def __init__(self, presets_directory: Optional[str] = None,
+                 preset_list: str = '',
+                 target_variables: Optional[dict[str, str]] = None) -> None:
+        """
+        Initialize the batch configuration manager.
+
+        Parameters
+        ----------
+        presets_directory : Optional[str], optional
+            Path to the directory containing preset YAML files.
+        preset_list : str, optional
+            The name of the presets list YAML file (without extension).
+        target_variables : Optional[dict[str, str]], optional
+            Variables used to replace placeholders in target file paths.
+        """
+        super().__init__(presets_directory)
+        self.preset_list = preset_list
+        self.target_variables = target_variables
+
+    def initialize_configuration(self) -> None:
+        """Load configurations from preset list."""
+        self.configurations = self._create_preset_list_configs(self.preset_list, self.target_variables)
+
+    def _create_preset_list_configs(self,
+                                    presets_list_target: str,
+                                    target_variables: Optional[dict[str, str]] = None) -> list[BaseConfiguration]:
+        """
+        Create preset-list workflow configurations.
+
+        Parameters
+        ----------
+        presets_list_target : str
+            The name of the presets list YAML file (without extension)
+        target_variables : Optional[dict[str, str]], optional
+            Variables used to replace placeholders in target file paths
+
+        Returns
+        -------
+        list[BaseConfiguration]
+            List of configurations for preset-list workflow with full metadata
+        """
+        presets_list = utils.read_yaml_file(self.presets_directory / f'{presets_list_target}.yaml')
+        presets_per_file = self.group_presets_by_file(presets_list, target_variables)
+
+        configs = []
+        for target_file, preset_entries in presets_per_file.items():
+            for entry in preset_entries:
+                preset_target = entry[ConfigOptions.PRESET.value]
+                group = entry.get('group', '')
+
+                try:
+                    # preset_target is already in the format 'file/preset_name'
+                    extraction_config = self._build_from_preset(preset_target)
+
+                    # Create config with full metadata
+                    builder = ConfigurationBuilder()
+                    builder._fields.update({
+                        ConfigOptions.CLUSTER_FILTER.value: extraction_config.cluster_filter,
+                        ConfigOptions.SHOULD_SLICE_CLUSTERS.value: extraction_config.should_slice_clusters,
+                        ConfigOptions.TEXT_FILTER_TYPE.value: extraction_config.filter_type,
+                        ConfigOptions.TEXT_FILTER.value: extraction_config.text_filter,
+                        ConfigOptions.SRC_START_CLUSTER_TEXT.value: extraction_config.src_start_cluster_text,
+                        ConfigOptions.SRC_END_CLUSTER_TEXT.value: extraction_config.src_end_cluster_text,
+                        ConfigOptions.REF_START_CLUSTER_TEXT.value: extraction_config.ref_start_cluster_text,
+                        ConfigOptions.REF_END_CLUSTER_TEXT.value: extraction_config.ref_end_cluster_text,
+                        ConfigOptions.PRESET.value: preset_target,
+                        ConfigOptions.TARGET_FILE.value: target_file,
+                        ConfigOptions.GROUP.value: group
+                    })
+                    configs.append(builder.build())
+
+                # Catching all exceptions is valid here
+                except Exception as e:  # pylint: disable=W0718
+                    console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_PRESET,
+                                                preset=preset_target, error=e))
+                    continue
+
+        if not configs:
+            raise ValueError(create_prompt(Section.ERROR_HANDLING, Key.NO_PRESETS_FOUND))
+        return configs
+
+    def _build_from_preset(self, preset_target: str) -> BaseConfiguration:
+        """Build configuration from a preset."""
+        initialized_config = self.load_preset(preset_target)
+        return self._convert_initialized_to_config(initialized_config)
+
+    def _convert_initialized_to_config(self, initialized: dict[str, Any]) -> BaseConfiguration:
+        """Convert initialized config dict to new configuration format."""
+        builder = ConfigurationBuilder()
+
+        # Map required fields - handle None values safely
+        cluster_filter = initialized.get('cluster_filter')
+        if cluster_filter is not None:
+            builder.with_cluster_filter(cluster_filter)
+
+        text_filter_type = initialized.get('text_filter_type')
+        if text_filter_type is not None:
+            builder.with_filter_type(text_filter_type)
+
+        text_filter = initialized.get('text_filter')
+        if text_filter is not None:
+            builder.with_text_filter(text_filter)
+
+        should_slice_clusters = initialized.get('should_slice_clusters')
+        if should_slice_clusters is not None:
+            builder.with_should_slice_clusters(should_slice_clusters)
+
+        # Map optional slicing fields
+        src_start = initialized.get('src_start_cluster_text')
+        if src_start is not None:
+            builder.with_src_start_cluster_text(src_start)
+
+        src_end = initialized.get('src_end_cluster_text')
+        if src_end is not None:
+            builder.with_src_end_cluster_text(src_end)
+
+        ref_start = initialized.get('ref_start_cluster_text')
+        if ref_start is not None:
+            builder.with_ref_start_cluster_text(ref_start)
+
+        ref_end = initialized.get('ref_end_cluster_text')
+        if ref_end is not None:
+            builder.with_ref_end_cluster_text(ref_end)
+
+        return builder.build()
+
+    def group_presets_by_file(self,
+                              presets_list: dict[str, list[dict[str, str]]],
+                              target_variables: Optional[dict[str, str]] = None
+                              ) -> dict[str, list[dict[str, str]]]:
+        """
+        Group preset entries by their target file after variable substitution.
+
+        Parameters
+        ----------
+        presets_list : dict[str, list[dict[str, str]]]
+            Dictionary containing preset groups and their entries.
+        target_variables : Optional[dict[str, str]], optional
+            Variables for template substitution in target file paths.
+
+        Returns
+        -------
+        dict[str, list[dict[str, str]]]
+            Dictionary mapping target files to their preset entries.
+        """
+        grouped_presets: dict[str, list[dict[str, str]]] = defaultdict(list)
+
+        for group_name, preset_entries in presets_list.items():
+            for preset_entry in preset_entries:
+                target_file = preset_entry['target']
+
+                # Apply variable substitution if provided
+                if target_variables:
+                    for var_name, var_value in target_variables.items():
+                        target_file = target_file.replace(f'{{{var_name}}}', var_value)
+
+                # Add group information to preset entry
+                preset_entry_with_group = preset_entry.copy()
+                preset_entry_with_group[ConfigOptions.GROUP.value] = group_name
+                preset_entry_with_group['target'] = target_file
+
+                grouped_presets[target_file].append(preset_entry_with_group)
+
+        return dict(grouped_presets)
