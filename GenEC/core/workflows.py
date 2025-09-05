@@ -2,7 +2,10 @@
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from pathlib import Path
 from typing import Callable, Optional, Type, TypeVar, TYPE_CHECKING
+
+from rich.console import Console
 
 from GenEC import utils
 from GenEC.core import FileID, Workflows
@@ -14,6 +17,7 @@ from GenEC.core.configuration_manager import (
 from GenEC.core.configuration import BaseConfiguration
 from GenEC.core.output_manager import OutputManager
 from GenEC.core.types.output import DataExtract, DataCompare, Entry
+from GenEC.core.prompts import Section, Key, create_prompt
 
 if TYPE_CHECKING:  # pragma: no cover
     import argparse
@@ -97,24 +101,40 @@ class Workflow(ABC):
             source_text = source_data.get(configuration.target_file, '')
             source_filtered = extractor.extract_from_data(configuration, source_text, FileID.SOURCE)
 
-            if ref_data:  # extract and compare
-                ref_text = ref_data.get(configuration.target_file, '')
-                ref_filtered = extractor.extract_from_data(configuration, ref_text, FileID.REFERENCE)
-                comparer = Comparer(source_filtered, ref_filtered)
-                comparison_result: dict[str, DataCompare] = comparer.compare()
-                results[configuration.group].append(Entry(
-                    preset=configuration.preset,
-                    target=configuration.target_file,
-                    data=dict(sorted(comparison_result.items()))))
-            else:  # extract only
-                count_result = utils.get_list_each_element_count(source_filtered)
-                extraction_result: dict[str, DataExtract] = {key: {'source': value} for key, value in count_result.items()}
-                results[configuration.group].append(Entry(
-                    preset=configuration.preset,
-                    target=configuration.target_file,
-                    data=dict(sorted(extraction_result.items()))))
+            # Check if both source and reference data exist for this specific target file
+            has_source = configuration.target_file in source_data
+            has_reference = ref_data is not None and configuration.target_file in ref_data
+
+            if has_source and has_reference:
+                # ref_data guaranteed not None by has_reference check
+                entry = self._create_comparison_entry(configuration, source_filtered, ref_data, extractor)  # type: ignore
+                results[configuration.group].append(entry)
+            elif has_source:
+                entry = self._create_extraction_entry(configuration, source_filtered)
+                results[configuration.group].append(entry)
 
         return results
+
+    def _create_comparison_entry(self, configuration: BaseConfiguration, source_filtered: list[str],
+                                 ref_data: dict[str, str], extractor: Extractor) -> Entry:
+        """Create an entry with comparison data."""
+        ref_text = ref_data[configuration.target_file]
+        ref_filtered = extractor.extract_from_data(configuration, ref_text, FileID.REFERENCE)
+        comparer = Comparer(source_filtered, ref_filtered)
+        comparison_result: dict[str, DataCompare] = comparer.compare()
+        return Entry(
+            preset=configuration.preset,
+            target=configuration.target_file,
+            data=dict(sorted(comparison_result.items())))
+
+    def _create_extraction_entry(self, configuration: BaseConfiguration, source_filtered: list[str]) -> Entry:
+        """Create an entry with extraction-only data."""
+        count_result = utils.get_list_each_element_count(source_filtered)
+        extraction_result: dict[str, DataExtract] = {key: {'source': value} for key, value in count_result.items()}
+        return Entry(
+            preset=configuration.preset,
+            target=configuration.target_file,
+            data=dict(sorted(extraction_result.items())))
 
     def run(self) -> None:
         """Execute the workflow: read files, process configurations, and generate output."""
@@ -123,7 +143,7 @@ class Workflow(ABC):
         results = self._process_configurations(self.configuration_manager.configurations, source_data, ref_data)
 
         output_manager = OutputManager(self.output_directory, self.output_types)
-        output_manager.process(results, root=self.source, is_comparison=bool(ref_data))
+        output_manager.process(results, root=self.source)
 
         utils.print_footer()
 
@@ -282,3 +302,46 @@ class PresetList(Workflow):
         )
         manager.initialize_configuration()
         return manager
+
+    def _get_data(self, configurations: list[BaseConfiguration]) -> tuple[dict[str, str], Optional[dict[str, str]]]:
+        """
+        Read source and reference files one-by-one, skipping missing files.
+
+        Parameters
+        ----------
+        configurations : list[BaseConfiguration]
+            List of Configuration objects specifying target files to read.
+
+        Returns
+        -------
+        tuple[dict[str, str], Optional[dict[str, str]]]
+            Dictionary mapping file names to contents for source files and
+            optionally for reference files if provided. Missing files are skipped.
+        """
+        console = Console()
+
+        source_data: dict[str, str] = {}
+        ref_data: Optional[dict[str, str]] = {} if self.reference else None
+        unique_source_files: set[str] = set(c.target_file for c in configurations)
+
+        for target_file in unique_source_files:
+            # Read source file
+            source_file_path = Path(self.source) if target_file == '' else Path(self.source) / target_file
+            try:
+                source_data[target_file] = utils.read_file(source_file_path)
+                source_exists = True
+            except FileNotFoundError:
+                console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_SOURCE_FILE,
+                                            target_file=target_file))
+                source_exists = False
+
+            # Only read reference file if source file exists and reference directory is provided
+            if source_exists and self.reference and ref_data is not None:
+                ref_file_path = Path(self.reference) if target_file == '' else Path(self.reference) / target_file
+                try:
+                    ref_data[target_file] = utils.read_file(ref_file_path)
+                except FileNotFoundError:
+                    console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_REFERENCE_FILE,
+                                                target_file=target_file))
+
+        return source_data, ref_data
