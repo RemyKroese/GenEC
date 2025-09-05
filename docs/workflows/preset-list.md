@@ -105,3 +105,15 @@ The Preset-List Workflow creates a structured output hierarchy:
 │   └── (additional groups as defined)
 └──────────────────────────────────────
 ```
+
+## File and Preset Handling
+
+GenEC gracefully handles missing files and failed presets during batch processing:
+
+**Missing source files:** Skips analysis for that file and continues with remaining files.
+
+**Missing reference files:** Continues with extraction-only mode (skips comparison).
+
+**Missing presets:** Skips the preset and processes remaining ones normally.
+
+This ensures preset-list workflows complete successfully even when some components are unavailable.
