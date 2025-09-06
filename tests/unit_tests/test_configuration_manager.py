@@ -181,6 +181,42 @@ class TestConfigurationManagerPresetLoading:
         expected = create_test_preset_data()['main_preset']
         assert result == expected
 
+    @pytest.mark.unit
+    @patch.object(BasicConfigurationManager, 'load_preset_file')
+    def test_load_preset_with_subdirectory_path(self, mock_load_file: Mock, c_instance: BasicConfigurationManager) -> None:
+        """Test loading preset with subdirectory path format."""
+        mock_load_file.return_value = create_multiple_presets_data()
+
+        result = c_instance.load_preset('subdir/test_file/sub_preset_A')
+
+        mock_load_file.assert_called_once_with('subdir/test_file')
+        expected = create_multiple_presets_data()['sub_preset_A']
+        assert result == expected
+
+    @pytest.mark.unit
+    @patch.object(BasicConfigurationManager, 'load_preset_file')
+    def test_load_preset_with_deep_subdirectory_path(self, mock_load_file: Mock, c_instance: BasicConfigurationManager) -> None:
+        """Test loading preset with deeply nested subdirectory path format."""
+        mock_load_file.return_value = create_test_preset_data()
+
+        result = c_instance.load_preset('level1/level2/level3/preset_file/main_preset')
+
+        mock_load_file.assert_called_once_with('level1/level2/level3/preset_file')
+        expected = create_test_preset_data()['main_preset']
+        assert result == expected
+
+    @pytest.mark.unit
+    @patch.object(BasicConfigurationManager, 'load_preset_file')
+    def test_load_preset_subdirectory_just_name(self, mock_load_file: Mock, c_instance: BasicConfigurationManager) -> None:
+        """Test loading preset with subdirectory in filename but no preset name."""
+        mock_load_file.return_value = create_test_preset_data()
+
+        result = c_instance.load_preset('subdir/main_preset')
+
+        mock_load_file.assert_called_once_with('subdir')
+        expected = create_test_preset_data()['main_preset']
+        assert result == expected
+
 
 class TestConfigurationManagerGrouping:
     """Test preset grouping functionality."""
