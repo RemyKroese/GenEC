@@ -5,6 +5,8 @@ from typing import cast, Optional, Sequence, Union
 from pathlib import Path
 import sys
 
+from rich.console import Console
+
 # Pyinstaller workaround
 if getattr(sys, 'frozen', False):  # pragma: no cover
     project_path = Path(sys.executable).parent
@@ -14,12 +16,15 @@ sys.path.insert(0, str(project_path))
 
 from GenEC.core import workflows, Workflows  # noqa: E402  # pylint: disable=wrong-import-position
 from GenEC.core.specs import MetaData, DEFAULT_PRESETS_DIRECTORY  # noqa: E402  # pylint: disable=wrong-import-position
+from GenEC.core.prompts import create_prompt, Section, Key  # noqa: E402  # pylint: disable=wrong-import-position
 
 
 QUICK_EXAMPLES = ('Quick examples:\n'
                   'GenEC basic --source data.txt\n'
                   'GenEC preset --source data.txt --preset preset_file_name_without_extension/preset_name\n'
                   'GenEC preset-list --preset-list preset_list_file.yaml --source my/data/folder/')
+
+console = Console()
 
 
 def parse_target_variables(pairs: Sequence[str]) -> dict[str, str]:
@@ -128,6 +133,8 @@ def parse_arguments() -> argparse.Namespace:
     common.add_argument('-t', '--output-types', type=str, nargs='+', required=False,
                         choices=['csv', 'json', 'txt', 'yaml'],
                         help='Output file types to generate. Provide at least one if --output-directory is set.')
+    common.add_argument('--only-show-differences', action='store_true',
+                        help='When comparing source and reference, only show elements with non-zero differences.')
 
     common_preset = argparse.ArgumentParser(add_help=False)
     common_preset.add_argument('-d', '--presets-directory', type=str, required=False,
@@ -156,8 +163,15 @@ def parse_arguments() -> argparse.Namespace:
                              help='Print results to CLI (disabled by default when output files are specified for performance).')
 
     args = parser.parse_args()
+
+    print()
+
     if (args.output_directory is None) != (args.output_types is None):
         parser.error('Arguments --output-directory and --output-types must both be provided or neither.')
+
+    if args.only_show_differences and not args.reference:
+        console.print(create_prompt(Section.ERROR_HANDLING, Key.ONLY_SHOW_DIFFERENCES_WITHOUT_REFERENCE))
+
     return args
 
 
@@ -179,7 +193,6 @@ def main() -> None:
 
     try:
         args = parse_arguments()
-        print('\n')  # Create some space between command argument and the output sequence
         workflows.get_workflow(args.workflow, args).run()
     except KeyboardInterrupt:
         print('\n\nOperation cancelled by user.')

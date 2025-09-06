@@ -57,6 +57,9 @@ class Key(Enum):
     PRESET_VALIDATION_ERROR = 'preset_validation_error'
     REGEX_COMPILATION_ERROR = 'regex_compilation_error'
 
+    # VALIDATION
+    ONLY_SHOW_DIFFERENCES_WITHOUT_REFERENCE = 'only_show_differences_without_reference'
+
     # CONFIGURATION_BUILDER
     REQUIRED_FIELD_MISSING = 'required_field_missing'
     TEXT_FILTER_TYPE_MISMATCH_STR = 'text_filter_type_mismatch_str'
@@ -158,7 +161,8 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
             Key.SKIPPING_TARGET_FILE: '[yellow]Skipping target file {target_file}: {error}[/yellow]',
             Key.SKIPPING_SOURCE_FILE: '[bold red]source file[/bold red] {target_file} not found - [red]skipping analysis[/red]',
             Key.SKIPPING_REFERENCE_FILE: '[bold cyan]reference file[/bold cyan] {target_file} not found - [cyan]skipping comparison[/cyan]',
-            Key.CLI_PRINTING_DISABLED: '[yellow]CLI printing disabled for performance. Use --print-results to enable.[/yellow]'
+            Key.CLI_PRINTING_DISABLED: '[yellow]CLI printing disabled for performance. Use --print-results to enable.[/yellow]',
+            Key.ONLY_SHOW_DIFFERENCES_WITHOUT_REFERENCE: ('[yellow]WARNING: --only-show-differences requires a --reference parameter[/yellow]')
         }
     }
 }

@@ -76,6 +76,7 @@ GenEC supports three workflow commands with different automation levels and use 
 | `--reference`        | `-r`  | No       | Path to the reference for comparison. |
 | `--output-directory` | `-o`  | No       | Directory to save output files (terminal-only by default). |
 | `--output-types`     | `-t`  | No       | List of output file types to generate. Choices: `csv`, `json`, `txt`, `yaml`. Note that multiple can be selected. |
+| `--only-show-differences` |   | No       | When comparing source and reference, only show elements with non-zero differences. |
 
 `--source` and `--reference` arguments accept **file paths** for the basic and preset workflows, and **directory paths** when using `preset-list` workflow.
 

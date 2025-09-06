@@ -32,6 +32,7 @@ When using the same parameters repeatedly in the basic workflow, considering cre
 | `--reference` / `-r` | string | No | Path to reference file for comparison (enables comparison mode) |
 | `--output-directory` / `-o` | string | No | Directory to save output files (must be used with `--output-types`) |
 | `--output-types` / `-t` | list | No | List of output file types: `csv`, `json`, `txt`, `yaml` (multiple allowed) |
+| `--only-show-differences` | flag | No | When comparing source and reference, only show elements with non-zero differences |
 
 **Basic syntax:**
 ```bash
@@ -51,6 +52,11 @@ uv run python GenEC/main.py basic --source logs/application.log
 **Extract-and-compare mode:**
 ```bash
 uv run python GenEC/main.py basic --source logs/app_current.log --reference logs/app_previous.log
+```
+
+**Filter comparison output to show only differences:**
+```bash
+uv run python GenEC/main.py basic --source logs/app_current.log --reference logs/app_previous.log --only-show-differences
 ```
 
 **With custom output directory and formats:**
