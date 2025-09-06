@@ -49,6 +49,28 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unit
 
+  integration_tests:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: [3.9, 3.13]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: ./.github/actions/setup-environment
+      - name: Run integration tests
+        run: uv run pytest -m integration --cov=. --cov-append --cov-branch --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: integration
+
   system_tests:
     runs-on: windows-latest
     continue-on-error: true
