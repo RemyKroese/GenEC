@@ -39,6 +39,7 @@ class Workflow(ABC):
         self.reference = args.reference
         self.output_directory = args.output_directory
         self.output_types = args.output_types
+        self.console = Console()
         self.configuration_manager: ConfigurationManager
 
     @abstractmethod
@@ -142,10 +143,16 @@ class Workflow(ABC):
         source_data, ref_data = self._get_data(self.configuration_manager.configurations)
         results = self._process_configurations(self.configuration_manager.configurations, source_data, ref_data)
 
-        output_manager = OutputManager(self.output_directory, self.output_types)
+        output_manager = self._create_output_manager()
         output_manager.process(results, root=self.source)
 
         utils.print_footer()
+
+    def _create_output_manager(self) -> OutputManager:
+        """Create the OutputManager for this workflow."""
+        return OutputManager(output_directory=self.output_directory,
+                             output_types=self.output_types,
+                             should_print_results=True)
 
 
 E = TypeVar('E', bound=Workflow)
@@ -284,6 +291,7 @@ class PresetList(Workflow):
         self.preset_list = args.preset_list
         self.presets_directory = args.presets_directory
         self.target_variables = args.target_variables
+        self.print_results = args.print_results
         self.configuration_manager = self._get_configuration_manager()
 
     def _get_configuration_manager(self) -> BatchConfigurationManager:
@@ -318,8 +326,6 @@ class PresetList(Workflow):
             Dictionary mapping file names to contents for source files and
             optionally for reference files if provided. Missing files are skipped.
         """
-        console = Console()
-
         source_data: dict[str, str] = {}
         ref_data: Optional[dict[str, str]] = {} if self.reference else None
         unique_source_files: set[str] = set(c.target_file for c in configurations)
@@ -331,8 +337,8 @@ class PresetList(Workflow):
                 source_data[target_file] = utils.read_file(source_file_path)
                 source_exists = True
             except FileNotFoundError:
-                console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_SOURCE_FILE,
-                                            target_file=target_file))
+                self.console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_SOURCE_FILE,
+                                                 target_file=target_file))
                 source_exists = False
 
             # Only read reference file if source file exists and reference directory is provided
@@ -341,7 +347,15 @@ class PresetList(Workflow):
                 try:
                     ref_data[target_file] = utils.read_file(ref_file_path)
                 except FileNotFoundError:
-                    console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_REFERENCE_FILE,
-                                                target_file=target_file))
+                    self.console.print(create_prompt(Section.ERROR_HANDLING, Key.SKIPPING_REFERENCE_FILE,
+                                                     target_file=target_file))
 
         return source_data, ref_data
+
+    def _create_output_manager(self) -> OutputManager:
+        """Create OutputManager with performance-optimized CLI printing for preset-list workflow."""
+        # Always print if no output files, otherwise check user preference
+        should_print = not (self.output_directory and self.output_types) or self.print_results
+        if not should_print:
+            self.console.print(create_prompt(Section.ERROR_HANDLING, Key.CLI_PRINTING_DISABLED))
+        return OutputManager(self.output_directory, self.output_types, should_print_results=should_print)

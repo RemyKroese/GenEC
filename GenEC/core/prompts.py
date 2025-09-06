@@ -77,6 +77,7 @@ class Key(Enum):
     SKIPPING_TARGET_FILE = 'skipping_target_file'
     SKIPPING_SOURCE_FILE = 'skipping_source_file'
     SKIPPING_REFERENCE_FILE = 'skipping_reference_file'
+    CLI_PRINTING_DISABLED = 'cli_printing_disabled'
 
 
 ENTER_IS_SKIP = '[gold]Enter[/gold]=[purple]skip[/purple]'
@@ -156,7 +157,8 @@ prompts: dict[str, dict[Section, dict[Key, str]]] = {
             Key.SKIPPING_PRESET: '[yellow]Skipping preset {preset}: {error}[/yellow]',
             Key.SKIPPING_TARGET_FILE: '[yellow]Skipping target file {target_file}: {error}[/yellow]',
             Key.SKIPPING_SOURCE_FILE: '[bold red]source file[/bold red] {target_file} not found - [red]skipping analysis[/red]',
-            Key.SKIPPING_REFERENCE_FILE: '[bold cyan]reference file[/bold cyan] {target_file} not found - [cyan]skipping comparison[/cyan]'
+            Key.SKIPPING_REFERENCE_FILE: '[bold cyan]reference file[/bold cyan] {target_file} not found - [cyan]skipping comparison[/cyan]',
+            Key.CLI_PRINTING_DISABLED: '[yellow]CLI printing disabled for performance. Use --print-results to enable.[/yellow]'
         }
     }
 }

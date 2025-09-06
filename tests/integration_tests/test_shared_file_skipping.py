@@ -36,6 +36,7 @@ def test_shared_file_single_skip_message() -> None:
 
         with patch('GenEC.core.workflows.Console') as mock_console_class:
             mock_console = mock_console_class.return_value
+            workflow.console = mock_console
 
             workflow._get_data(workflow.configuration_manager.configurations)  # pylint: disable=protected-access
 
@@ -75,6 +76,7 @@ def test_mixed_file_availability_integration() -> None:
 
         with patch('GenEC.core.workflows.Console') as mock_console_class:
             mock_console = mock_console_class.return_value
+            workflow.console = mock_console
 
             workflow.run()
 
