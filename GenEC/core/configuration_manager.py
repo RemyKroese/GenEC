@@ -162,7 +162,8 @@ class ConfigurationManager(ABC):
         Parameters
         ----------
         preset_target : str
-            Preset identifier in format 'filename/preset_name' or just 'preset_name'.
+            Preset identifier in format 'path/to/filename/preset_name' or just 'preset_name'.
+            Supports subdirectories within the presets directory.
 
         Returns
         -------
@@ -170,7 +171,7 @@ class ConfigurationManager(ABC):
             The loaded preset configuration as a dictionary.
         """
         if '/' in preset_target:
-            preset_file, preset_name = preset_target.split('/', 1)
+            preset_file, preset_name = preset_target.rsplit('/', 1)
         else:
             preset_file = preset_target
             preset_name = None
@@ -200,7 +201,8 @@ class ConfigurationManager(ABC):
         Parameters
         ----------
         preset_file : str
-            Name of the preset file (without .yaml extension).
+            Path to the preset file (without .yaml extension).
+            Can include subdirectories (e.g., 'subdir/preset_file').
 
         Returns
         -------
@@ -590,7 +592,8 @@ class BatchConfigurationManager(ConfigurationManager):
         Parameters
         ----------
         presets_list_target : str
-            The name of the presets list YAML file (without extension)
+            Path to the presets list YAML file (without extension).
+            Can include subdirectories (e.g., 'subdir/preset_list_file').
         target_variables : Optional[dict[str, str]], optional
             Variables used to replace placeholders in target file paths
 

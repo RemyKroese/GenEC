@@ -16,6 +16,8 @@ Preset-lists support variable substitution, making them dynamic and reusable acr
 
 Preset-list files reference existing presets. To create the preset configurations themselves, see: [Preset Configuration documentation](preset.md)
 
+**Subdirectory organization**: Both preset files and preset-list files can be organized into subdirectories within the presets directory for better organization. Use forward slashes in paths: `subdir/preset_file/preset_name`.
+
 ## How to use
 
 ### YAML Structure
@@ -40,7 +42,7 @@ group_name_2:
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `preset` | string | Yes | Reference to existing preset in format `'<file_without_extension>/preset_name'` |
+| `preset` | string | Yes | Reference to existing preset in format `'<file_path_without_extension>/preset_name'`. Supports subdirectories (e.g., `'subdir/preset_file/preset_name'`) |
 | `target` | string | Yes | Target filename within source directory |
 
 ### Group Organization
@@ -123,13 +125,13 @@ log_monitoring:
 security_audit:
   - preset: 'security_presets/login_attempts'
     target: 'auth.log'
-  - preset: 'security_presets/access_violations'
+  - preset: 'security/advanced_presets/access_violations'
     target: 'security.log'
   - preset: 'security_presets/privilege_escalation'
     target: 'admin.log'
 
 data_validation:
-  - preset: 'validation_presets/data_integrity'
+  - preset: 'validation/quality/data_integrity'
     target: '{dataset}_validation.txt'
   - preset: 'validation_presets/format_compliance'
     target: '{dataset}_format.txt'

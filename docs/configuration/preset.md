@@ -15,11 +15,12 @@ When you create a preset, you're essentially saving a recipe for data extraction
 Preset files are stored with `.yaml` extensions and can contain multiple preset configurations within a single file. Each preset has a unique name and can be referenced individually when running the Preset Workflow.
 
 ## How to use
-Preset files are part of both the [Preset workflow](../workflows/preset.md) and the [Preset-list workflow](../workflows/preset-list.md). Note that in both workflows a preset is provided through the following syntax: `<preset_file_name_without_extension>/<preset_name>`
+Preset files are part of both the [Preset workflow](../workflows/preset.md) and the [Preset-list workflow](../workflows/preset-list.md). Note that in both workflows a preset is provided through the following syntax: `<preset_file_path_without_extension>/<preset_name>`
 - in the preset workflow: Provide the preset through the CLI `--preset` / `-p` parameter.
 - in the preset-list workflow: Provide the preset as a list entry within a preset-list.yaml file
-  - Preset-lists and presets must be in the same directory.
+  - Preset-lists and presets must be in the same directory or subdirectories within the presets directory.
 - The default location for presets is in `GenEC/presets`. However, custom locations can be used through the `--presets-directory` / `-d` command.
+- **Subdirectory support**: Preset files can be organized into subdirectories within the presets directory. Use forward slashes to specify the path: `subdir/preset_file/preset_name` or `level1/level2/preset_file/preset_name`.
 
 ### YAML Structure
 
