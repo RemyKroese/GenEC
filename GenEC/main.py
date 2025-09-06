@@ -152,6 +152,8 @@ def parse_arguments() -> argparse.Namespace:
     preset_list.add_argument('-v', '--target-variables', type=str, nargs='+',
                              action=TargetVariablesAction, metavar='VARIABLE=VALUE',
                              help='Variable=value pairs for dynamic path substitution in preset-list workflow.')
+    preset_list.add_argument('--print-results', action='store_true',
+                             help='Print results to CLI (disabled by default when output files are specified for performance).')
 
     args = parser.parse_args()
     if (args.output_directory is None) != (args.output_types is None):

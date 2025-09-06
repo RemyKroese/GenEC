@@ -36,6 +36,7 @@ Preset-list mass-executes [presets](preset.md). So in situations where folders, 
 | `--target-variables` / `-v` | list | No | Key-value pairs (`key=value`) for variable substitution (can be specified multiple times) |
 | `--output-directory` / `-o` | string | No | Directory to save output files (must be used with `--output-types`) |
 | `--output-types` / `-t` | list | No | List of output file types: `csv`, `json`, `txt`, `yaml` (multiple allowed) |
+| `--print-results` | flag | No | Print results to CLI (disabled by default when output files are specified for performance) |
 
 **Basic syntax:**
 ```bash
@@ -56,6 +57,14 @@ uv run python GenEC/main.py preset-list --preset-list comprehensive_analysis --s
 ```bash
 uv run python GenEC/main.py preset-list -l analysis_suite -s logs/current/ -r logs/baseline/ -v environment=production version=1.2.3
 ```
+
+### Performance Optimization
+
+For large dataset processing, GenEC automatically optimizes performance by disabling CLI printing when output files are specified:
+
+- **Default behavior**: When `--output-directory` and `--output-types` are provided, CLI printing is disabled for better performance
+- **Override option**: Use `--print-results` to force CLI printing even when output files are specified
+- **Terminal-only mode**: When no output files are specified, results are always printed to CLI
 
 ### YAML Configuration Structure
 Preset list files reference existing preset configurations:

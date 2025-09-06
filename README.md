@@ -91,6 +91,7 @@ GenEC supports three workflow commands with different automation levels and use 
 | **preset-list**| `--preset-list`       | `-l`  | Yes      | Batch processing configuration - [Learn more →](docs/workflows/preset-list.md)  |
 |                | `--presets-directory` | `-d`  | No       | Directory containing preset YAML files (default: `GenEC/presets/`). |
 |                | `--target-variables`  | `-v`  | No       | Key-value pairs (`key=value`) for variable substitution. Can be specified multiple times.|
+|                | `--print-results`     |       | No       | Print results to CLI (disabled by default when output files are specified for performance). |
 
 ### Example Commands
 

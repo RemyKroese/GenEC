@@ -3,6 +3,8 @@
 from unittest.mock import Mock, patch
 from pathlib import Path
 
+from rich.console import Console
+
 from GenEC.core.workflows import PresetList
 from GenEC.core.configuration import BaseConfiguration
 
@@ -23,6 +25,7 @@ class TestPresetList:
         workflow = PresetList.__new__(PresetList)
         workflow.source = 'source_dir'
         workflow.reference = 'ref_dir'
+        workflow.console = Console()
 
         config1 = Mock(spec=BaseConfiguration)
         config1.target_file = 'existing_file.txt'
@@ -42,9 +45,10 @@ class TestPresetList:
         assert source_data['another_existing.txt'] == 'file content'
 
         assert ref_data is not None
-        assert 'existing_file.txt' in ref_data
-        assert 'another_existing.txt' in ref_data
-        assert 'missing_file.txt' not in ref_data
+        assert isinstance(ref_data, dict)
+        assert 'existing_file.txt' in ref_data  # pylint: disable=unsupported-membership-test
+        assert 'another_existing.txt' in ref_data  # pylint: disable=unsupported-membership-test
+        assert 'missing_file.txt' not in ref_data  # pylint: disable=unsupported-membership-test
 
     @patch('GenEC.core.workflows.utils.read_file')
     def test_get_data_no_reference(self, mock_read_file: Mock) -> None:
@@ -54,6 +58,7 @@ class TestPresetList:
         workflow = PresetList.__new__(PresetList)
         workflow.source = 'source_dir'
         workflow.reference = None
+        workflow.console = Console()
 
         config = Mock(spec=BaseConfiguration)
         config.target_file = 'test_file.txt'
@@ -76,6 +81,7 @@ class TestPresetList:
         workflow = PresetList.__new__(PresetList)
         workflow.source = 'source_dir'
         workflow.reference = None
+        workflow.console = mock_console
 
         config = Mock(spec=BaseConfiguration)
         config.target_file = 'missing_file.txt'
@@ -107,6 +113,7 @@ class TestPresetList:
         workflow = PresetList.__new__(PresetList)
         workflow.source = 'source_dir'
         workflow.reference = 'ref_dir'
+        workflow.console = Console()
 
         config = Mock(spec=BaseConfiguration)
         config.target_file = 'missing_file.txt'
@@ -122,7 +129,8 @@ class TestPresetList:
 
         assert 'missing_file.txt' not in source_data
         assert ref_data is not None
-        assert 'missing_file.txt' not in ref_data
+        assert isinstance(ref_data, dict)
+        assert 'missing_file.txt' not in ref_data  # pylint: disable=unsupported-membership-test
 
     @patch('GenEC.core.workflows.Console')
     @patch('GenEC.core.workflows.utils.read_file')
@@ -143,6 +151,7 @@ class TestPresetList:
         workflow = PresetList.__new__(PresetList)
         workflow.source = 'source_dir'
         workflow.reference = 'ref_dir'
+        workflow.console = mock_console
 
         config1 = Mock(spec=BaseConfiguration)
         config1.target_file = 'source_missing.txt'
@@ -169,4 +178,5 @@ class TestPresetList:
         assert 'source_missing.txt' not in source_data
         assert 'ref_missing.txt' in source_data
         assert ref_data is not None
-        assert 'ref_missing.txt' not in ref_data
+        assert isinstance(ref_data, dict)
+        assert 'ref_missing.txt' not in ref_data  # pylint: disable=unsupported-membership-test
