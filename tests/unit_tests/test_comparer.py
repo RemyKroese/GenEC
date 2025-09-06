@@ -49,6 +49,20 @@ DIFFERENCES_3: dict[str, dict[str, int]] = {
     '100': {'source': 0, 'reference': 1, 'difference': -1}
 }
 
+# Expected results for only_show_differences=True tests
+DIFFERENCES_2_FILTERED: dict[str, dict[str, int]] = {
+    '1': {'source': 1, 'reference': 0, 'difference': 1},
+    '2': {'source': 1, 'reference': 0, 'difference': 1},
+    '3': {'source': 0, 'reference': 1, 'difference': -1}
+}
+
+DIFFERENCES_3_FILTERED: dict[str, dict[str, int]] = {
+    '1': {'source': 3, 'reference': 0, 'difference': 3},
+    '3': {'source': 0, 'reference': 1, 'difference': -1},
+    '52': {'source': 0, 'reference': 1, 'difference': -1},
+    '100': {'source': 0, 'reference': 1, 'difference': -1}
+}
+
 
 @pytest.mark.unit
 @pytest.mark.parametrize('source, reference, expected_unique_elements', [
@@ -83,4 +97,16 @@ def test_counters(source: list[str], reference: list[str],
     (SRC_3, REF_3, DIFFERENCES_3)])
 def test_compare(source: list[str], reference: list[str], expected_diff: dict[str, dict[str, int]]) -> None:
     c: Comparer = Comparer(source, reference)
+    assert c.compare() == expected_diff
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize('source, reference, expected_diff', [
+    (SRC_1, REF_1, {}),
+    (SRC_2, REF_2, DIFFERENCES_2_FILTERED),
+    (SRC_3, REF_3, DIFFERENCES_3_FILTERED),
+])
+def test_compare_with_only_show_differences(source: list[str], reference: list[str],
+                                          expected_diff: dict[str, dict[str, int]]) -> None:
+    c: Comparer = Comparer(source, reference, only_show_differences=True)
     assert c.compare() == expected_diff

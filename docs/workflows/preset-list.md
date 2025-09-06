@@ -36,6 +36,7 @@ Preset-list mass-executes [presets](preset.md). So in situations where folders, 
 | `--target-variables` / `-v` | list | No | Key-value pairs (`key=value`) for variable substitution (can be specified multiple times) |
 | `--output-directory` / `-o` | string | No | Directory to save output files (must be used with `--output-types`) |
 | `--output-types` / `-t` | list | No | List of output file types: `csv`, `json`, `txt`, `yaml` (multiple allowed) |
+| `--only-show-differences` | flag | No | When comparing source and reference, only show elements with non-zero differences |
 | `--print-results` | flag | No | Print results to CLI (disabled by default when output files are specified for performance) |
 
 **Basic syntax:**
@@ -51,6 +52,11 @@ uv run python GenEC/main.py preset-list --preset-list comprehensive_analysis --s
 **Extract-and-compare mode:**
 ```bash
 uv run python GenEC/main.py preset-list --preset-list comprehensive_analysis --source logs/current/ --reference logs/baseline/
+```
+
+**Filter comparison output to show only differences:**
+```bash
+uv run python GenEC/main.py preset-list --preset-list comprehensive_analysis --source logs/current/ --reference logs/baseline/ --only-show-differences
 ```
 
 **With variable substitution:**

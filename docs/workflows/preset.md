@@ -36,6 +36,7 @@ When (automated) analysis of more than 1 file at a time is required, [preset-lis
 | `--presets-directory` / `-d` | string | No | Directory containing preset YAML files (default: `GenEC/presets/`) |
 | `--output-directory` / `-o` | string | No | Directory to save output files (must be used with `--output-types`) |
 | `--output-types` / `-t` | list | No | List of output file types: `csv`, `json`, `txt`, `yaml` (multiple allowed) |
+| `--only-show-differences` | flag | No | When comparing source and reference, only show elements with non-zero differences |
 
 **Basic syntax:**
 ```bash
@@ -50,6 +51,11 @@ uv run python GenEC/main.py preset --preset error_analysis --source logs/current
 **Extract-and-compare mode:**
 ```bash
 uv run python GenEC/main.py preset --preset error_analysis --source logs/current.log --reference logs/baseline.log
+```
+
+**Filter comparison output to show only differences:**
+```bash
+uv run python GenEC/main.py preset --preset error_analysis --source logs/current.log --reference logs/baseline.log --only-show-differences
 ```
 
 ### YAML Configuration Structure

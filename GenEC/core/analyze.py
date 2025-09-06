@@ -134,7 +134,7 @@ class Comparer:
     differences between source and reference counts.
     """
 
-    def __init__(self, source: list[str], reference: list[str]) -> None:
+    def __init__(self, source: list[str], reference: list[str], only_show_differences: bool = False) -> None:
         """
         Initialize the comparer with source and reference data.
 
@@ -144,10 +144,13 @@ class Comparer:
             Extracted data from the source text.
         reference : list[str]
             Extracted data from the reference text.
+        only_show_differences : bool, optional
+            If True, exclude elements with zero differences from comparison results, by default False.
         """
         self.source_counts = utils.get_list_each_element_count(source)
         self.reference_counts = utils.get_list_each_element_count(reference)
         self.unique_elements = set(self.source_counts.keys()).union(self.reference_counts.keys())
+        self.only_show_differences = only_show_differences
 
     def compare(self) -> dict[str, DataCompare]:
         """
@@ -163,9 +166,13 @@ class Comparer:
         for element in self.unique_elements:
             src_count = self.source_counts.get(element, 0)
             ref_count = self.reference_counts.get(element, 0)
+            difference = src_count - ref_count
+            if self.only_show_differences and difference == 0:
+                continue
+
             differences[element] = {
                 'source': src_count,
                 'reference': ref_count,
-                'difference': src_count - ref_count,
+                'difference': difference,
             }
         return differences

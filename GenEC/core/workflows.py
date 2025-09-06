@@ -39,6 +39,7 @@ class Workflow(ABC):
         self.reference = args.reference
         self.output_directory = args.output_directory
         self.output_types = args.output_types
+        self.only_show_differences = args.only_show_differences
         self.console = Console()
         self.configuration_manager: ConfigurationManager
 
@@ -121,7 +122,7 @@ class Workflow(ABC):
         """Create an entry with comparison data."""
         ref_text = ref_data[configuration.target_file]
         ref_filtered = extractor.extract_from_data(configuration, ref_text, FileID.REFERENCE)
-        comparer = Comparer(source_filtered, ref_filtered)
+        comparer = Comparer(source_filtered, ref_filtered, self.only_show_differences)
         comparison_result: dict[str, DataCompare] = comparer.compare()
         return Entry(
             preset=configuration.preset,
